@@ -4,3 +4,12 @@ __pycache__/
 instance/*.db
 uploads/proofs/*
 !uploads/proofs/.gitkeep
+
+# Data yang hanya disimpan di PythonAnywhere
+instance/*.db
+uploads/books/*
+uploads/proofs/*
+uploads/previews/*
+!uploads/books/.gitkeep
+!uploads/proofs/.gitkeep
+!uploads/previews/.gitkeep

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Portal Wali Santri — TPQ H. Marisa{% endblock %}
+{% block title %}Portal Wali Santri — TPQ HMarisa{% endblock %}
 {% block auth_content %}
 <section class="login-layout guardian-entry-layout">
   <div class="login-showcase">
     <div class="showcase-brand">
-      <span class="showcase-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ H. Marisa"></span>
-      <span><strong>Portal TPQ H. Marisa</strong><small>Pendidikan Al-Qur'an Terintegrasi</small></span>
+      <span class="showcase-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa"></span>
+      <span><strong>Portal TPQ HMarisa</strong><small>Pendidikan Al-Qur'an Terintegrasi</small></span>
     </div>
     <div class="showcase-content">
       <span class="showcase-pill"><i class="fa-solid fa-people-roof"></i> Portal Wali Santri</span>
       <h1>Pantau perkembangan<br>belajar ananda.</h1>
-      <p>Masukkan nama lengkap santri dan pilih kelas untuk melihat nilai, mutabaah, hafalan, tagihan, serta perpustakaan digital.</p>
+      <p>Pilih kelas terlebih dahulu. Daftar nama santri akan muncul otomatis sesuai database kelas yang dipilih.</p>
       <div class="arabic-quote">رَبِّ زِدْنِي عِلْمًا</div>
       <small>“Ya Tuhanku, tambahkanlah ilmu kepadaku.”</small>
     </div>
@@ -20,26 +20,20 @@
   <div class="login-panel">
     <div class="login-card guardian-entry-card">
       <div class="login-mobile-brand">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
-        <span><strong>Portal TPQ H. Marisa</strong><small>Akses Wali Santri</small></span>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa">
+        <span><strong>Portal TPQ HMarisa</strong><small>Akses Wali Santri</small></span>
       </div>
       <div class="login-heading">
         <span class="eyebrow">Assalamu'alaikum Ayah/Bunda</span>
         <h2>Lihat Data Ananda</h2>
-        <p>Tidak perlu username atau kata sandi. Ketik nama lengkap santri sesuai data pendaftaran, lalu pilih kelasnya.</p>
+        <p>Pilih kelas, lalu pilih nama ananda yang muncul otomatis dari database santri.</p>
       </div>
 
-      <form method="post" action="{{ url_for('home') }}" class="form-grid login-form guardian-entry-form">
-        <label>Nama Lengkap Santri
-          <div class="input-with-icon">
-            <i class="fa-regular fa-user"></i>
-            <input type="text" name="student_name" value="{{ student_name or '' }}" placeholder="Contoh: Ahmad Zaki Al-Fatih" autocomplete="off" required autofocus>
-          </div>
-        </label>
+      <form method="post" action="{{ url_for('home') }}" class="form-grid login-form guardian-entry-form" id="guardianEntryForm">
         <label>Kelas
           <div class="input-with-icon select-with-icon">
             <i class="fa-solid fa-school"></i>
-            <select name="class_name" required>
+            <select name="class_name" id="guardianClassSelect" required autofocus>
               <option value="">Pilih kelas santri</option>
               {% for class_item in CLASSES %}
                 <option value="{{ class_item }}" {% if class_name == class_item %}selected{% endif %}>{{ class_item }}</option>
@@ -47,14 +41,25 @@
             </select>
           </div>
         </label>
-        <button class="btn btn-primary btn-block login-submit" type="submit">
+
+        <label>Nama Santri
+          <div class="input-with-icon select-with-icon">
+            <i class="fa-regular fa-user"></i>
+            <select name="student_id" id="guardianStudentSelect" required disabled>
+              <option value="">Pilih kelas terlebih dahulu</option>
+            </select>
+          </div>
+          <small class="guardian-select-status" id="guardianStudentStatus">Nama akan muncul otomatis setelah kelas dipilih.</small>
+        </label>
+
+        <button class="btn btn-primary btn-block login-submit" id="guardianSubmitButton" type="submit" disabled>
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Buka Portal Ananda
         </button>
       </form>
 
       <div class="guardian-help-box">
         <i class="fa-solid fa-circle-info"></i>
-        <span><strong>Nama tidak ditemukan?</strong> Pastikan ejaan nama dan kelas sama dengan data yang tersimpan, atau hubungi Admin TPQ H. Marisa.</span>
+        <span><strong>Nama belum muncul?</strong> Pastikan data ananda sudah terdaftar pada kelas yang benar atau hubungi Admin TPQ HMarisa.</span>
       </div>
 
       <div class="admin-entry-divider"><span>khusus pengelola</span></div>
@@ -64,4 +69,62 @@
     </div>
   </div>
 </section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const studentsByClass = {{ students_by_class|tojson }};
+  const classSelect = document.getElementById('guardianClassSelect');
+  const studentSelect = document.getElementById('guardianStudentSelect');
+  const submitButton = document.getElementById('guardianSubmitButton');
+  const status = document.getElementById('guardianStudentStatus');
+  const initialStudentId = {{ (student_id or 0)|tojson }};
+
+  function fillStudents() {
+    const className = classSelect.value;
+    const students = studentsByClass[className] || [];
+    studentSelect.innerHTML = '';
+
+    if (!className) {
+      studentSelect.disabled = true;
+      studentSelect.add(new Option('Pilih kelas terlebih dahulu', ''));
+      status.textContent = 'Nama akan muncul otomatis setelah kelas dipilih.';
+      submitButton.disabled = true;
+      return;
+    }
+
+    if (!students.length) {
+      studentSelect.disabled = true;
+      studentSelect.add(new Option('Belum ada santri di kelas ini', ''));
+      status.textContent = 'Belum ada data santri pada kelas yang dipilih.';
+      submitButton.disabled = true;
+      return;
+    }
+
+    const counts = students.reduce((result, student) => {
+      const key = student.name.toLocaleLowerCase('id-ID');
+      result[key] = (result[key] || 0) + 1;
+      return result;
+    }, {});
+
+    studentSelect.add(new Option('Pilih nama santri', ''));
+    students.forEach(student => {
+      const duplicate = counts[student.name.toLocaleLowerCase('id-ID')] > 1;
+      const label = duplicate ? `${student.name} — NIS ${student.nis}` : student.name;
+      const option = new Option(label, String(student.id));
+      if (Number(student.id) === Number(initialStudentId)) option.selected = true;
+      studentSelect.add(option);
+    });
+    studentSelect.disabled = false;
+    status.textContent = `${students.length} santri ditemukan pada kelas ${className}.`;
+    submitButton.disabled = !studentSelect.value;
+  }
+
+  classSelect.addEventListener('change', fillStudents);
+  studentSelect.addEventListener('change', () => {
+    submitButton.disabled = !studentSelect.value;
+  });
+  fillStudents();
+})();
+</script>
 {% endblock %}

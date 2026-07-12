@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#14532d">
-  <title>{% block title %}Portal TPQ H. Marisa{% endblock %}</title>
+  <title>{% block title %}Portal TPQ HMarisa{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +18,8 @@
   <aside class="sidebar desktop-sidebar" aria-label="Navigasi utama">
     <div class="sidebar-brand">
       <a href="{{ url_for('dashboard') }}" class="brand-lockup">
-        <span class="brand-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ H. Marisa"></span>
-        <span><strong>TPQ H. Marisa</strong><small>Digital School Portal</small></span>
+        <span class="brand-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa"></span>
+        <span><strong>TPQ HMarisa</strong><small>Digital School Portal</small></span>
       </a>
       <div class="sidebar-user">
         <span class="user-avatar">{{ current_user.full_name[:1]|upper }}</span>
@@ -74,7 +74,7 @@
   <header class="mobile-topbar">
     <a href="{{ url_for('dashboard') }}" class="mobile-brand">
       <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
-      <span><strong>Portal TPQ H. Marisa</strong><small>{{ 'Panel Admin' if current_user.is_admin else 'Portal Wali Santri' }}</small></span>
+      <span><strong>Portal TPQ HMarisa</strong><small>{{ 'Panel Admin' if current_user.is_admin else 'Portal Wali Santri' }}</small></span>
     </a>
     <button class="mobile-menu-button" type="button" aria-label="Buka menu" data-menu-toggle><i class="fa-solid fa-bars-staggered"></i></button>
   </header>
@@ -82,7 +82,7 @@
   <div class="drawer-overlay" data-drawer-overlay></div>
   <aside class="mobile-drawer" data-mobile-drawer aria-label="Navigasi seluler">
     <div class="drawer-head">
-      <div class="brand-lockup compact"><span class="brand-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></span><span><strong>TPQ H. Marisa</strong><small>Navigasi Portal</small></span></div>
+      <div class="brand-lockup compact"><span class="brand-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></span><span><strong>TPQ HMarisa</strong><small>Navigasi Portal</small></span></div>
       <button type="button" data-drawer-close aria-label="Tutup menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="drawer-user"><span class="user-avatar">{{ current_user.full_name[:1]|upper }}</span><span><strong>{{ current_user.full_name }}</strong><small>{{ 'Administrator' if current_user.is_admin else 'Wali Santri' }}</small></span></div>
@@ -123,9 +123,9 @@
         {% elif endpoint in ['finance','edit_bill','bill_receipt','view_bill_proof'] %}
           <h1>Administrasi Iuran</h1><p>Kelola tagihan, bukti transfer, verifikasi, dan kuitansi.</p>
         {% elif endpoint in ['library','upload_book','edit_book','purchase_book','book_preview','download_book','view_book_proof'] %}
-          <h1>Perpustakaan Digital</h1><p>Katalog kitab dan materi belajar TPQ H. Marisa.</p>
+          <h1>Perpustakaan Digital</h1><p>Katalog kitab dan materi belajar TPQ HMarisa.</p>
         {% else %}
-          <h1>Portal TPQ H. Marisa</h1><p>Sistem informasi pendidikan Al-Qur'an.</p>
+          <h1>Portal TPQ HMarisa</h1><p>Sistem informasi pendidikan Al-Qur'an.</p>
         {% endif %}
       </div>
       <div class="date-card">
@@ -147,7 +147,7 @@
         {% endwith %}
         {% block content %}{% endblock %}
       </div>
-      <footer class="footer">© {{ current_year }} TPQ H. Marisa — Portal Pendidikan Al-Qur'an</footer>
+      <footer class="footer">© {{ current_year }} TPQ HMarisa — Portal Pendidikan Al-Qur'an</footer>
     </main>
   </section>
 </div>

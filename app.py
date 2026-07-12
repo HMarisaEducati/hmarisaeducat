@@ -27,8 +27,10 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 PROOF_DIR = os.path.join(UPLOAD_DIR, "proofs")
 BOOK_DIR = os.path.join(UPLOAD_DIR, "books")
+PREVIEW_DIR = os.path.join(UPLOAD_DIR, "previews")
 os.makedirs(PROOF_DIR, exist_ok=True)
 os.makedirs(BOOK_DIR, exist_ok=True)
+os.makedirs(PREVIEW_DIR, exist_ok=True)
 
 app = Flask(__name__, instance_relative_config=True)
 os.makedirs(app.instance_path, exist_ok=True)
@@ -39,7 +41,7 @@ app.config.update(
     MAX_CONTENT_LENGTH=25 * 1024 * 1024,
     BSI_BANK_NAME="Bank Syariah Indonesia (BSI)",
     BSI_ACCOUNT_NUMBER=os.environ.get("BSI_ACCOUNT_NUMBER", "[ISI NOMOR REKENING BSI]"),
-    BSI_ACCOUNT_NAME=os.environ.get("BSI_ACCOUNT_NAME", "TPQ H. Marisa"),
+    BSI_ACCOUNT_NAME=os.environ.get("BSI_ACCOUNT_NAME", "TPQ HMarisa"),
 )
 
 db = SQLAlchemy(app)
@@ -297,30 +299,47 @@ def home():
         logout_user()
         session.pop("guardian_student_id", None)
 
+    students_by_class = {class_name: [] for class_name in CLASSES}
+    students = (Santri.query
+                .order_by(Santri.class_name, func.lower(Santri.name), Santri.id)
+                .all())
+    for student in students:
+        students_by_class.setdefault(student.class_name, []).append({
+            "id": student.id,
+            "name": student.name,
+            "nis": student.nis,
+        })
+
+    selected_class = request.form.get("class_name", "").strip() if request.method == "POST" else ""
+    selected_student_id = request.form.get("student_id", type=int) if request.method == "POST" else None
+
     if request.method == "POST":
-        student_name = " ".join(request.form.get("student_name", "").split())
-        class_name = request.form.get("class_name", "").strip()
-        if not student_name or class_name not in CLASSES:
-            flash("Nama santri dan kelas wajib dipilih.", "danger")
-            return render_template("guardian_entry.html", student_name=student_name, class_name=class_name), 400
+        if selected_class not in CLASSES or not selected_student_id:
+            flash("Pilih kelas dan nama santri terlebih dahulu.", "danger")
+            return render_template(
+                "guardian_entry.html",
+                students_by_class=students_by_class,
+                class_name=selected_class,
+                student_id=selected_student_id,
+            ), 400
 
-        matches = (Santri.query
-                   .filter(func.lower(Santri.name) == student_name.lower(),
-                           Santri.class_name == class_name)
-                   .order_by(Santri.id)
-                   .all())
-        if len(matches) != 1:
-            flash("Data santri tidak ditemukan. Periksa kembali nama lengkap dan kelas.", "danger")
-            return render_template("guardian_entry.html", student_name=student_name, class_name=class_name), 404
+        student = db.session.get(Santri, selected_student_id)
+        if not student or student.class_name != selected_class:
+            flash("Data santri tidak ditemukan atau tidak sesuai dengan kelas yang dipilih.", "danger")
+            return render_template(
+                "guardian_entry.html",
+                students_by_class=students_by_class,
+                class_name=selected_class,
+                student_id=selected_student_id,
+            ), 404
 
-        student = matches[0]
         login_user(student.guardian, remember=False)
         session["guardian_student_id"] = student.id
         session["guardian_entry"] = True
         flash(f"Data ananda {student.name} berhasil dibuka.", "success")
         return redirect(url_for("dashboard"))
 
-    return render_template("guardian_entry.html")
+    return render_template("guardian_entry.html", students_by_class=students_by_class)
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
@@ -760,7 +779,7 @@ def build_report_pdf(student, raport):
                               textColor=colors.HexColor("#024936"), fontSize=18, leading=22))
     story = [
         Paragraph("E-RAPORT SANTRI", styles["CenterTitle"]),
-        Paragraph("TPQ H. Marisa", ParagraphStyle(name="sub", parent=styles["Heading2"], alignment=TA_CENTER)),
+        Paragraph("TPQ HMarisa", ParagraphStyle(name="sub", parent=styles["Heading2"], alignment=TA_CENTER)),
         Spacer(1, 12),
     ]
     identity = [
@@ -801,7 +820,7 @@ def build_report_pdf(student, raport):
 
     signatures = [
         ["Mengetahui,", "Wali Kelas"],
-        ["Kepala TPQ H. Marisa", student.class_name],
+        ["Kepala TPQ HMarisa", student.class_name],
         ["\n\n\n", "\n\n\n"],
         [PRINCIPAL, TEACHERS[student.class_name]],
     ]
@@ -1080,8 +1099,11 @@ def edit_book(book_id):
                 except Exception:
                     shutil.move(temp_path, final_path)
 
-                old_path = os.path.join(BOOK_DIR, book.filename or "")
-                if book.filename and os.path.exists(old_path):
+                old_filename = book.filename
+                old_path = os.path.join(BOOK_DIR, old_filename or "")
+                if old_filename:
+                    clear_book_preview_cache(old_filename)
+                if old_filename and os.path.exists(old_path):
                     os.remove(old_path)
                 book.filename = final_name
                 book.original_filename = original_filename
@@ -1111,6 +1133,8 @@ def delete_book(book_id):
     proof_paths = [access.proof_path for access in book.accesses if access.proof_path]
     db.session.delete(book)
     db.session.commit()
+    if filename:
+        clear_book_preview_cache(filename)
     if filename and os.path.exists(path):
         os.remove(path)
     for proof_name in proof_paths:
@@ -1214,6 +1238,45 @@ def has_book_access(book, student):
     return bool(access and access.status == "Terbuka")
 
 
+def preview_cache_directory(filename):
+    safe_stem = os.path.splitext(os.path.basename(filename or "book"))[0]
+    return os.path.join(PREVIEW_DIR, safe_stem)
+
+
+def clear_book_preview_cache(filename):
+    cache_dir = preview_cache_directory(filename)
+    if os.path.isdir(cache_dir):
+        shutil.rmtree(cache_dir, ignore_errors=True)
+
+
+def build_book_preview(pdf_path, filename, page_number):
+    """Render one real PDF page to a cached JPEG preview."""
+    import fitz
+
+    cache_dir = preview_cache_directory(filename)
+    os.makedirs(cache_dir, exist_ok=True)
+    output_path = os.path.join(cache_dir, f"page_{page_number}.jpg")
+    if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+        return output_path
+
+    doc = fitz.open(pdf_path)
+    try:
+        if doc.needs_pass:
+            raise ValueError("PDF terkunci dengan kata sandi")
+        if page_number < 1 or page_number > doc.page_count:
+            return None
+        page = doc.load_page(page_number - 1)
+        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
+        image_bytes = pix.tobytes("jpeg", jpg_quality=84)
+        temporary_path = f"{output_path}.tmp"
+        with open(temporary_path, "wb") as preview_file:
+            preview_file.write(image_bytes)
+        os.replace(temporary_path, output_path)
+        return output_path
+    finally:
+        doc.close()
+
+
 @app.route("/library/<int:book_id>/preview/<int:page_number>")
 @login_required
 def book_preview(book_id, page_number):
@@ -1229,25 +1292,20 @@ def book_preview(book_id, page_number):
             abort(403)
     if not book.filename:
         abort(404)
-    path = os.path.join(BOOK_DIR, book.filename)
-    if not os.path.exists(path):
+
+    pdf_path = os.path.join(BOOK_DIR, book.filename)
+    if not os.path.exists(pdf_path):
         abort(404)
+
     try:
-        import fitz
-        from PIL import Image
-        doc = fitz.open(path)
-        if page_number > doc.page_count:
-            doc.close()
+        preview_path = build_book_preview(pdf_path, book.filename, page_number)
+        if not preview_path:
             abort(404)
-        page = doc.load_page(page_number - 1)
-        pix = page.get_pixmap(matrix=fitz.Matrix(1.3, 1.3), alpha=False)
-        image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        doc.close()
-        out = io.BytesIO()
-        image.save(out, format="JPEG", quality=84)
-        out.seek(0)
-        return send_file(out, mimetype="image/jpeg")
+        return send_file(preview_path, mimetype="image/jpeg", conditional=True, max_age=86400)
+    except (ValueError, RuntimeError):
+        abort(422)
     except Exception:
+        app.logger.exception("Gagal membuat pratinjau PDF untuk buku %s halaman %s", book.id, page_number)
         abort(500)
 
 
@@ -1388,7 +1446,7 @@ def create_sample_book():
 def seed_database():
     admin = User.query.filter_by(username="tpqhmarisa").first()
     if not admin:
-        admin = User(username="tpqhmarisa", full_name="Administrator TPQ H. Marisa", role="admin")
+        admin = User(username="tpqhmarisa", full_name="Administrator TPQ HMarisa", role="admin")
         admin.set_password("tpqhmarisa")
         db.session.add(admin)
 

@@ -10,7 +10,13 @@
     <div class="card-head"><h2>Pratinjau {{ PREVIEW_PAGE_LIMIT }} Halaman Awal</h2><span class="badge">PDF</span></div>
     <div class="preview-pages-large">
       {% for page in range(1, PREVIEW_PAGE_LIMIT + 1) %}
-      <figure><img src="{{ url_for('book_preview', book_id=book.id, page_number=page) }}" alt="Halaman {{ page }}" onerror="this.closest('figure').style.display='none'"><figcaption>Halaman {{ page }}</figcaption></figure>
+      <figure>
+        <div class="preview-page-large">
+          <img src="{{ url_for('book_preview', book_id=book.id, page_number=page) }}" alt="Pratinjau halaman {{ page }} dari {{ book.title }}" loading="lazy" onerror="this.hidden=true; this.nextElementSibling.hidden=false">
+          <span class="preview-fallback" hidden><i class="fa-regular fa-file-pdf"></i> Halaman {{ page }} tidak tersedia</span>
+        </div>
+        <figcaption>Halaman {{ page }}</figcaption>
+      </figure>
       {% endfor %}
     </div>
     <p class="muted">Halaman selanjutnya dan file unduhan penuh akan terbuka setelah pembayaran diverifikasi admin.</p>
