@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Unggah Kitab{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin · Koleksi Kitab</span><h1>Unggah Kitab Baru</h1><p>Pilih file PDF langsung dari penyimpanan HP, tablet, atau komputer.</p></div><a class="btn btn-outline" href="{{ url_for('library') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a></div>
+<section class="card narrow-card">
+  <form method="post" enctype="multipart/form-data" class="form-grid">
+    <label>Judul Kitab<input name="title" required placeholder="Judul kitab atau buku"></label>
+    <label>Kategori
+      <select name="category" required>
+        <option value="">-- Pilih Kategori --</option>
+        {% for category in BOOK_CATEGORIES %}<option value="{{ category }}">{{ category }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Keterangan<textarea name="description" rows="5" placeholder="Ringkasan isi kitab"></textarea></label>
+    <label>Harga Akses<input type="number" name="price" value="0" min="0" step="1000"><small>Isi 0 agar kitab gratis dan langsung terbuka untuk seluruh wali santri.</small></label>
+    <label>Upload File PDF<input type="file" name="pdf" accept="application/pdf" required><small>Pilih file dari penyimpanan perangkat. Maksimal 25 MB.</small></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-upload"></i> Unggah & Simpan Kitab</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Profil Santri</span><h1>{{ student.name }}</h1><p>NIS {{ student.nis }} · {{ student.class_name }} · Wali: {{ student.guardian.full_name }}</p></div>
+  <div class="button-row">
+    <a class="btn btn-outline" href="{{ url_for('report_pdf', student_id=student.id) }}">Unduh E-Raport</a>
+    {% if current_user.is_admin %}<a class="btn btn-primary" href="{{ url_for('academics', student_id=student.id) }}">Edit Akademik</a>{% endif %}
+  </div>
+</div>
+
+<section class="two-column">
+  <article class="card">
+    <div class="card-head"><h2>Nilai Akademik</h2><span class="badge">{{ raport.semester }}</span></div>
+    <div class="score-grid">
+      {% for field in SCORE_FIELDS[student.class_name] %}
+      <div class="score-card"><span>{{ field }}</span><strong>{{ raport.scores().get(field, 0) }}</strong><div class="score-bar"><i style="width: {{ raport.scores().get(field, 0) }}%"></i></div></div>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="card">
+    {% set hf = raport.hafalan() %}{% set done = hf.values()|select|list|length %}
+    <div class="card-head"><h2>Hafalan Juz 30</h2><strong>{{ done }}/{{ SURAH_JUZ30|length }}</strong></div>
+    <div class="progress"><i style="width: {{ (done / SURAH_JUZ30|length * 100)|round }}%"></i></div>
+    <p class="muted">{{ ((done / SURAH_JUZ30|length) * 100)|round|int }}% surah telah ditandai selesai.</p>
+  </article>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Jurnal Mutabaah</h2>{% if current_user.is_admin %}<a href="{{ url_for('academics', student_id=student.id) }}#mutabaah">Tambah catatan</a>{% endif %}</div>
+  <div class="timeline">
+  {% for entry in raport.mutabaah() %}
+    <article><time>{{ entry.date }}</time><div><strong>{{ entry.tilawati or 'Tilawati/Iqro belum diisi' }}</strong><p>{{ entry.fiqih }}</p><small>{{ entry.notes }}</small></div></article>
+  {% else %}<p class="empty">Belum ada jurnal belajar.</p>{% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Tagihan Iuran</h2><span class="muted">Nominal standar Rp 50.000</span></div>
+  <div class="bill-grid">
+    {% for bill in bills %}
+    <article class="bill-card">
+      <div><span class="badge">{{ bill.month }} {{ bill.year }}</span><h3>{{ bill.nominal|rupiah }}</h3><p class="status-text">{{ bill.status }}</p></div>
+      <div class="button-row compact">
+        <a class="btn btn-small btn-outline" href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>
+        <a class="btn btn-small btn-whatsapp" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
+      </div>
+      {% if not current_user.is_admin and bill.status != 'Lunas' %}
+      <form method="post" action="{{ url_for('upload_bill_proof', bill_id=bill.id) }}" enctype="multipart/form-data" class="upload-inline">
+        <input type="file" name="proof" accept="image/*,.pdf" required><button class="btn btn-small btn-primary" type="submit">Kirim Bukti</button>
+      </form>
+      {% endif %}
+    </article>
+    {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
+  </div>
+</section>
+
+{% if current_user.is_admin %}
+<form method="post" action="{{ url_for('delete_student', student_id=student.id) }}" onsubmit="return confirm('Hapus seluruh data santri ini?')">
+  <button class="btn btn-danger" type="submit">Hapus Santri</button>
+</form>
+{% endif %}
+{% endblock %}

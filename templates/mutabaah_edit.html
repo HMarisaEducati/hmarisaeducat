@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Edit Prestasi Harian{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Prestasi Harian</span><h1>Edit Catatan {{ student.name }}</h1><p>{{ student.class_name }} · NIS {{ student.nis }}</p></div>
+  <a class="btn btn-outline" href="{{ url_for('academics', student_id=student.id) }}#mutabaah"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+<section class="card narrow-card">
+  <form method="post" class="form-grid">
+    <label>Tanggal<input type="date" name="date" value="{{ entry.date }}" required></label>
+    <label>Tilawati / Iqro / Al-Qur'an<input name="tilawati" value="{{ entry.tilawati }}" placeholder="Contoh: Tilawati Jilid 2 halaman 15"></label>
+    <label>Materi Fiqih / Materi Harian<input name="fiqih" value="{{ entry.fiqih }}" placeholder="Contoh: Rukun wudhu"></label>
+    <label>Catatan Perkembangan<textarea name="notes" rows="5">{{ entry.notes }}</textarea></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Prestasi</button>
+  </form>
+</section>
+{% endblock %}

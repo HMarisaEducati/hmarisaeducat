@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit Administrasi{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Sistem Keuangan</span><h1>Edit Data Administrasi</h1><p>Ubah manual apabila terdapat kekeliruan nama, periode, status, atau nominal.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('finance') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+<section class="card narrow-card">
+  <form method="post" class="form-grid">
+    <label>Santri<select name="student_id" required>{% for student in students %}<option value="{{ student.id }}" {% if bill.santri_id == student.id %}selected{% endif %}>{{ student.name }} — {{ student.class_name }}</option>{% endfor %}</select></label>
+    <div class="form-grid form-grid-2 nested-grid">
+      <label>Bulan<select name="month">{% for month in MONTHS %}<option value="{{ month }}" {% if bill.month == month %}selected{% endif %}>{{ month }}</option>{% endfor %}</select></label>
+      <label>Tahun<select name="year">{% for year in years %}<option value="{{ year }}" {% if bill.year == year %}selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
+    </div>
+    <label>Status<select name="status"><option {% if bill.status == 'Belum Lunas' %}selected{% endif %}>Belum Lunas</option><option {% if bill.status == 'Menunggu Verifikasi' %}selected{% endif %}>Menunggu Verifikasi</option><option {% if bill.status == 'Lunas' %}selected{% endif %}>Lunas</option></select></label>
+    <label>Nominal<input type="number" name="nominal" value="{{ bill.nominal }}" min="0" step="1000" required></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
+  </form>
+</section>
+{% endblock %}

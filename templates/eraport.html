@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}E-Raport{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Akademik</span><h1>Database E-Raport</h1><p>Pilih satu kelas, lalu seluruh santri dari kelas tersebut akan ditampilkan.</p></div>
+</div>
+<section class="card class-selector-card">
+  <form method="get" class="single-class-selector">
+    <label>Pilih Kelas
+      <select name="class_name" required>
+        <option value="">-- Pilih Kelas --</option>
+        {% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-folder-open"></i> Buka Database Rapor</button>
+  </form>
+</section>
+
+{% if class_filter %}
+<section class="card">
+  <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-graduation-cap"></i><h2>Santri Kelas {{ class_filter }}</h2></div><span class="badge">{{ students|length }} santri</span></div>
+  <div class="one-column-list">
+    {% for student in students %}
+      <article class="eraport-row">
+        <div><strong>{{ student.name }}</strong><small>NIS {{ student.nis }}</small></div>
+        <div class="button-row compact">
+          <a class="btn btn-small btn-primary" href="{{ url_for('academics', student_id=student.id) }}"><i class="fa-solid fa-pen"></i> Isi / Edit Rapor</a>
+          <a class="btn btn-small btn-outline" href="{{ url_for('report_pdf', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Cetak PDF</a>
+        </div>
+      </article>
+    {% else %}<p class="empty">Belum ada santri di kelas ini.</p>{% endfor %}
+  </div>
+</section>
+{% else %}
+<section class="card empty-state"><i class="fa-solid fa-arrow-up empty-icon"></i><h2>Pilih kelas terlebih dahulu</h2><p>Daftar santri tidak ditampilkan sebelum kelas dipilih agar halaman tetap ringkas.</p></section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Buku Prestasi Harian{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Perkembangan Santri</span><h1>Buku Prestasi Harian</h1><p>Cari nama dan kelas untuk membuka atau memperbarui catatan perkembangan santri.</p></div>
+</div>
+<section class="card">
+  <form method="get" class="search-filter-form two-search-columns">
+    <label>Nama Santri<input name="q" value="{{ q }}" placeholder="Ketik nama santri"></label>
+    <label>Kelas<select name="class_name"><option value="">Semua kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+    {% if q or class_filter %}<a class="btn btn-outline" href="{{ url_for('daily_progress') }}">Reset</a>{% endif %}
+  </form>
+</section>
+<section class="card">
+  <div class="card-head"><h2>Hasil Pencarian</h2><span class="muted">{{ total_matches }} data ditemukan{% if total_matches > search_limit %}; tampilkan {{ search_limit }} teratas, perjelas pencarian untuk hasil lain{% endif %}</span></div>
+  <div class="table-wrap">
+    <table class="two-column-table">
+      <thead><tr><th>Nama Santri</th><th>Kelas</th></tr></thead>
+      <tbody>
+      {% for student in students %}
+        <tr>
+          <td><strong>{{ student.name }}</strong><small class="table-sub">NIS {{ student.nis }}</small><div class="inline-row-actions"><a href="{{ url_for('academics', student_id=student.id) }}#mutabaah"><i class="fa-solid fa-pen-to-square"></i> Buka / Edit Prestasi Harian</a></div></td>
+          <td><span class="badge">{{ student.class_name }}</span></td>
+        </tr>
+      {% else %}<tr><td colspan="2" class="empty">Data santri tidak ditemukan.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

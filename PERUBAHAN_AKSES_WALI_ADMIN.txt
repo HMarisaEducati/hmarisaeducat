@@ -1,0 +1,24 @@
+PERUBAHAN AKSES PORTAL TPQ H. MARISA
+=====================================
+
+1. WALI SANTRI
+- Masuk hanya dengan nama lengkap santri dan pilihan kelas.
+- Tidak melihat kolom Nilai Akademik.
+- Tidak melihat tombol/menu E-Raport.
+- Tidak dapat membuka URL admin /student/<id>, /academics/<id>, atau /report/<id>/pdf.
+- Hanya melihat mutabaah, hafalan Juz 30, tagihan, kuitansi, unggah bukti bayar, dan perpustakaan.
+
+2. ADMIN
+- Login terpisah di /admin/login.
+- Tetap dapat mengelola nilai dan mencetak E-Raport.
+- Memiliki akses penuh ke seluruh buku tanpa membeli/unlock.
+- Dapat mengunggah, mengedit, mengganti PDF, mengubah harga, menghapus buku, memverifikasi, dan menutup kembali akses premium.
+
+3. BUKU GRATIS DAN PREMIUM
+- Harga Rp 0 = otomatis gratis dan langsung terbuka untuk wali.
+- Harga lebih dari Rp 0 = premium, wali mengunggah bukti lalu admin memverifikasi.
+- Admin selalu dapat membuka dan mengunduh semua buku.
+
+PENTING SAAT MEMASANG UPDATE
+- Untuk mempertahankan data lama, jangan hapus/menimpa folder instance/ dan uploads/.
+- Ganti app.py, folder templates/, dan static/css/style.css saja.

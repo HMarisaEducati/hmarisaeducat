@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Database Santri{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Database</span><h1>Database Santri</h1><p>Tampilan dibuat ringkas: nama, kelas, dan pencarian cepat.</p></div>
+  <div class="button-row"><a class="btn btn-outline" href="{{ url_for('bulk_students') }}"><i class="fa-solid fa-file-import"></i> Impor CSV</a></div>
+</div>
+
+<section class="card">
+  <details class="collapsible-panel">
+    <summary><span><i class="fa-solid fa-user-plus"></i> Tambah Santri Baru</span><small>Klik untuk membuka formulir</small></summary>
+    <form method="post" class="form-grid form-grid-2 collapsible-content">
+      <label>Nama Santri<input name="name" required placeholder="Nama lengkap"></label>
+      <label>Kelas<select name="class_name" required><option value="">Pilih kelas</option>{% for c in CLASSES %}<option>{{ c }}</option>{% endfor %}</select></label>
+      <label>Nama Wali<input name="guardian_name" placeholder="Nama ayah/bunda"></label>
+      <div class="form-action"><button class="btn btn-primary" type="submit">Simpan Santri</button></div>
+    </form>
+    <p class="hint">NIS dibuat otomatis, dan akun internal wali dibuat oleh sistem. Wali tetap masuk hanya memakai nama santri dan kelas.</p>
+  </details>
+</section>
+
+<section class="card">
+  <form method="get" class="search-filter-form two-search-columns">
+    <label>Nama Santri<input name="q" value="{{ q }}" placeholder="Ketik nama santri"></label>
+    <label>Kelas<select name="class_name"><option value="">Semua kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+    {% if q or class_filter %}<a class="btn btn-outline" href="{{ url_for('students') }}">Reset</a>{% endif %}
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Hasil Database Santri</h2><span class="muted">{{ total_matches }} data ditemukan{% if total_matches > search_limit %}; tampil {{ search_limit }} teratas{% endif %}</span></div>
+  <div class="table-wrap">
+    <table class="two-column-table">
+      <thead><tr><th>Nama Santri</th><th>Kelas</th></tr></thead>
+      <tbody>
+      {% for student in students %}
+        <tr>
+          <td>
+            <strong>{{ student.name }}</strong><small class="table-sub">NIS {{ student.nis }}</small>
+            <div class="inline-row-actions">
+              <a href="{{ url_for('student_detail', student_id=student.id) }}"><i class="fa-solid fa-eye"></i> Detail</a>
+              <a href="{{ url_for('academics', student_id=student.id) }}#mutabaah"><i class="fa-solid fa-book-open-reader"></i> Prestasi</a>
+            </div>
+          </td>
+          <td><span class="badge">{{ student.class_name }}</span></td>
+        </tr>
+      {% else %}<tr><td colspan="2" class="empty">Data santri tidak ditemukan.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

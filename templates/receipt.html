@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Kuitansi {{ bill.santri.name }}{% endblock %}
+{% block content %}
+<section class="receipt">
+  <div class="receipt-head"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"><div><h1>KUITANSI DIGITAL</h1><p>TPQ H. Marisa</p></div><span>#IURAN-{{ '%05d'|format(bill.id) }}</span></div>
+  <div class="receipt-status">{{ bill.status }}</div>
+  <dl>
+    <div><dt>Nama Santri</dt><dd>{{ bill.santri.name }}</dd></div><div><dt>NIS / Kelas</dt><dd>{{ bill.santri.nis }} / {{ bill.santri.class_name }}</dd></div>
+    <div><dt>Periode</dt><dd>{{ bill.month }} {{ bill.year }}</dd></div><div><dt>Nominal</dt><dd>{{ bill.nominal|rupiah }}</dd></div>
+    <div><dt>Tanggal Verifikasi</dt><dd>{{ bill.verified_at.strftime('%d-%m-%Y %H:%M') if bill.verified_at else '-' }}</dd></div>
+  </dl>
+  <div class="receipt-note">Kuitansi ini dibuat secara digital oleh Portal TPQ H. Marisa.</div>
+  <div class="button-row no-print"><button class="btn btn-primary" onclick="window.print()">Cetak / Simpan PDF</button><a class="btn btn-whatsapp" target="_blank" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}">Kirim via WhatsApp</a></div>
+</section>
+{% endblock %}

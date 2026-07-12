@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Portal Wali Santri — TPQ H. Marisa{% endblock %}
+{% block auth_content %}
+<section class="login-layout guardian-entry-layout">
+  <div class="login-showcase">
+    <div class="showcase-brand">
+      <span class="showcase-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ H. Marisa"></span>
+      <span><strong>Portal TPQ H. Marisa</strong><small>Pendidikan Al-Qur'an Terintegrasi</small></span>
+    </div>
+    <div class="showcase-content">
+      <span class="showcase-pill"><i class="fa-solid fa-people-roof"></i> Portal Wali Santri</span>
+      <h1>Pantau perkembangan<br>belajar ananda.</h1>
+      <p>Masukkan nama lengkap santri dan pilih kelas untuk melihat nilai, mutabaah, hafalan, tagihan, serta perpustakaan digital.</p>
+      <div class="arabic-quote">رَبِّ زِدْنِي عِلْمًا</div>
+      <small>“Ya Tuhanku, tambahkanlah ilmu kepadaku.”</small>
+    </div>
+    <div class="showcase-pattern">علم</div>
+  </div>
+
+  <div class="login-panel">
+    <div class="login-card guardian-entry-card">
+      <div class="login-mobile-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+        <span><strong>Portal TPQ H. Marisa</strong><small>Akses Wali Santri</small></span>
+      </div>
+      <div class="login-heading">
+        <span class="eyebrow">Assalamu'alaikum Ayah/Bunda</span>
+        <h2>Lihat Data Ananda</h2>
+        <p>Tidak perlu username atau kata sandi. Ketik nama lengkap santri sesuai data pendaftaran, lalu pilih kelasnya.</p>
+      </div>
+
+      <form method="post" action="{{ url_for('home') }}" class="form-grid login-form guardian-entry-form">
+        <label>Nama Lengkap Santri
+          <div class="input-with-icon">
+            <i class="fa-regular fa-user"></i>
+            <input type="text" name="student_name" value="{{ student_name or '' }}" placeholder="Contoh: Ahmad Zaki Al-Fatih" autocomplete="off" required autofocus>
+          </div>
+        </label>
+        <label>Kelas
+          <div class="input-with-icon select-with-icon">
+            <i class="fa-solid fa-school"></i>
+            <select name="class_name" required>
+              <option value="">Pilih kelas santri</option>
+              {% for class_item in CLASSES %}
+                <option value="{{ class_item }}" {% if class_name == class_item %}selected{% endif %}>{{ class_item }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </label>
+        <button class="btn btn-primary btn-block login-submit" type="submit">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Buka Portal Ananda
+        </button>
+      </form>
+
+      <div class="guardian-help-box">
+        <i class="fa-solid fa-circle-info"></i>
+        <span><strong>Nama tidak ditemukan?</strong> Pastikan ejaan nama dan kelas sama dengan data yang tersimpan, atau hubungi Admin TPQ H. Marisa.</span>
+      </div>
+
+      <div class="admin-entry-divider"><span>khusus pengelola</span></div>
+      <a class="btn btn-admin-login btn-block" href="{{ url_for('admin_login') }}">
+        <i class="fa-solid fa-shield-halved"></i> Login Admin
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

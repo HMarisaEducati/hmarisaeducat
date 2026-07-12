@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit Silabus Pekanan{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Silabus</span><h1>Edit Rencana Pekanan</h1><p>Perbaiki data yang salah lalu simpan kembali.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('curriculum', class_name=row.class_name) }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+<section class="card">
+  <form method="post" class="form-grid form-grid-3">
+    <label>Kelas<select name="class_name" required>{% for c in CLASSES %}<option value="{{ c }}" {% if row.class_name == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Pekan Ke-<input type="number" name="week_number" value="{{ row.week_number }}" min="1" max="60" required></label>
+    <label>Bidang Pelajaran<input name="subject" value="{{ row.subject }}" required></label>
+    <label class="full-field">Materi Pokok<input name="topic" value="{{ row.topic }}" required></label>
+    <label>Target Pembelajaran<textarea name="learning_target" rows="4">{{ row.learning_target }}</textarea></label>
+    <label>Kegiatan Pembelajaran<textarea name="activities" rows="4">{{ row.activities }}</textarea></label>
+    <label>Catatan Guru<textarea name="notes" rows="4">{{ row.notes }}</textarea></label>
+    <div class="form-action full-field"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+  </form>
+</section>
+{% endblock %}

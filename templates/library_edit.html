@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Edit Kitab{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Koleksi Kitab</span><h1>Edit Kitab</h1><p>Perbarui judul, kategori, keterangan, harga, atau file PDF.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('library', category=book.category) }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+<section class="card">
+  <form method="post" enctype="multipart/form-data" class="form-grid form-grid-2">
+    <label>Judul Kitab<input type="text" name="title" value="{{ book.title }}" required></label>
+    <label>Kategori<select name="category" required>{% for category in BOOK_CATEGORIES %}<option value="{{ category }}" {% if book.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></label>
+    <label>Harga (Rp)<input type="number" name="price" value="{{ book.price }}" min="0" required><small>Isi 0 agar gratis.</small></label>
+    <label class="full-field">Keterangan<textarea name="description" rows="5">{{ book.description }}</textarea></label>
+    <label class="full-field">Ganti File PDF (opsional)<input type="file" name="pdf" accept="application/pdf"><small>Biarkan kosong bila file lama tetap digunakan.</small></label>
+    <div class="form-action full-field"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+  </form>
+</section>
+{% endblock %}

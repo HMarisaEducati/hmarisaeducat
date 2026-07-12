@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Impor Santri{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Impor Massal</span><h1>Salin-Tempel Data CSV</h1><p>Satu santri per baris untuk mempercepat pendataan.</p></div></div>
+<section class="card">
+  <form method="post" class="form-grid">
+    <label>Data CSV
+      <textarea name="csv_data" rows="12" placeholder="Nama,Kelas,UsernameWali,NamaWali,PasswordWali&#10;Siti Aisyah,Ar-Rahman,waliaisyah,Bunda Aisyah,rahasia123"></textarea>
+    </label>
+    <div class="notice"><strong>Format:</strong> Nama, Kelas, Username Wali, Nama Wali, Password Wali. Kolom nama dan password wali boleh dikosongkan. Kelas harus Ar-Rahim, Ar-Rahman, atau Al-Bayyan.</div>
+    <button class="btn btn-primary" type="submit">Proses Impor</button>
+  </form>
+</section>
+{% if results %}
+<section class="card"><h2>Hasil Impor</h2><div class="table-wrap"><table><thead><tr><th>Baris</th><th>Nama</th><th>Status</th></tr></thead><tbody>{% for row in results %}<tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td></tr>{% endfor %}</tbody></table></div></section>
+{% endif %}
+{% endblock %}

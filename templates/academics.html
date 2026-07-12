@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Akademik {{ student.name }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin · E-Raport</span><h1>{{ student.name }}</h1><p>{{ student.nis }} · {{ student.class_name }}</p></div><a class="btn btn-gold" href="{{ url_for('report_pdf', student_id=student.id) }}">Cetak PDF</a></div>
+
+<section class="card">
+  <div class="card-head"><h2>Penilaian 0–100</h2><span class="muted">Wali kelas: {{ TEACHERS[student.class_name] }}</span></div>
+  <form method="post" class="form-grid form-grid-2">
+    <input type="hidden" name="action" value="save_scores">
+    {% for field in SCORE_FIELDS[student.class_name] %}
+    <label>{{ field }}<input type="number" name="score_{{ field }}" value="{{ scores.get(field, 0) }}" min="0" max="100" required></label>
+    {% endfor %}
+    <label>Semester<input name="semester" value="{{ raport.semester }}"></label>
+    <label>Tahun Ajaran<input name="academic_year" value="{{ raport.academic_year }}"></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit">Simpan Nilai</button></div>
+  </form>
+</section>
+
+<section class="card" id="mutabaah">
+  <h2>Jurnal Mutabaah Harian</h2>
+  <form method="post" class="form-grid form-grid-2">
+    <input type="hidden" name="action" value="add_mutabaah">
+    <label>Tanggal<input type="date" name="date" value="{{ current_date }}" required></label>
+    <label>Tilawati/Iqro<input name="tilawati" placeholder="Contoh: Tilawati Jilid 2 halaman 15"></label>
+    <label>Materi Fiqih<input name="fiqih" placeholder="Contoh: Rukun wudhu"></label>
+    <label>Catatan<textarea name="notes" rows="3" placeholder="Perkembangan atau tindak lanjut"></textarea></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit">Tambah Jurnal</button></div>
+  </form>
+  <div class="timeline compact-timeline">
+    {% for entry in mutabaah %}
+    <article>
+      <time>{{ entry.date }}</time>
+      <div>
+        <strong>{{ entry.tilawati or 'Progres mengaji' }}</strong>
+        {% if entry.fiqih %}<p>{{ entry.fiqih }}</p>{% endif %}
+        {% if entry.notes %}<small>{{ entry.notes }}</small>{% endif %}
+        <div class="inline-row-actions mutabaah-actions">
+          <a href="{{ url_for('edit_mutabaah', student_id=student.id, entry_index=loop.index0) }}"><i class="fa-solid fa-pen"></i> Edit</a>
+          <form method="post" action="{{ url_for('delete_mutabaah', student_id=student.id, entry_index=loop.index0) }}" onsubmit="return confirm('Hapus catatan prestasi harian ini?')"><button type="submit"><i class="fa-solid fa-trash"></i> Hapus</button></form>
+        </div>
+      </div>
+    </article>
+    {% else %}<p class="empty">Belum ada jurnal.</p>{% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  {% set done = hafalan.values()|select|list|length %}
+  <div class="card-head"><h2>Tracker Hafalan Juz 30</h2><span>{{ done }}/{{ SURAH_JUZ30|length }} selesai</span></div>
+  <div class="progress"><i style="width: {{ (done / SURAH_JUZ30|length * 100)|round }}%"></i></div>
+  <form method="post">
+    <input type="hidden" name="action" value="save_hafalan">
+    <div class="surah-grid">
+      {% for surah in SURAH_JUZ30 %}
+      <label class="surah-check"><input type="checkbox" name="surah_{{ loop.index0 }}" {% if hafalan.get(surah) %}checked{% endif %}><span>{{ loop.index }}. {{ surah }}</span></label>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary" type="submit">Simpan Progres Hafalan</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Pembelian {{ book.title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Portal Wali · Pembelian Buku</span><h1>{{ book.title }}</h1><p>{{ book.category }} · Akses untuk {{ student.name }}</p></div>
+  <a class="btn btn-outline" href="{{ url_for('library', category=book.category) }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+<section class="two-column purchase-layout">
+  <article class="card">
+    <div class="card-head"><h2>Pratinjau {{ PREVIEW_PAGE_LIMIT }} Halaman Awal</h2><span class="badge">PDF</span></div>
+    <div class="preview-pages-large">
+      {% for page in range(1, PREVIEW_PAGE_LIMIT + 1) %}
+      <figure><img src="{{ url_for('book_preview', book_id=book.id, page_number=page) }}" alt="Halaman {{ page }}" onerror="this.closest('figure').style.display='none'"><figcaption>Halaman {{ page }}</figcaption></figure>
+      {% endfor %}
+    </div>
+    <p class="muted">Halaman selanjutnya dan file unduhan penuh akan terbuka setelah pembayaran diverifikasi admin.</p>
+  </article>
+  <article class="card purchase-card">
+    <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-cart-shopping"></i><h2>Beli Akses Buku</h2></div><strong>{{ book.price|rupiah }}</strong></div>
+    <p>{{ book.description }}</p>
+    <div class="payment-info">
+      <strong>{{ config.BSI_BANK_NAME }}</strong>
+      <span>No. Rekening: {{ config.BSI_ACCOUNT_NUMBER }}</span>
+      <span>a.n. {{ config.BSI_ACCOUNT_NAME }}</span>
+      <span>Nominal: {{ book.price|rupiah }}</span>
+    </div>
+    {% if access and access.status == 'Menunggu Verifikasi' %}
+      <div class="pending-box"><i class="fa-solid fa-clock"></i><div><strong>Menunggu Verifikasi Admin</strong><p>Bukti pembayaran sudah terkirim. Setelah dikonfirmasi, buku otomatis dapat dibuka dan diunduh.</p></div></div>
+    {% else %}
+      <form method="post" action="{{ url_for('request_book_unlock', book_id=book.id) }}" enctype="multipart/form-data" class="form-grid">
+        <input type="hidden" name="student_id" value="{{ student.id }}">
+        <label>Unggah Bukti Transfer<input type="file" name="proof" accept="image/*,.pdf" required><small>Pilih foto atau PDF dari HP, tablet, atau komputer.</small></label>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Kirim Bukti Pembayaran</button>
+      </form>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

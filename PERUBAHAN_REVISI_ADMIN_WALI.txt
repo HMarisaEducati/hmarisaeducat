@@ -1,0 +1,21 @@
+PERUBAHAN PORTAL TPQ H. MARISA
+
+PORTAL ADMIN
+1. Modul Silabus & Kurikulum Pekanan per kelas.
+2. Tambah, edit, dan hapus silabus.
+3. Database santri ringkas: Nama dan Kelas + tombol Cari.
+4. Buku Prestasi Harian ringkas + pencarian + edit/hapus catatan.
+5. E-Raport diawali pilihan kelas.
+6. Sistem Keuangan memiliki tombol Input, Edit, dan Ekspor.
+7. Filter keuangan: Nama, Kelas, Bulan.
+8. Edit manual data tagihan.
+9. Hapus kitab tersedia.
+10. Upload kitab dari perangkat dengan lima kategori.
+11. Beranda menampilkan silabus melalui satu pilihan kelas.
+
+PORTAL WALI
+1. Koleksi kitab memakai pilihan kategori.
+2. Tiga halaman awal kitab premium dapat dibaca.
+3. Tombol unduh kitab terkunci mengarah ke halaman pembelian.
+4. Setelah admin mengonfirmasi pembayaran, akses penuh dan unduhan otomatis terbuka.
+5. Nilai dan E-Raport tetap tidak tersedia untuk wali.

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Koleksi Kitab{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Digital Library</span><h1>Koleksi Kitab TPQ</h1><p>Pilih kategori untuk menampilkan kitab yang sudah diunggah oleh admin.</p></div>
+  {% if current_user.is_admin %}<a class="btn btn-gold" href="{{ url_for('upload_book') }}"><i class="fa-solid fa-upload"></i> Unggah Kitab</a>{% endif %}
+</div>
+
+<section class="card library-category-selector">
+  <form method="get" class="single-category-selector">
+    <label>Kategori Kitab
+      <select name="category" onchange="this.form.submit()">
+        <option value="">Semua Kategori</option>
+        {% for category in BOOK_CATEGORIES %}<option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+      </select>
+    </label>
+    <noscript><button class="btn btn-primary" type="submit">Tampilkan</button></noscript>
+  </form>
+</section>
+
+{% if current_user.is_admin %}
+<section class="card admin-library-note">
+  <div class="card-title-icon"><i class="fa-solid fa-user-shield"></i><div><h2>Akses Penuh Administrator</h2><small>Admin dapat membuka, mengunduh, mengedit, dan menghapus seluruh kitab tanpa membeli akses.</small></div></div>
+</section>
+{% else %}
+<section class="card library-payment-banner">
+  <div class="card-title-icon"><i class="fa-solid fa-building-columns"></i><div><h2>Akses Kitab Premium</h2><small>Wali dapat membaca {{ PREVIEW_PAGE_LIMIT }} halaman awal. File lengkap terbuka setelah pembayaran diverifikasi.</small></div></div>
+  <div class="payment-info compact-payment"><strong>{{ config.BSI_BANK_NAME }}</strong><span>No. Rek: {{ config.BSI_ACCOUNT_NUMBER }}</span><span>a.n. {{ config.BSI_ACCOUNT_NAME }}</span></div>
+</section>
+{% endif %}
+
+{% if current_user.is_admin and pending %}
+<section class="card">
+  <div class="card-head"><h2>Permintaan Pembelian Menunggu Verifikasi</h2><span class="badge">{{ pending|length }} permintaan</span></div>
+  <div class="list-stack">
+    {% for access in pending %}
+    <div class="list-row">
+      <span class="avatar"><i class="fa-solid fa-book"></i></span>
+      <span><strong>{{ access.kitab.title }}</strong><small>{{ access.santri.name }} · {{ access.kitab.price|rupiah }}</small></span>
+      <div class="table-actions">
+        <a href="{{ url_for('view_book_proof', access_id=access.id) }}" target="_blank">Lihat Bukti</a>
+        <form method="post" action="{{ url_for('confirm_book_access', access_id=access.id) }}"><button type="submit">Konfirmasi & Buka</button></form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="book-grid">
+{% for book in books %}
+  {% set access = access_map.get(book.id) if not current_user.is_admin else none %}
+  {% set unlocked = current_user.is_admin or book.price == 0 or (access and access.status == 'Terbuka') %}
+  <article class="book-card">
+    <div class="book-cover"><span>كتاب</span><strong>{{ book.title }}</strong><small>{{ book.category }}</small></div>
+    <div class="book-body">
+      <div class="card-head">
+        <span class="badge">{{ book.category }}</span>
+        {% if book.price == 0 %}<strong class="free-label">Gratis</strong>{% else %}<strong>{{ book.price|rupiah }}</strong>{% endif %}
+      </div>
+      <h2>{{ book.title }}</h2>
+      <p>{{ book.description }}</p>
+      {% if book.original_size %}<small class="muted">Ukuran: {{ (book.optimized_size/1024)|round|int }} KB</small>{% endif %}
+      <div class="preview-strip preview-three-pages">
+        {% for page in range(1, PREVIEW_PAGE_LIMIT + 1) %}
+        <img src="{{ url_for('book_preview', book_id=book.id, page_number=page) }}" alt="Preview halaman {{ page }}" onerror="this.style.display='none'">
+        {% endfor %}
+      </div>
+
+      {% if unlocked %}
+        <a class="btn btn-primary btn-block" href="{{ url_for('download_book', book_id=book.id) }}"><i class="fa-solid fa-download"></i> {{ 'Unduh / Buka Kitab' if current_user.is_admin else 'Baca & Unduh Kitab' }}</a>
+      {% elif access and access.status == 'Menunggu Verifikasi' %}
+        <a class="btn btn-muted btn-block" href="{{ url_for('purchase_book', book_id=book.id) }}"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi</a>
+      {% else %}
+        <a class="btn btn-gold btn-block" href="{{ url_for('download_book', book_id=book.id) }}"><i class="fa-solid fa-download"></i> Unduh Kitab</a>
+        <small class="locked-note"><i class="fa-solid fa-lock"></i> Tombol unduh akan mengarahkan ke sistem pembelian.</small>
+      {% endif %}
+
+      {% if current_user.is_admin %}
+      <div class="admin-book-actions">
+        <a class="btn btn-small btn-outline" href="{{ url_for('edit_book', book_id=book.id) }}"><i class="fa-solid fa-pen"></i> Edit</a>
+        <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}" onsubmit="return confirm('Hapus kitab ini beserta seluruh aksesnya?')">
+          <button class="btn btn-small btn-danger" type="submit"><i class="fa-solid fa-trash"></i> Hapus</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </article>
+{% else %}
+  <div class="card empty-state"><i class="fa-solid fa-book-open empty-icon"></i><h2>Belum ada kitab</h2><p>Belum ada kitab pada kategori yang dipilih.</p></div>
+{% endfor %}
+</section>
+
+{% if current_user.is_admin %}
+<section class="card">
+  <div class="card-head"><h2>Akses Kitab yang Sudah Dibuka</h2><span class="muted">Akses premium dapat ditutup kembali bila diperlukan.</span></div>
+  <div class="list-stack">
+    {% set opened = namespace(count=0) %}
+    {% for book in books %}
+      {% for access in book.accesses if access.status == 'Terbuka' %}
+        {% set opened.count = opened.count + 1 %}
+        <div class="list-row">
+          <span class="avatar">{{ access.santri.name[:1] }}</span>
+          <span><strong>{{ access.santri.name }}</strong><small>{{ book.title }}</small></span>
+          <form method="post" action="{{ url_for('revoke_book_access', access_id=access.id) }}" onsubmit="return confirm('Tutup akses kitab untuk santri ini?')"><button class="btn btn-small btn-outline" type="submit">Tutup Akses</button></form>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    {% if opened.count == 0 %}<p class="empty">Belum ada akses premium yang dibuka.</p>{% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Admin{% endblock %}
+{% block content %}
+<section class="quote-banner">
+  <div class="quote-content">
+    <span class="quote-pill"><i class="fa-solid fa-quote-left"></i> Kalam Mutiara Hari Ini</span>
+    <p class="quote-arabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</p>
+    <p class="quote-translation">“Sebaik-baik kalian adalah orang yang belajar Al-Qur'an dan mengajarkannya.” <span>(HR. Bukhari)</span></p>
+  </div>
+  <div class="quote-watermark">قرآن</div>
+</section>
+
+<div class="section-heading dashboard-heading">
+  <div><span class="eyebrow">Ringkasan Hari Ini</span><h2>Assalamu'alaikum, {{ current_user.full_name }}</h2><p>Seluruh informasi penting TPQ H. Marisa tersedia dalam satu dasbor.</p></div>
+  <a class="btn btn-gold" href="{{ url_for('students') }}"><i class="fa-solid fa-user-plus"></i> Tambah Santri</a>
+</div>
+
+<section class="stat-grid">
+  <article class="stat-card"><div><span>Santri Aktif</span><strong>{{ stats.students }}</strong><small>Seluruh kelas</small></div><i class="stat-icon green fa-solid fa-children"></i></article>
+  <article class="stat-card"><div><span>Belum Lunas</span><strong>{{ stats.unpaid }}</strong><small>Tagihan perlu ditindaklanjuti</small></div><i class="stat-icon rose fa-solid fa-file-circle-exclamation"></i></article>
+  <article class="stat-card"><div><span>Verifikasi Iuran</span><strong>{{ stats.pending_bills }}</strong><small>Bukti pembayaran masuk</small></div><i class="stat-icon blue fa-solid fa-receipt"></i></article>
+  <article class="stat-card"><div><span>Unlock Buku</span><strong>{{ stats.pending_books }}</strong><small>Menunggu konfirmasi</small></div><i class="stat-icon amber fa-solid fa-book-open"></i></article>
+</section>
+
+<section class="card dashboard-curriculum-card">
+  <div class="card-head">
+    <div class="card-title-icon"><i class="fa-solid fa-table-list"></i><div><h2>Silabus & Kurikulum Pekanan</h2><small>Pilih kelas untuk menampilkan rencana pembelajaran yang sudah diinput guru.</small></div></div>
+    <a href="{{ url_for('curriculum') }}">Kelola Silabus <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+  <form method="get" action="{{ url_for('dashboard') }}" class="single-class-selector dashboard-selector">
+    <label>Pilih Kelas
+      <select name="syllabus_class" required>
+        <option value="">-- Pilih Kelas --</option>
+        {% for c in CLASSES %}<option value="{{ c }}" {% if curriculum_class == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-eye"></i> Tampilkan</button>
+  </form>
+  {% if curriculum_class %}
+  <div class="curriculum-preview-list">
+    {% for row in curriculum_rows %}
+    <article><span class="week-badge">Pekan {{ row.week_number }}</span><div><strong>{{ row.subject }} — {{ row.topic }}</strong><p>{{ row.learning_target or 'Target pembelajaran belum diisi.' }}</p></div></article>
+    {% else %}<p class="empty">Belum ada silabus untuk kelas {{ curriculum_class }}.</p>{% endfor %}
+  </div>
+  {% else %}
+  <p class="empty selector-empty">Pilih salah satu kelas untuk melihat silabus pekanan.</p>
+  {% endif %}
+</section>
+
+<section class="two-column">
+  <article class="card">
+    <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-users"></i><h2>Santri Terbaru</h2></div><a href="{{ url_for('students') }}">Kelola <i class="fa-solid fa-arrow-right"></i></a></div>
+    <div class="list-stack">
+      {% for student in recent_students %}
+      <a class="list-row" href="{{ url_for('student_detail', student_id=student.id) }}">
+        <span class="avatar">{{ student.name[:1] }}</span><span><strong>{{ student.name }}</strong><small>{{ student.nis }} · {{ student.class_name }}</small></span><b><i class="fa-solid fa-chevron-right"></i></b>
+      </a>
+      {% else %}<p class="empty">Belum ada data santri.</p>{% endfor %}
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-wallet"></i><h2>Tagihan Terbaru</h2></div><a href="{{ url_for('finance') }}">Kelola <i class="fa-solid fa-arrow-right"></i></a></div>
+    <div class="list-stack">
+      {% for bill in recent_bills %}
+      <div class="list-row">
+        <span class="status-dot status-{{ 'paid' if bill.status == 'Lunas' else 'pending' if bill.status == 'Menunggu Verifikasi' else 'unpaid' }}"></span>
+        <span><strong>{{ bill.santri.name }}</strong><small>{{ bill.month }} {{ bill.year }} · {{ bill.nominal|rupiah }}</small></span>
+        <span class="badge">{{ bill.status }}</span>
+      </div>
+      {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="card backup-card">
+  <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-cloud-arrow-down"></i><div><h2>Cadangan Data</h2><small>Unduh secara berkala untuk keamanan data.</small></div></div></div>
+  <div class="button-row">
+    <a class="btn btn-outline" href="{{ url_for('backup_academic') }}"><i class="fa-solid fa-file-csv"></i> CSV Akademik</a>
+    <a class="btn btn-outline" href="{{ url_for('backup_financial') }}"><i class="fa-solid fa-file-invoice-dollar"></i> CSV Keuangan</a>
+    <a class="btn btn-dark" href="{{ url_for('backup_database') }}"><i class="fa-solid fa-database"></i> Database .SQL</a>
+  </div>
+</section>
+{% endblock %}

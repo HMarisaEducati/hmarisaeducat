@@ -1,0 +1,20 @@
+PERUBAHAN AKSES PORTAL TPQ H. MARISA
+
+1. Halaman utama sekarang khusus Wali Santri.
+2. Wali tidak perlu username dan kata sandi.
+3. Wali cukup mengetik nama lengkap santri dan memilih kelas.
+4. Setelah data cocok, portal hanya membuka data santri yang dipilih pada sesi tersebut.
+5. Login Admin dipindahkan ke tombol dan halaman terpisah: /admin/login
+6. Hanya akun role Admin yang dapat masuk melalui halaman Login Admin.
+7. Menu E-Raport editing, Data Santri, Keuangan, dan backup tetap Admin-only.
+
+Data contoh wali:
+Nama  : Ahmad Zaki Al-Fatih
+Kelas : Ar-Rahim
+
+Akun Admin:
+Username : tpqhmarisa
+Password : tpqhmarisa
+
+CATATAN KEAMANAN:
+Nama dan kelas bukan autentikasi kuat. Untuk portal publik, disarankan menambahkan NIS atau PIN wali.
