@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sikap & Kehadiran {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+{% include '_eraport_student_header_v10.html' %}
+{% include '_eraport_tabs_v10.html' %}
+<form method="post" class="card er10-section-card">
+  <div class="card-head"><div><h2>Penilaian Sikap</h2><p class="muted">Bagian penilaian sikap dipertahankan sesuai sistem sebelumnya.</p></div></div>
+  <div class="er10-form-grid er10-form-grid-2">
+    {% for key in attitude_keys %}<label><span>{{ key }}</span><select name="attitude_{{ loop.index0 }}"><option value="">Belum diisi</option>{% for code,label in attitude_options %}<option value="{{ code }}" {% if attitude.get(key)==code %}selected{% endif %}>{{ code }} — {{ label }}</option>{% endfor %}</select></label>{% endfor %}
+  </div>
+  <div class="er10-subsection-head"><h3>Kehadiran</h3><p>Isi jumlah sesuai rekap semester.</p></div>
+  <div class="table-wrap"><table class="er10-table er10-attendance-table"><thead><tr><th>Keterangan</th><th>Jumlah</th></tr></thead><tbody>{% for key in attendance_keys %}{% set item=absence.get(key,{}) %}<tr><td>{{ key }}</td><td><input type="number" min="0" name="attendance_{{ loop.index0 }}" value="{{ item.get('count',0) if item is mapping else item }}"></td></tr>{% endfor %}</tbody></table></div>
+  {% set next_label='Catatan Perkembangan' %}{% include '_eraport_actions_v10.html' %}
+</form>
+{% endblock %}

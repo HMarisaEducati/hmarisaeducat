@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar %}
+{% block title %}{{ 'Edit Menu' if mode=='edit' else 'Tambah Menu' }} — Kelola Sidebar{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar_menu.css') }}?v=20260718-1">
+<style>
+.smf-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem;
+}
+.smf-card-title {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-secondary, #64748b);
+  margin-bottom: 1rem; padding-bottom: .6rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex; align-items: center; gap: .4rem;
+}
+.smf-field { margin-bottom: 1rem; }
+.smf-label {
+  display: block; font-size: .8rem; font-weight: 600;
+  color: var(--text-primary, #1e293b); margin-bottom: .35rem;
+}
+.smf-label .req { color: #ef4444; margin-left: .15rem; }
+.smf-label .hint { font-weight: 400; color: var(--text-secondary, #64748b); margin-left: .3rem; }
+.smf-input {
+  width: 100%; padding: .55rem .75rem;
+  border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px;
+  font-size: .87rem; color: var(--text-primary, #1e293b);
+  background: var(--input-bg, #fff); transition: border-color .15s;
+}
+.smf-input:focus { outline: none; border-color: var(--primary-color, #075f46); box-shadow: 0 0 0 3px rgba(7,95,70,.1); }
+.smf-input.textarea { resize: vertical; min-height: 80px; }
+.smf-hint { font-size: .72rem; color: var(--text-secondary, #64748b); margin-top: .25rem; }
+.smf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.smf-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+@media(max-width:640px){ .smf-grid-2,.smf-grid-3 { grid-template-columns: 1fr; } }
+
+/* Icon picker */
+.smf-icon-preview-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem .85rem; background: #f8fafc;
+  border-radius: 8px; margin-bottom: .6rem; border: 1px solid var(--border-color, #e2e8f0);
+}
+.smf-icon-big {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: linear-gradient(135deg, #075f46, #10b981);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: #fff; flex-shrink: 0;
+}
+.smf-icon-name { font-size: .8rem; color: var(--text-secondary, #64748b); font-family: monospace; }
+.smf-icon-grid {
+  display: flex; flex-wrap: wrap; gap: .35rem;
+  max-height: 180px; overflow-y: auto; padding: .35rem;
+  border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px;
+}
+.smf-icon-opt {
+  width: 36px; height: 36px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .9rem; color: var(--text-secondary, #64748b);
+  border: 1px solid transparent; transition: all .12s;
+}
+.smf-icon-opt:hover { border-color: var(--primary-color, #075f46); color: var(--primary-color, #075f46); background: #f0fdf9; }
+.smf-icon-opt.selected { border-color: var(--primary-color, #075f46); background: #f0fdf9; color: var(--primary-color, #075f46); }
+
+/* Role checks */
+.smf-roles-grid { display: flex; flex-wrap: wrap; gap: .45rem; }
+.smf-role-check {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .35rem .7rem; border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 99px; cursor: pointer; font-size: .8rem; font-weight: 500;
+  transition: all .12s; color: var(--text-secondary, #64748b);
+}
+.smf-role-check:has(input:checked) { border-color: var(--primary-color, #075f46); background: #f0fdf9; color: var(--primary-color, #075f46); }
+.smf-role-labels {
+  admin_utama: "Admin Utama"; admin: "Admin";
+  bendahara: "Bendahara"; guru: "Guru"; guardian: "Wali";
+}
+
+/* Auto-create banner */
+.smf-autocreate {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .85rem 1rem; border-radius: 10px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  cursor: pointer;
+}
+.smf-autocreate input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; }
+.smf-autocreate-text { font-size: .83rem; color: #1d4ed8; }
+.smf-autocreate-text strong { display: block; font-weight: 700; margin-bottom: .1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set is_edit = (mode == 'edit') %}
+{% set f = editing if is_edit else none %}
+
+{{ page_toolbar(
+  title=('Edit Menu: ' + f.label) if is_edit else 'Tambah Menu Baru',
+  subtitle='Kelola Menu Sidebar — TPQ HMarisa',
+  back_url=url_for('sidebar_menu_admin'),
+  back_label='Kembali ke Daftar Menu'
+) }}
+
+<form method="post" id="smf" action="{{ url_for('sidebar_menu_edit', menu_id=f.id) if is_edit else url_for('sidebar_menu_add') }}">
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start">
+
+    {# ── Kolom kiri ── #}
+    <div>
+
+      {# Informasi Dasar #}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-circle-info"></i> Informasi Dasar</div>
+
+        <div class="smf-grid-2">
+          <div class="smf-field">
+            <label class="smf-label">Nama Menu <span class="req">*</span></label>
+            <input type="text" name="label" class="smf-input" required maxlength="100"
+                   value="{{ f.label if f else form.get('label','') }}"
+                   placeholder="mis. Database Santri">
+          </div>
+          <div class="smf-field">
+            <label class="smf-label">Parent Menu <span class="hint">(untuk submenu)</span></label>
+            <select name="parent_id" class="smf-input" id="parent-select">
+              <option value="">— Tidak ada (menu utama) —</option>
+              {% for pid, plabel in parent_choices %}
+              <option value="{{ pid }}"
+                {% if f and f.parent_id == pid %}selected
+                {% elif request.args.get('parent_id')|int == pid %}selected
+                {% elif form and form.get('parent_id')|string == pid|string %}selected
+                {% endif %}>
+                {{ plabel }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="smf-field">
+          <label class="smf-label">Deskripsi Singkat</label>
+          <input type="text" name="description" class="smf-input"
+                 value="{{ f.description if f else '' }}"
+                 placeholder="Penjelasan singkat tentang menu ini">
+        </div>
+
+        <div class="smf-grid-2">
+          <div class="smf-field">
+            <label class="smf-label">Fungsi Menu</label>
+            <textarea name="menu_function" class="smf-input textarea" rows="3"
+                      placeholder="Apa yang dilakukan menu ini?">{{ f.menu_function if f else '' }}</textarea>
+          </div>
+          <div class="smf-field">
+            <label class="smf-label">Tujuan Menu</label>
+            <textarea name="menu_purpose" class="smf-input textarea" rows="3"
+                      placeholder="Mengapa menu ini dibutuhkan?">{{ f.menu_purpose if f else '' }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      {# Navigasi & Routing #}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-link"></i> Navigasi &amp; Routing</div>
+
+        <div class="smf-grid-2">
+          <div class="smf-field">
+            <label class="smf-label">Flask Endpoint <span class="hint">(opsional)</span></label>
+            <input type="text" name="endpoint" class="smf-input"
+                   value="{{ f.endpoint if f else '' }}"
+                   placeholder="students, finance, curriculum">
+            <div class="smf-hint">Nama fungsi view Flask. Kosongkan jika memakai URL langsung.</div>
+          </div>
+          <div class="smf-field">
+            <label class="smf-label">URL Langsung <span class="hint">(opsional)</span></label>
+            <input type="text" name="url" class="smf-input"
+                   value="{{ f.url if f else '' }}"
+                   placeholder="/students atau /m/inventaris">
+            <div class="smf-hint">Gunakan jika endpoint tidak tersedia atau butuh path lengkap.</div>
+          </div>
+        </div>
+
+        <div class="smf-field">
+          <label class="smf-label">Endpoint untuk Deteksi Aktif</label>
+          <input type="text" name="active_endpoints" class="smf-input"
+                 value="{{ f.active_endpoints if f else '' }}"
+                 placeholder="curriculum,curriculum_detail,edit_curriculum">
+          <div class="smf-hint">Pisahkan koma. Menu di-highlight saat endpoint halaman ada di sini.</div>
+        </div>
+      </div>
+
+      {# Pengaturan Lanjutan #}
+      <details class="smf-card" {% if (f and (f.url_param or f.badge_key or f.extra_style)) %}open{% endif %}>
+        <summary class="smf-card-title" style="cursor:pointer;list-style:none">
+          <i class="fa-solid fa-gears"></i> Pengaturan Lanjutan
+          <i class="fa-solid fa-chevron-down" style="margin-left:auto;font-size:.7rem"></i>
+        </summary>
+        <div style="padding-top:.75rem">
+          <div class="smf-grid-3">
+            <div class="smf-field">
+              <label class="smf-label">Parameter URL Session</label>
+              <select name="url_param" class="smf-input">
+                <option value="">— Tidak ada —</option>
+                <option value="guardian_student_id"
+                  {{ 'selected' if f and f.url_param == 'guardian_student_id' }}>
+                  guardian_student_id (Wali)
+                </option>
+              </select>
+            </div>
+            <div class="smf-field">
+              <label class="smf-label">Badge Count Dinamis</label>
+              <select name="badge_key" class="smf-input">
+                <option value="">— Tidak ada —</option>
+                <option value="finance_unpaid_count"
+                  {{ 'selected' if f and f.badge_key == 'finance_unpaid_count' }}>
+                  Iuran belum lunas
+                </option>
+                <option value="guardian_finance_unpaid_count"
+                  {{ 'selected' if f and f.badge_key == 'guardian_finance_unpaid_count' }}>
+                  Iuran ananda (Wali)
+                </option>
+              </select>
+            </div>
+            <div class="smf-field">
+              <label class="smf-label">Custom Inline Style</label>
+              <input type="text" name="extra_style" class="smf-input"
+                     value="{{ f.extra_style if f else '' }}"
+                     placeholder="color:#10b981;font-weight:700">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {# Auto-create CMS Page (hanya untuk menu baru) #}
+      {% if not is_edit %}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-cube"></i> Buat Halaman Otomatis</div>
+        <label class="smf-autocreate">
+          <input type="checkbox" name="auto_create_cms" value="1">
+          <div class="smf-autocreate-text">
+            <strong>Lanjut ke CMS Builder setelah simpan</strong>
+            Setelah menu berhasil dibuat, sistem akan membuka CMS Builder
+            dengan data menu ini sudah terisi — Anda tinggal menambahkan kolom dan fitur yang diinginkan.
+          </div>
+        </label>
+      </div>
+      {% endif %}
+
+    </div>
+
+    {# ── Kolom kanan ── #}
+    <div>
+
+      {# Ikon #}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-icons"></i> Ikon Menu</div>
+        <div class="smf-icon-preview-row">
+          <div class="smf-icon-big" id="smf-icon-preview-box">
+            <i class="fa-solid {{ f.icon if f else 'fa-circle' }}" id="smf-icon-preview-i"></i>
+          </div>
+          <span class="smf-icon-name" id="smf-icon-preview-name">{{ f.icon if f else 'fa-circle' }}</span>
+        </div>
+        <input type="hidden" name="icon" id="smf-icon-input" value="{{ f.icon if f else 'fa-circle' }}">
+        <div class="smf-icon-grid">
+          {% set all_icons = [
+            'fa-chart-pie','fa-users','fa-user-graduate','fa-user-plus','fa-users-gear',
+            'fa-table-list','fa-book-open-reader','fa-book-open','fa-file-pen',
+            'fa-file-invoice-dollar','fa-wallet','fa-chart-bar','fa-receipt',
+            'fa-quote-right','fa-gears','fa-child-reaching','fa-school','fa-mosque',
+            'fa-star-and-crescent','fa-graduation-cap','fa-calendar-week',
+            'fa-list-check','fa-bell','fa-envelope','fa-folder-open',
+            'fa-shield-halved','fa-key','fa-link','fa-house','fa-circle-info',
+            'fa-star','fa-bolt','fa-circle','fa-tag','fa-clipboard-list',
+            'fa-wrench','fa-layer-group','fa-award','fa-handshake','fa-heart',
+            'fa-map-pin','fa-puzzle-piece','fa-cube','fa-boxes-stacked',
+            'fa-scroll','fa-book-bookmark','fa-chalkboard-user','fa-pen-ruler',
+            'fa-id-card','fa-hashtag','fa-bullhorn','fa-flag','fa-truck',
+            'fa-box-archive','fa-database','fa-sliders','fa-gear','fa-toggle-on',
+            'fa-lock','fa-unlock','fa-eye','fa-print','fa-file-csv','fa-file-excel',
+            'fa-file-import','fa-file-export','fa-upload','fa-download',
+            'fa-magnifying-glass','fa-filter','fa-sort','fa-timeline',
+          ] %}
+          {% for ico in all_icons %}
+          {% for ic, ic_label in icon_options %}
+          {% if ic == ico %}
+          <div class="smf-icon-opt {{ 'selected' if f and f.icon == ico else '' }}"
+               title="{{ ico }}" data-icon="{{ ico }}" onclick="smfPickIcon('{{ ico }}')">
+            <i class="fa-solid {{ ico }}"></i>
+          </div>
+          {% endif %}
+          {% endfor %}
+          {% endfor %}
+          {# Fallback: show all icon_options #}
+          {% for ic, ic_label in icon_options %}
+          {% if ic not in all_icons %}
+          <div class="smf-icon-opt {{ 'selected' if f and f.icon == ic else '' }}"
+               title="{{ ic }}" data-icon="{{ ic }}" onclick="smfPickIcon('{{ ic }}')">
+            <i class="fa-solid {{ ic }}"></i>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Role #}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-shield-halved"></i> Hak Akses Role</div>
+        <div class="smf-roles-grid">
+          {% set role_labels = {
+            'admin_utama': 'Admin Utama',
+            'admin': 'Admin',
+            'bendahara': 'Bendahara',
+            'guru': 'Guru',
+            'guardian': 'Wali Santri'
+          } %}
+          {% for r in all_roles %}
+          <label class="smf-role-check">
+            <input type="checkbox" name="roles" value="{{ r }}"
+                   {% if f and r in f.roles_list() %}checked
+                   {% elif not f and r in ['admin_utama', 'admin'] %}checked
+                   {% endif %}>
+            {{ role_labels.get(r, r) }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Urutan & Status #}
+      <div class="smf-card">
+        <div class="smf-card-title"><i class="fa-solid fa-sliders"></i> Urutan &amp; Status</div>
+        <div class="smf-grid-2">
+          <div class="smf-field">
+            <label class="smf-label">Urutan Tampil</label>
+            <input type="number" name="sort_order" class="smf-input"
+                   value="{{ f.sort_order if f else 0 }}" min="-9999" max="9999">
+            <div class="smf-hint">Angka kecil tampil lebih atas.</div>
+          </div>
+          <div class="smf-field">
+            <label class="smf-label">Status</label>
+            <select name="is_active" class="smf-input">
+              <option value="1" {{ 'selected' if not f or f.is_active }}>✓ Aktif</option>
+              <option value="0" {{ 'selected' if f and not f.is_active }}>✗ Nonaktif</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {# Submit #}
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.7rem">
+          <i class="fa-solid fa-floppy-disk"></i>
+          {{ 'Simpan Perubahan' if is_edit else 'Tambah Menu' }}
+        </button>
+        <a href="{{ url_for('sidebar_menu_admin') }}" class="btn btn-outline"
+           style="width:100%;justify-content:center;padding:.7rem">
+          Batal
+        </a>
+      </div>
+
+    </div>
+  </div>
+</form>
+
+<script>
+function smfPickIcon(ico) {
+  document.getElementById('smf-icon-input').value = ico;
+  document.getElementById('smf-icon-preview-i').className = 'fa-solid ' + ico;
+  document.getElementById('smf-icon-preview-name').textContent = ico;
+  document.querySelectorAll('.smf-icon-opt').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.icon === ico);
+  });
+}
+// Pre-select parent from URL query param
+(function() {
+  const pid = new URL(location.href).searchParams.get('parent_id');
+  if (pid) {
+    const sel = document.getElementById('parent-select');
+    if (sel) sel.value = pid;
+  }
+})();
+</script>
+{% endblock %}

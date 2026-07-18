@@ -1,0 +1,7 @@
+<nav class="er10-tabs" aria-label="Tahapan pengisian E-Raport">
+  <a class="{% if active_tab == 'academic' %}active{% endif %}" href="{{ url_for('eraport_academic', student_id=student.id, **period_query) }}">Nilai Akademik</a>
+  <a class="{% if active_tab == 'hafalan' %}active{% endif %}" href="{{ url_for('eraport_hafalan', student_id=student.id, **period_query) }}">Hafalan</a>
+  <a class="{% if active_tab == 'attitude' %}active{% endif %}" href="{{ url_for('eraport_attitude', student_id=student.id, **period_query) }}">Sikap & Kehadiran</a>
+  <a class="{% if active_tab == 'development' %}active{% endif %}" href="{{ url_for('eraport_development', student_id=student.id, **period_query) }}">Catatan Perkembangan</a>
+  <a class="{% if active_tab == 'publication' %}active{% endif %}" href="{{ url_for('eraport_publication', student_id=student.id, **period_query) }}">Penerbitan</a>
+</nav>

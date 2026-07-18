@@ -1,80 +1,51 @@
-# Portal TPQ H. Marisa — Revisi Administrasi, Silabus, dan Koleksi Kitab
+# Portal TPQ HMarisa — Revisi Final
 
-Aplikasi web Flask + SQLite/SQLAlchemy untuk Portal TPQ H. Marisa.
+Aplikasi Flask + SQLite/SQLAlchemy untuk Portal TPQ HMarisa. Paket ini mencakup revisi Halaman Utama sampai E-Raport, sekaligus mempertahankan Sistem Keuangan dan Perpustakaan Digital dari proyek sebelumnya.
 
-## Login dan akses
+## Fitur utama
 
-### Wali santri
-Halaman utama tidak memakai username atau password. Wali cukup mengetik nama lengkap santri dan memilih kelas.
+- Portal Wali berbasis pilihan kelas dan nama santri.
+- Hadis Harian dari bank internal yang sinkron antara halaman publik dan dashboard.
+- Data Master dinamis: kelas, guru, bidang pelajaran, dan tahun ajaran.
+- Database santri dengan status aktif/nonaktif, ekspor CSV, dan Nama Tampilan Publik.
+- Silabus Bulanan Pekan 1–5 dengan Bank Silabus Ar Rahman dan Ar Rahim.
+- Jurnal Mutabaah dan Tracker Hafalan Juz 30 terpisah dari E-Raport.
+- Santri Terbaik Mingguan dan poster yang dapat dibagikan manual ke WhatsApp.
+- E-Raport dengan KKM 70, predikat otomatis, pratinjau, penerbitan, revisi, dan PDF A4.
 
-Data contoh:
-- Nama: `Ahmad Zaki Al-Fatih`
-- Kelas: `Ar-Rahim`
-
-Wali hanya dapat melihat perkembangan, hafalan, tagihan, dan koleksi kitab. Nilai serta E-Raport tetap disembunyikan dan dilindungi dari akses URL langsung.
-
-### Admin
-Buka `/admin/login`.
-
-- Username: `tpqhmarisa`
-- Password: `tpqhmarisa`
-
-## Fitur revisi terbaru
-
-1. Silabus dan kurikulum pekanan per kelas, lengkap dengan tambah, edit, dan hapus.
-2. Database santri ditampilkan ringkas dalam dua kolom: nama dan kelas, dengan pencarian.
-3. Buku prestasi harian memiliki pencarian nama/kelas serta tombol edit dan hapus catatan.
-4. E-Raport dibuka melalui pilihan kelas terlebih dahulu.
-5. Sistem keuangan memiliki tombol Input, Edit, dan Ekspor.
-6. Pencarian administrasi memakai nama, kelas, dan bulan.
-7. Data tagihan dapat diedit manual.
-8. Koleksi kitab dapat diunggah, diedit, dan dihapus oleh admin.
-9. Kategori kitab:
-   - Kitab Fiqih
-   - Kitab Akhlaq
-   - Kitab Nizhomi
-   - Kitab Tilawati
-   - Buku Edukasi Anak
-10. Wali dapat membaca tiga halaman awal kitab premium. Tombol unduh mengarah ke pembelian, lalu file penuh otomatis dapat diunduh setelah admin mengonfirmasi pembayaran.
-11. Beranda admin memiliki satu pilihan kelas untuk menampilkan silabus pekanan.
-
-## Menjalankan aplikasi
+## Menjalankan secara lokal
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
 python app.py
 ```
 
-Untuk deployment:
+Aplikasi tersedia pada `http://127.0.0.1:5000`.
 
-```bash
-gunicorn app:app --bind 0.0.0.0:$PORT
-```
+## Login admin bawaan
 
-## Memasang ke project lama tanpa kehilangan data
+- Username: `tpqhmarisa`
+- Password: `tpqhmarisa`
 
-Ganti file/folder berikut:
+Ubah sandi bawaan setelah instalasi produksi. Atur `SECRET_KEY` melalui environment/WSGI.
 
-- `app.py`
-- `templates/`
-- `static/css/style.css`
-- `static/js/app.js` bila disertakan dalam paket update
+## Database
 
-Jangan menimpa atau menghapus:
+- Database aktif: `instance/tpq_hmarisa.db`
+- Backup sebelum revisi: `instance/tpq_hmarisa_before_final_revision.db`
+- Pembaruan tabel/kolom dijalankan otomatis saat aplikasi pertama kali dimuat.
 
-- `instance/`
-- `uploads/`
+## Bank Silabus
 
-Aplikasi akan otomatis menambahkan tabel silabus dan kolom kategori kitab ke database SQLite lama saat pertama kali dijalankan.
+- Data JSON: `data/curriculum_bank.json`
+- Workbook sumber: `data/Bank_Silabus_Semester_TPQ_HMarisa_Sesuai_Kaldik.xlsx`
 
-## Catatan pembelian kitab
+## Deployment
 
-Versi ini memakai alur transfer manual:
+Baca `PETUNJUK_UPDATE_PYTHONANYWHERE.txt` sebelum mengganti versi produksi.
 
-1. Wali membuka tiga halaman awal.
-2. Wali menekan tombol unduh dan diarahkan ke halaman pembelian.
-3. Wali mengunggah bukti transfer.
-4. Admin mengonfirmasi pembayaran.
-5. Akses baca dan unduh penuh langsung terbuka untuk santri tersebut.
+## Poster mingguan
 
-Integrasi pembayaran bank otomatis belum digunakan karena membutuhkan payment gateway atau API bank terpisah.
+Dashboard menyediakan proses manual **Jalankan Sekarang/Buat Ulang Poster**. Skrip `scheduled_weekly.py` dapat dipasang sebagai tugas harian pukul 06.00 WIB; skrip hanya memproses pada hari Ahad. Pengiriman ke WhatsApp tetap dilakukan manual melalui tombol berbagi.

@@ -1,20 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Edit Silabus Pekanan{% endblock %}
+{% block title %}Edit Silabus Bulanan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/silabus_final.css') }}?v=20260715-1">{% endblock %}
 {% block content %}
-<div class="page-heading">
-  <div><span class="eyebrow">Admin · Silabus</span><h1>Edit Rencana Pekanan</h1><p>Perbaiki data yang salah lalu simpan kembali.</p></div>
-  <a class="btn btn-outline" href="{{ url_for('curriculum', class_name=row.class_name) }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+<div class="silabus-page">
+<div class="page-heading"><div><span class="eyebrow">Database Silabus · Edit</span><h1>Edit Silabus {{ row.class_name }}</h1><p>{{ row.month }} {{ row.year }} · {{ row.subject }}</p></div><a class="btn btn-outline" href="{{ url_for('curriculum_detail', row_id=row.id) }}">Kembali</a></div>
+<section class="card"><form method="post" class="form-grid form-grid-3">
+<label>Kelas<select name="class_name" id="edit-silabus-class" required>{% for c in CLASSES %}<option value="{{ c }}" {% if row.class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+<label>Bulan<select name="month" required>{% for m in MONTHS %}<option value="{{ m }}" {% if row.month==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+<label>Tahun Ajaran<select name="academic_year" required>{% for y in academic_year_options %}<option value="{{ y }}" {% if row.academic_year==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+<label>Bidang Pelajaran<select name="subject" id="edit-silabus-subject" required></select></label>
+<label>Materi Pokok<input name="topic" value="{{ row.topic }}" required></label>
+<label>Status<select name="status"><option value="Aktif" {% if row.status=='Aktif' %}selected{% endif %}>Aktif</option><option value="Nonaktif" {% if row.status=='Nonaktif' %}selected{% endif %}>Nonaktif</option></select></label>
+<label class="span-2">Target Pembelajaran<textarea name="learning_target" rows="3">{{ row.learning_target }}</textarea></label>
+<label>Versi<input type="number" name="version" min="1" value="{{ row.version or 1 }}"></label>
+{% for i in range(1,6) %}<label>Rencana Materi Pekan {{ i }}<textarea name="week{{ i }}" rows="3">{{ row|attr('week' ~ i) }}</textarea></label>{% endfor %}
+<label>Catatan Guru<textarea name="notes" rows="3">{{ row.notes }}</textarea></label>
+<div class="form-action"><button class="btn btn-primary">Simpan Perubahan</button></div>
+</form></section>
 </div>
-<section class="card">
-  <form method="post" class="form-grid form-grid-3">
-    <label>Kelas<select name="class_name" required>{% for c in CLASSES %}<option value="{{ c }}" {% if row.class_name == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
-    <label>Pekan Ke-<input type="number" name="week_number" value="{{ row.week_number }}" min="1" max="60" required></label>
-    <label>Bidang Pelajaran<input name="subject" value="{{ row.subject }}" required></label>
-    <label class="full-field">Materi Pokok<input name="topic" value="{{ row.topic }}" required></label>
-    <label>Target Pembelajaran<textarea name="learning_target" rows="4">{{ row.learning_target }}</textarea></label>
-    <label>Kegiatan Pembelajaran<textarea name="activities" rows="4">{{ row.activities }}</textarea></label>
-    <label>Catatan Guru<textarea name="notes" rows="4">{{ row.notes }}</textarea></label>
-    <div class="form-action full-field"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
-  </form>
-</section>
+<script type="application/json" id="edit-silabus-subject-map">{{ subject_map|tojson }}</script>
+<script>(()=>{const cls=document.getElementById('edit-silabus-class'),sub=document.getElementById('edit-silabus-subject'),map=JSON.parse(document.getElementById('edit-silabus-subject-map').textContent||'{}'),selected={{ row.subject|tojson }};function fill(){const values=map[cls.value]||[];sub.innerHTML=values.map(v=>`<option value="${v}">${v}</option>`).join('');if(values.includes(selected))sub.value=selected;}cls.addEventListener('change',fill);fill();})();</script>
 {% endblock %}

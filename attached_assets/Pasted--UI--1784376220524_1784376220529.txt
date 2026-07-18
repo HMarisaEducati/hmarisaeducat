@@ -1,0 +1,190 @@
+
+======================================================================
+UI
+======================================================================
+
+Gunakan desain modern.
+
+Responsive.
+
+Sidebar modern.
+
+Topbar modern.
+
+Dark Mode.
+
+Breadcrumb.
+
+Cards.
+
+Widget.
+
+Charts.
+
+Search.
+
+Notification Bell.
+
+Profile Menu.
+
+Quick Actions.
+
+Floating Action Button.
+
+======================================================================
+ARSITEKTUR
+======================================================================
+
+Refactor menjadi struktur modular.
+
+Pisahkan:
+
+Models
+
+Routes
+
+Controllers
+
+Services
+
+Templates
+
+Static
+
+Helpers
+
+Permissions
+
+Settings
+
+Blueprint
+
+Utils
+
+Config
+
+======================================================================
+Portal Wali Santri
+======================================================================
+
+FITUR WAJIB:
+
+1. SISTEM LOGIN ADMIN
+- Buat autentikasi admin yang aman.
+- Role administrator memiliki hak akses tertinggi.
+- Admin dapat masuk ke dashboard pusat kendali.
+
+2. KONTROL SELURUH PORTAL WALI SANTRI
+Hubungkan Pusat Kendali Admin dengan seluruh modul portal yang sudah ada:
+- Dashboard wali santri
+- Data santri
+- Data wali
+- Prestasi santri
+- Silabus
+- Laporan
+- E-raport
+- Keuangan
+- Administrasi iuran
+- Tagihan
+- Riwayat pembayaran
+- Pengaturan portal
+- Upload dokumen dan gambar
+- Semua halaman HTML/template yang tersedia
+
+Admin dapat:
+- Melihat semua data
+- Mengedit data
+- Menambah data baru
+- Menghapus data
+- Mengaktifkan/nonaktifkan fitur
+
+3. PAGE BUILDER / MANAGEMENT HALAMAN
+Buat fitur pengelolaan halaman:
+- Admin dapat membuat halaman baru
+- Mengubah judul halaman
+- Mengubah isi halaman
+- Mengatur urutan menu
+- Menambah menu navigasi baru
+- Menghapus menu
+- Mengatur halaman tampil atau tersembunyi
+
+4. CONTENT MANAGEMENT SYSTEM
+Admin tidak perlu mengubah kode untuk:
+- Mengubah teks
+- Mengubah gambar
+- Mengubah banner
+- Mengubah informasi portal
+- Mengupdate pengumuman
+
+5. MANAGEMENT DATABASE
+Buat panel database:
+- Semua tabel dapat dikelola melalui dashboard
+- Tambah/edit/hapus data melalui interface
+- Tetap gunakan struktur database yang sudah ada
+- Jangan merusak data lama
+
+6. ROLE DAN PERMISSION
+Buat sistem hak akses:
+- Super Admin
+- Admin
+- Operator
+- Wali Santri
+
+Super Admin memiliki akses penuh.
+
+7. DESAIN DASHBOARD
+Buat tampilan seperti:
+- Admin panel modern
+- Sidebar menu lengkap
+- Statistik data
+- Grafik laporan
+- Tombol cepat pengelolaan
+
+8. INTEGRASI DENGAN WEBSITE EXISTING
+PENTING:
+Jangan membuat aplikasi terpisah.
+
+Gunakan kode website yang sudah ada.
+
+Analisa seluruh:
+- app.py
+- routes
+- templates
+- database
+- models
+- file Python lainnya
+
+Kemudian integrasikan Pusat Kendali Admin ke sistem yang sudah berjalan.
+
+Sebelum melakukan perubahan:
+1. Backup file penting.
+2. Periksa struktur project.
+3. Jangan menghapus fitur lama.
+4. Pertahankan semua fungsi Portal Wali Santri yang sudah ada.
+
+Hasil akhir:
+Pusat Kendali Admin menjadi pusat kontrol utama seluruh Portal Wali Santri.
+
+======================================================================
+KOMPATIBILITAS
+======================================================================
+
+Pastikan seluruh fitur lama tetap berjalan.
+
+Jangan menghapus route lama.
+
+Jangan menghapus template lama.
+
+Jangan menghapus database lama.
+
+Jika perlu, buat adapter agar sistem lama tetap kompatibel.
+
+======================================================================
+OUTPUT
+======================================================================
+
+Saya ingin hasil akhirnya menjadi sebuah Control Center profesional yang dapat mengelola seluruh website dari browser, sehingga hampir semua perubahan dapat dilakukan melalui halaman admin tanpa harus mengedit source code lagi.
+
+Jika ada fitur lama yang perlu diintegrasikan, lakukan integrasi secara bertahap tanpa merusak sistem yang sudah berjalan.
+
+Sebelum membuat kode baru, analisis terlebih dahulu seluruh struktur project agar solusi yang dibuat mengikuti arsitektur yang sudah ada dan tidak menghasilkan duplikasi file atau logika.

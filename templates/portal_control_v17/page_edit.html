@@ -1,0 +1,37 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}{{ 'Edit Halaman' if row else 'Tambah Halaman' }}{% endblock %}
+{% block pc17_subtitle %}Susun halaman menggunakan blok aman. Tidak ada editor kode bebas.{% endblock %}
+{% block pc17_content %}
+<form method="post" class="pc17-builder-form" data-page-builder>
+  <section class="card pc17-card pc17-form-grid">
+    <label>Judul Halaman<input name="title" required value="{{ row.title if row else '' }}" data-slug-source></label>
+    <label>Slug URL<input name="slug" required value="{{ row.slug if row else '' }}" placeholder="pendaftaran-santri-baru" data-slug-target></label>
+    <label>Target Portal<select name="target_scope">{% for scope in scopes %}<option value="{{ scope }}" {% if row and row.target_scope==scope %}selected{% endif %}>{{ scope|title }}</option>{% endfor %}</select></label>
+    <label>Label Menu<input name="menu_label" value="{{ row.menu_label if row else '' }}" placeholder="Opsional"></label>
+    <label>Ikon Menu<select name="menu_icon">{% for key,value in icons.items() %}<option value="{{ value }}" {% if row and row.menu_icon==value %}selected{% endif %}>{{ key|replace('-', ' ')|title }}</option>{% endfor %}</select></label>
+    <label>Urutan Menu<input type="number" name="sort_order" min="0" value="{{ row.sort_order if row else 100 }}"></label>
+    <label class="pc17-check"><input type="checkbox" name="show_in_menu" {% if row and row.show_in_menu %}checked{% endif %}> Tampilkan di menu</label>
+    <fieldset><legend>Peran yang boleh melihat</legend><div class="pc17-check-grid">{% for role in roles %}<label><input type="checkbox" name="roles" value="{{ role }}" {% if row and role in row.roles() %}checked{% endif %}> {{ role|replace('_',' ')|title }}</label>{% endfor %}</div><small>Kosong = mengikuti target portal.</small></fieldset>
+  </section>
+  <section class="card pc17-card">
+    <div class="card-head"><div><h2>Blok Halaman</h2><p class="muted">Seret tidak diperlukan; gunakan tombol naik/turun.</p></div><button type="button" class="btn btn-primary" data-add-page-block><i class="fa-solid fa-plus"></i> Tambah Blok</button></div>
+    <div class="pc17-builder-list" data-page-blocks></div>
+    <input type="hidden" name="blocks_json" value='{{ blocks|tojson }}' data-page-blocks-json>
+  </section>
+  <div class="pc17-sticky-actions"><a class="btn btn-ghost" href="{{ url_for('portal_control_pages_v17') }}">Batal</a><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button>{% if row %}<a class="btn btn-outline" href="{{ url_for('portal_control_page_preview_v17', page_id=row.id) }}">Preview</a>{% endif %}</div>
+</form>
+<template data-page-block-template>
+  <article class="pc17-builder-row" data-builder-row>
+    <div class="pc17-row-head"><strong>Blok</strong><div><button type="button" data-move-up title="Naik">↑</button><button type="button" data-move-down title="Turun">↓</button><button type="button" data-remove-row title="Hapus">×</button></div></div>
+    <div class="pc17-form-grid">
+      <label>Jenis<select data-field="type"><option value="heading">Judul</option><option value="text">Teks</option><option value="banner">Banner</option><option value="image">Gambar</option><option value="button">Tombol</option><option value="cards">Kartu</option><option value="list">Daftar</option><option value="announcement">Pengumuman</option><option value="contact">Kontak</option><option value="form">Formulir</option></select></label>
+      <label>Judul<input data-field="title"></label>
+      <label class="span-2">Isi<textarea rows="4" data-field="body" placeholder="Teks biasa; baris baru tetap dipertahankan."></textarea></label>
+      <label>Label Tombol<input data-field="link_label"></label><label>Tujuan Tautan<input data-field="link_url" placeholder="/finance atau https://..."></label>
+      <label>Media<select data-field="image"><option value="">Tanpa media</option>{% for item in media %}<option value="{{ item.filename }}">{{ item.original_name }}</option>{% endfor %}</select></label>
+      <label>Formulir<select data-field="form_slug"><option value="">Tidak ada</option>{% for item in forms %}<option value="{{ item.slug }}">{{ item.title }}</option>{% endfor %}</select></label>
+      <label>Gaya<select data-field="style"><option value="default">Default</option><option value="green">Hijau</option><option value="gold">Emas</option><option value="soft">Lembut</option><option value="hero">Hero</option></select></label>
+    </div>
+  </article>
+</template>
+{% endblock %}

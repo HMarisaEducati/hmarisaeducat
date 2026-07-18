@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Detail Tagihan{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_administration_v15b2.css') }}?v=20260715-1">
+{% endblock %}
+{% block content %}
+<div class="finance-v15b-page finance-admin-v15b2-page">
+  <div class="finance-page-heading">
+    <div><span class="eyebrow">{{ bill.bill_number }}</span><h1>Detail Tagihan</h1><p>{{ student.name if student else 'Santri tidak ditemukan' }} · {{ student.class_name if student else 'Belum diisi' }}</p></div>
+    <div class="button-row"><a class="btn btn-outline" href="{{ url_for('finance_administration', class_name=student.class_name if student else '') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>{% if not bill.is_archived %}<a class="btn btn-primary" href="{{ url_for('finance_bill_edit', bill_id=bill.id) }}"><i class="fa-solid fa-pen"></i> Edit Tagihan</a>{% endif %}</div>
+  </div>
+  {% include "finance_v15b/_tabs.html" %}
+
+  <nav class="finance-detail-tabs" aria-label="Detail tagihan">
+    <a class="{% if detail_view == 'detail' %}active{% endif %}" href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='detail') }}">Detail Tagihan</a>
+    <a class="{% if detail_view == 'payments' %}active{% endif %}" href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='payments') }}">Riwayat Pembayaran <span>{{ payments|length }}</span></a>
+    <a class="{% if detail_view == 'history' %}active{% endif %}" href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='history') }}">Riwayat Perubahan</a>
+  </nav>
+
+  {% if detail_view == 'detail' %}
+  <section class="finance-panel">
+    <div class="finance-panel-head"><div><h2>Informasi Tagihan</h2><p>Status berubah otomatis berdasarkan pembayaran aktif.</p></div><span class="finance-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></div>
+    <dl class="finance-detail-list">
+      <div><dt>Nomor Tagihan</dt><dd>{{ bill.bill_number }}</dd></div><div><dt>Nama Santri</dt><dd>{{ student.name if student else 'Belum diisi' }}</dd></div>
+      <div><dt>Kelas</dt><dd>{{ student.class_name if student else 'Belum diisi' }}</dd></div><div><dt>Orang Tua/Wali</dt><dd>{{ student.guardian_name if student and student.guardian_name else 'Belum diisi' }}</dd></div>
+      <div><dt>Nomor WhatsApp</dt><dd>{{ student.guardian_phone if student and student.guardian_phone else 'Belum diisi' }}</dd></div><div><dt>Tahun Ajaran</dt><dd>{{ bill.academic_year }}</dd></div>
+      <div><dt>Semester</dt><dd>{{ bill.semester }}</dd></div><div><dt>Jenis Tagihan</dt><dd>{{ charge_type.name if charge_type else 'Belum diisi' }}</dd></div>
+      <div><dt>Periode</dt><dd>{{ bill.period_label }} {{ bill.period_year }}</dd></div><div><dt>Jatuh Tempo</dt><dd>{{ bill.due_date.strftime('%d/%m/%Y') if bill.due_date else 'Belum diisi' }}</dd></div>
+      <div><dt>Nominal Tagihan</dt><dd>{{ bill.amount|rupiah }}</dd></div><div><dt>Total Dibayar</dt><dd>{{ bill.paid_amount|rupiah }}</dd></div>
+      <div><dt>Sisa Tagihan</dt><dd><strong>{{ bill.remaining_amount|rupiah }}</strong></dd></div><div><dt>Status</dt><dd>{{ bill.status }}</dd></div>
+      <div class="wide"><dt>Catatan</dt><dd>{{ bill.notes or 'Belum diisi' }}</dd></div>
+      {% if waiver %}<div class="wide"><dt>Alasan Dibebaskan</dt><dd>{{ waiver.reason }} · Disetujui {{ waiver.approved_by_name }} pada {{ waiver.waiver_date.strftime('%d/%m/%Y') }}</dd></div>{% endif %}
+      {% if bill.is_archived %}<div class="wide"><dt>Alasan Arsip</dt><dd>{{ bill.archive_reason or 'Belum diisi' }}</dd></div>{% endif %}
+    </dl>
+    {% if not bill.is_archived %}
+    <div class="finance-detail-primary-actions">
+      {% if bill.status not in ['Lunas','Dibebaskan'] %}<a class="btn btn-primary" href="{{ url_for('finance_payment_new', bill_id=bill.id) }}"><i class="fa-solid fa-money-bill-wave"></i> Catat Pembayaran</a>{% endif %}
+      {% if bill.status in ['Belum Lunas','Sebagian'] %}<a class="btn btn-outline" href="{{ url_for('finance_bill_whatsapp', bill_id=bill.id) }}"><i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp</a>{% endif %}
+      {% if payments %}<a class="btn btn-outline" href="{{ url_for('finance_payment_receipt', payment_id=payments[0].id) }}"><i class="fa-solid fa-receipt"></i> Preview Bukti Terbaru</a>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  {% if not bill.is_archived and not waiver and not payments %}
+  <section class="finance-panel finance-secondary-action-panel">
+    <div class="finance-section-title"><h2>Pembebasan Tagihan</h2><p>Pembebasan bukan pembayaran dan wajib disertai alasan.</p></div>
+    <form method="post" action="{{ url_for('finance_bill_waive', bill_id=bill.id) }}" class="finance-form" data-confirm="Tagihan akan ditetapkan sebagai Dibebaskan. Lanjutkan?">
+      <div class="finance-form-grid two"><label>Tanggal<input type="date" name="waiver_date" value="{{ today }}" required></label><label>Disetujui Oleh<input name="approved_by_name" required></label></div>
+      <label>Alasan Pembebasan<textarea name="reason" rows="3" required></textarea></label><label>Catatan<textarea name="notes" rows="2"></textarea></label>
+      <button class="btn btn-outline" type="submit"><i class="fa-solid fa-hand-holding-heart"></i> Bebaskan Tagihan</button>
+    </form>
+  </section>
+  {% elif waiver and not bill.is_archived %}
+  <section class="finance-panel finance-secondary-action-panel"><div class="finance-section-title"><h2>Batalkan Pembebasan</h2><p>Status akan dihitung ulang menjadi Belum Lunas.</p></div><form method="post" action="{{ url_for('finance_bill_unwaive', bill_id=bill.id) }}" class="finance-inline-confirm" data-confirm="Batalkan pembebasan tagihan ini?"><input name="reason" placeholder="Alasan pembatalan pembebasan" required><button class="btn btn-outline" type="submit">Batalkan Pembebasan</button></form></section>
+  {% endif %}
+
+  {% elif detail_view == 'payments' %}
+  <section class="finance-panel">
+    <div class="finance-panel-head"><div><h2>Riwayat Pembayaran</h2><p>Setiap pembayaran memiliki nomor transaksi dan bukti tersendiri.</p></div>{% if not bill.is_archived and bill.status not in ['Lunas','Dibebaskan'] %}<a class="btn btn-primary" href="{{ url_for('finance_payment_new', bill_id=bill.id) }}"><i class="fa-solid fa-plus"></i> Catat Pembayaran</a>{% endif %}</div>
+    {% if payments %}
+    <div class="finance-payment-list">
+      {% for payment in payments %}
+      <article class="finance-payment-card {% if payment.is_cancelled %}is-cancelled{% endif %}">
+        <div><span class="finance-payment-number">{{ payment.transaction_number }}</span><strong>{{ payment.amount|rupiah }}</strong><small>{{ payment.payment_date.strftime('%d/%m/%Y') }} · {{ payment.method }} · {{ payment.receiver_name }}</small>{% if payment.notes %}<p>{{ payment.notes }}</p>{% endif %}{% if payment.is_cancelled %}<p class="finance-cancel-reason">Dibatalkan: {{ payment.cancellation_reason }}</p>{% endif %}</div>
+        <div class="button-row"><a class="btn btn-sm btn-outline" href="{{ url_for('finance_payment_receipt', payment_id=payment.id) }}"><i class="fa-solid fa-eye"></i> Preview Bukti</a>{% if payment.proof_path %}<a class="btn btn-sm btn-outline" href="{{ url_for('finance_payment_proof', payment_id=payment.id) }}" target="_blank"><i class="fa-solid fa-paperclip"></i> Lampiran</a>{% endif %}</div>
+        {% if not payment.is_cancelled %}<form method="post" action="{{ url_for('finance_payment_cancel', payment_id=payment.id) }}" class="finance-inline-confirm" data-confirm="Transaksi tidak dihapus, tetapi akan dibatalkan dan status tagihan dihitung ulang. Lanjutkan?"><input name="reason" placeholder="Alasan pembatalan transaksi" required><button class="btn btn-sm btn-danger" type="submit">Batalkan Transaksi</button></form>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}<div class="finance-empty"><i class="fa-solid fa-money-bill-transfer"></i><strong>Belum ada pembayaran</strong><span>Gunakan Catat Pembayaran agar status tagihan berubah otomatis.</span></div>{% endif %}
+  </section>
+
+  {% else %}
+  <section class="finance-panel"><div class="finance-panel-head"><div><h2>Riwayat Perubahan</h2><p>Aktivitas penting dicatat bersama pengguna dan waktu WIB.</p></div></div><div class="finance-timeline">{% for log in audit_logs %}<article><span></span><div><strong>{{ log.action }}</strong><small>{{ log.user_name }} · {{ format_wib(log.created_at) }}</small></div></article>{% else %}<div class="finance-empty compact"><strong>Belum ada riwayat</strong><span>Perubahan tagihan akan dicatat di sini.</span></div>{% endfor %}</div></section>
+  {% endif %}
+
+  {% if detail_view == 'detail' and not bill.is_archived %}
+  <section class="finance-panel danger-zone"><div><div><h2>Arsipkan Tagihan</h2><p>Data tidak dihapus permanen dan dapat direstore.</p></div><form method="post" action="{{ url_for('finance_bill_archive', bill_id=bill.id) }}" data-confirm="Tagihan akan dipindahkan ke Arsip. Lanjutkan?"><input name="reason" placeholder="Alasan arsip" required><button class="btn btn-danger" type="submit"><i class="fa-solid fa-box-archive"></i> Arsipkan</button></form></div></section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script><script src="{{ url_for('static', filename='js/finance_administration_v15b2.js') }}?v=20260715-1"></script>{% endblock %}

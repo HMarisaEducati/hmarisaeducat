@@ -1,0 +1,88 @@
+{% extends "control_center/base.html" %}
+{% block title %}Database Manager{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><span>Database</span>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-database" style="color:var(--cc-accent)"></i> Database Manager</div>
+    <div class="cc-page-subtitle">Lihat struktur tabel, statistik record, dan kelola data langsung dari browser</div>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('control_center_db_export_all') }}" class="cc-btn cc-btn-secondary">
+      <i class="fa-solid fa-file-zipper"></i> Export Semua (ZIP)
+    </a>
+    <a href="{{ url_for('control_center_backup') }}" class="cc-btn cc-btn-primary">
+      <i class="fa-solid fa-box-archive"></i> Backup Database
+    </a>
+  </div>
+</div>
+
+<!-- DB Stats -->
+<div class="cc-stat-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:24px">
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon teal"><i class="fa-solid fa-table"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ tables|length }}</div>
+      <div class="cc-stat-label">Total Tabel</div>
+    </div>
+  </div>
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon blue"><i class="fa-solid fa-list-ol"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ '{:,}'.format(total_rows).replace(',','.') }}</div>
+      <div class="cc-stat-label">Total Record</div>
+    </div>
+  </div>
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon green"><i class="fa-solid fa-hard-drive"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ db_size_mb }} MB</div>
+      <div class="cc-stat-label">Ukuran Database</div>
+    </div>
+  </div>
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon orange"><i class="fa-solid fa-clock"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ last_backup or '—' }}</div>
+      <div class="cc-stat-label">Backup Terakhir</div>
+    </div>
+  </div>
+</div>
+
+<!-- Table list -->
+<div class="cc-card">
+  <div class="cc-card-header">
+    <div class="cc-card-title"><i class="fa-solid fa-table-list"></i> Daftar Tabel</div>
+    <div class="cc-toolbar-search" style="max-width:220px">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="tableSearch" placeholder="Cari tabel...">
+    </div>
+  </div>
+  <div class="cc-card-body">
+    <div class="cc-db-table-list" id="dbTableList">
+      {% for tbl in tables %}
+      <a href="{{ url_for('control_center_db_table', table_name=tbl.name) }}" class="cc-db-table-card" data-name="{{ tbl.name }}">
+        <div class="cc-db-table-icon"><i class="fa-solid fa-table"></i></div>
+        <div>
+          <div class="cc-db-table-name">{{ tbl.name }}</div>
+          <div class="cc-db-table-rows">{{ '{:,}'.format(tbl.row_count).replace(',','.') }} record · {{ tbl.col_count }} kolom</div>
+        </div>
+        <i class="fa-solid fa-chevron-right" style="margin-left:auto;color:var(--cc-text-muted);font-size:.75rem"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('tableSearch').addEventListener('input', function() {
+  var q = this.value.toLowerCase();
+  document.querySelectorAll('#dbTableList .cc-db-table-card').forEach(function(card) {
+    card.style.display = card.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

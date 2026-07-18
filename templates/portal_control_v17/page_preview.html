@@ -1,0 +1,7 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}Preview: {{ page.title }}{% endblock %}
+{% block pc17_subtitle %}Preview menggunakan draft. Portal aktif belum berubah sampai diterbitkan.{% endblock %}
+{% block pc17_content %}
+<div class="pc17-toolbar"><a class="btn btn-outline" href="{{ url_for('portal_control_page_edit_v17', page_id=page.id) }}">Kembali Edit</a><form method="post" action="{{ url_for('portal_control_page_publish_v17', page_id=page.id) }}"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan Halaman</button></form>{% if page.status=='published' %}<a class="btn btn-outline" target="_blank" href="{{ url_for('portal_page_view_v17', slug=page.slug) }}">Buka Versi Aktif</a>{% endif %}</div>
+<div class="pc17-device-preview"><div class="pc17-preview-bar"><span></span><span></span><span></span><strong>{{ page.target_scope|title }}</strong></div>{% include "portal_control_v17/_blocks.html" %}</div>
+{% endblock %}

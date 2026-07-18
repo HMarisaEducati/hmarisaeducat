@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Administrasi Iuran{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page" data-finance-view="administration">
+  <div class="finance-page-heading"><div><span class="eyebrow">Admin · Administrasi Iuran</span><h1>Administrasi Iuran</h1><p>Cari, filter, dan kelola tagihan santri.</p></div><div class="button-row"><a class="btn btn-outline" href="{{ url_for('finance_archive') }}"><i class="fa-solid fa-box-archive"></i> Arsip</a><a class="btn btn-primary" href="{{ url_for('finance_bill_new') }}"><i class="fa-solid fa-plus"></i> Buat Tagihan</a></div></div>
+  {% include "finance_v15b/_tabs.html" %}
+
+  <section class="finance-panel">
+    <form method="get" class="finance-filter-grid" data-finance-filter="administration">
+      <label>Nama Santri<input name="q" value="{{ filters.q }}" placeholder="Ketik nama santri"></label>
+      <label>Tahun Ajaran<select name="academic_year"><option value="">Semua</option>{% for item in academic_years %}<option value="{{ item }}" {% if filters.academic_year == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+      <label>Semester<select name="semester"><option value="">Semua</option><option {% if filters.semester == 'Semester 1' %}selected{% endif %}>Semester 1</option><option {% if filters.semester == 'Semester 2' %}selected{% endif %}>Semester 2</option></select></label>
+      <label>Kelas<select name="class_name"><option value="">Semua kelas</option>{% for item in classes %}<option value="{{ item }}" {% if filters.class_name == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+      <label>Jenis Tagihan<select name="charge_type_id"><option value="">Semua jenis</option>{% for item in charge_types %}<option value="{{ item.id }}" {% if filters.charge_type_id|string == item.id|string %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select></label>
+      <label>Periode<select name="period"><option value="">Semua periode</option>{% for item in months %}<option value="{{ item }}" {% if filters.period == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+      <label>Status<select name="status"><option value="">Semua status</option>{% for item in ['Lunas','Sebagian','Belum Lunas','Dibebaskan'] %}<option value="{{ item }}" {% if filters.status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+      <label>Urutkan<select name="sort"><option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Terbaru</option><option value="oldest" {% if filters.sort == 'oldest' %}selected{% endif %}>Terlama</option><option value="name" {% if filters.sort == 'name' %}selected{% endif %}>Nama</option><option value="class" {% if filters.sort == 'class' %}selected{% endif %}>Kelas</option><option value="status" {% if filters.sort == 'status' %}selected{% endif %}>Status</option><option value="amount" {% if filters.sort == 'amount' %}selected{% endif %}>Nominal</option><option value="period" {% if filters.sort == 'period' %}selected{% endif %}>Periode</option></select></label>
+      <label>Per halaman<select name="per_page"><option value="25" {% if per_page == 25 %}selected{% endif %}>25</option><option value="50" {% if per_page == 50 %}selected{% endif %}>50</option><option value="100" {% if per_page == 100 %}selected{% endif %}>100</option></select></label>
+      <div class="finance-filter-actions"><button class="btn btn-primary" type="submit" data-loading-text="Sedang memuat data..."><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button><a class="btn btn-outline" href="{{ url_for('finance_administration') }}">Reset Filter</a></div>
+    </form>
+  </section>
+
+  <section class="finance-panel">
+    <div class="finance-panel-head"><div><h2>Daftar Tagihan</h2><p>{{ total }} data ditemukan.</p></div><span class="finance-count">Halaman {{ page }} dari {{ max_page }}</span></div>
+    {% if rows %}
+    <div class="finance-table-wrap">
+      <table class="finance-table">
+        <thead><tr><th>Nama Santri</th><th>Kelas</th><th>Jenis Tagihan</th><th>Periode</th><th>Nominal</th><th>Dibayar</th><th>Sisa</th><th>Status</th><th>Jatuh Tempo</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for bill in rows %}{% set student = student_map.get(bill.santri_id) %}{% set charge = charge_map.get(bill.charge_type_id) %}
+        <tr>
+          <td data-label="Nama Santri"><a class="finance-name-link" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><strong>{{ student.name if student else 'Santri tidak ditemukan' }}</strong><small>{{ bill.bill_number }}</small></a></td>
+          <td data-label="Kelas">{{ student.class_name if student else 'Belum diisi' }}</td>
+          <td data-label="Jenis Tagihan">{{ charge.name if charge else 'Belum diisi' }}</td>
+          <td data-label="Periode">{{ bill.period_label }} {{ bill.period_year }}</td>
+          <td data-label="Nominal">{{ bill.amount|rupiah }}</td>
+          <td data-label="Dibayar">{{ bill.paid_amount|rupiah }}</td>
+          <td data-label="Sisa"><strong>{{ bill.remaining_amount|rupiah }}</strong></td>
+          <td data-label="Status"><span class="finance-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></td>
+          <td data-label="Jatuh Tempo">{{ bill.due_date.strftime('%d/%m/%Y') if bill.due_date else 'Belum diisi' }}</td>
+          <td data-label="Aksi"><div class="finance-actions"><a href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><i class="fa-solid fa-eye"></i><span>Detail</span></a><a href="{{ url_for('finance_bill_edit', bill_id=bill.id) }}"><i class="fa-solid fa-pen"></i><span>Edit</span></a></div></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <nav class="finance-pagination" aria-label="Pagination">
+      {% if page > 1 %}<a href="{{ url_for('finance_administration', q=filters.q, class_name=filters.class_name, charge_type_id=filters.charge_type_id, period=filters.period, status=filters.status, academic_year=filters.academic_year, semester=filters.semester, sort=filters.sort, per_page=per_page, page=page-1) }}"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</a>{% endif %}
+      <span>{{ page }} / {{ max_page }}</span>
+      {% if page < max_page %}<a href="{{ url_for('finance_administration', q=filters.q, class_name=filters.class_name, charge_type_id=filters.charge_type_id, period=filters.period, status=filters.status, academic_year=filters.academic_year, semester=filters.semester, sort=filters.sort, per_page=per_page, page=page+1) }}">Berikutnya <i class="fa-solid fa-chevron-right"></i></a>{% endif %}
+    </nav>
+    {% else %}
+    <div class="finance-empty"><i class="fa-solid fa-file-invoice"></i><strong>Belum ada tagihan</strong><span>Filter tidak menemukan data atau tagihan belum dibuat.</span><a class="btn btn-primary" href="{{ url_for('finance_bill_new') }}"><i class="fa-solid fa-plus"></i> Buat Tagihan</a></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script>{% endblock %}

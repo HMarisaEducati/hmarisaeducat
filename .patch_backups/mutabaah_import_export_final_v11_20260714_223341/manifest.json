@@ -1,0 +1,10 @@
+{
+  "app.py": true,
+  "templates/base.html": true,
+  "templates/academics.html": true,
+  "templates/mutabaah_edit.html": true,
+  "templates/mutabaah_history.html": true,
+  "templates/mutabaah_import.html": false,
+  "templates/mutabaah_export.html": false,
+  "static/css/daily_progress_patch.css": true
+}

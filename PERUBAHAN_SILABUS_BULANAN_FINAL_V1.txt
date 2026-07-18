@@ -1,0 +1,10 @@
+PATCH SILABUS BULANAN FINAL V1
+
+1. Halaman input Silabus Bulanan dipisahkan dari Database Silabus Bulanan.
+2. Tombol Unduh Bank Silabus diganti menjadi Export Silabus (Excel/PDF).
+3. Ditambahkan Import Silabus Excel dengan template, pratinjau, validasi, dan konfirmasi.
+4. Tahun Ajaran menjadi dropdown 2026/2027 sampai 2049/2050.
+5. Semester terisi otomatis berdasarkan bulan.
+6. Halaman baru /curriculum/database untuk filter, lihat, edit, PDF, aktif/nonaktif, dan hapus permanen.
+7. Detail Silabus menampilkan identitas, materi, target, rencana pekan 1-5, catatan, sumber, versi, dan duplikasi bulan.
+8. Database, uploads, dan file pengguna tidak disertakan dalam patch.

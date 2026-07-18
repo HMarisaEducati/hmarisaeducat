@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard E-Raport {{ class_name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+<div class="page-heading er10-page-heading">
+  <div><span class="eyebrow">Admin · Dashboard E-Raport Kelas</span><h1>E-Raport Kelas {{ class_name }}</h1><p>{{ academic_year }} — {{ semester }}</p></div>
+  <div class="button-row"><a class="btn btn-outline" href="{{ url_for('eraport') }}">Kembali ke Filter</a><a class="btn btn-gold" href="{{ url_for('eraport_bulk', class_name=class_name, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-table-cells"></i> Input Nilai Satu Kelas</a></div>
+</div>
+<div class="er10-stats-grid">
+  <article class="card er10-stat"><span>Jumlah Santri</span><strong>{{ stats.total }}</strong></article>
+  <article class="card er10-stat"><span>Draft</span><strong>{{ stats.draft }}</strong></article>
+  <article class="card er10-stat"><span>Diterbitkan</span><strong>{{ stats.published }}</strong></article>
+</div>
+<section class="card er10-dashboard-card">
+  <div class="card-head"><div><h2>Database Santri Kelas {{ class_name }}</h2><p class="muted">{{ rows|length }} data sesuai filter.</p></div></div>
+  {% if rows %}
+  <div class="er10-student-list">
+    {% for student, raport, display_status in rows %}
+    <article class="er10-student-row">
+      <div><h3>{{ student.name }}</h3><p>NIS {{ student.nis }} · {{ student.class_name }}</p><div class="er10-completeness"><span style="width:{{ raport.completeness }}%"></span></div><small>Kelengkapan {{ raport.completeness }}% · Diperbarui {{ raport.updated_at.strftime('%d-%m-%Y %H:%M') if raport.updated_at else 'Belum diisi' }}</small></div>
+      <div class="er10-row-status"><span class="er10-status {{ 'published' if raport.status == 'Diterbitkan' else 'draft' }}">{{ display_status }}</span></div>
+      <div class="er10-row-actions">
+        <a class="btn btn-primary" href="{{ url_for('eraport_academic', student_id=student.id, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-pen"></i> Edit Nilai</a>
+        <a class="btn btn-outline" href="{{ url_for('report_preview', student_id=student.id, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-eye"></i> Lihat Raport</a>
+        {% if raport.status == 'Diterbitkan' %}<a class="btn btn-ghost" href="{{ url_for('report_pdf', student_id=student.id, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-download"></i> Unduh PDF</a>{% else %}<span class="er10-disabled-action"><i class="fa-solid fa-lock"></i> Unduh PDF</span>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}<div class="er10-empty-inline"><strong>Tidak ada santri sesuai filter.</strong><p>Pastikan kelas memiliki santri aktif atau ubah filter status.</p></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,17 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Impor Santri{% endblock %}
+{% block title %}Import Excel Santri{% endblock %}
 {% block content %}
-<div class="page-heading"><div><span class="eyebrow">Impor Massal</span><h1>Salin-Tempel Data CSV</h1><p>Satu santri per baris untuk mempercepat pendataan.</p></div></div>
-<section class="card">
-  <form method="post" class="form-grid">
-    <label>Data CSV
-      <textarea name="csv_data" rows="12" placeholder="Nama,Kelas,UsernameWali,NamaWali,PasswordWali&#10;Siti Aisyah,Ar-Rahman,waliaisyah,Bunda Aisyah,rahasia123"></textarea>
-    </label>
-    <div class="notice"><strong>Format:</strong> Nama, Kelas, Username Wali, Nama Wali, Password Wali. Kolom nama dan password wali boleh dikosongkan. Kelas harus Ar-Rahim, Ar-Rahman, atau Al-Bayyan.</div>
-    <button class="btn btn-primary" type="submit">Proses Impor</button>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/students_patch.css') }}">
+<div class="page-heading"><div><span class="eyebrow">Database Santri · Import</span><h1>Import Santri dari Excel</h1><p>Unggah file .xlsx, periksa pratinjau dan kesalahan, lalu simpan hanya baris yang valid.</p></div><a class="btn btn-outline" href="{{ url_for('students', tab='database') }}"><i class="fa-solid fa-arrow-left"></i> Database Santri</a></div>
+<section class="card excel-import-card">
+  <div class="excel-guide"><div><h2>Format Excel</h2><p>Gunakan template resmi agar kolom terbaca dengan benar.</p></div><a class="btn btn-outline" href="{{ url_for('document_preview', document_type='students-template') }}"><i class="fa-solid fa-download"></i> Preview Template Excel</a></div>
+  <form method="post" enctype="multipart/form-data" class="excel-upload-form">
+    <label>Pilih File Excel (.xlsx)<input type="file" name="excel_file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Periksa dan Tampilkan Pratinjau</button>
   </form>
 </section>
-{% if results %}
-<section class="card"><h2>Hasil Impor</h2><div class="table-wrap"><table><thead><tr><th>Baris</th><th>Nama</th><th>Status</th></tr></thead><tbody>{% for row in results %}<tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td></tr>{% endfor %}</tbody></table></div></section>
+{% if preview %}
+<section class="card">
+  <div class="card-head"><div><h2>Pratinjau Import</h2><p class="muted">{{ valid_count }} dari {{ preview|length }} baris siap disimpan.</p></div></div>
+  <div class="import-preview-wrap"><table class="import-preview-table"><thead><tr><th>Baris</th><th>Nama</th><th>NIS</th><th>Kelas</th><th>Wali</th><th>Status</th></tr></thead><tbody>{% for row in preview %}<tr class="{{ 'valid-row' if row.status=='Valid' else 'invalid-row' }}"><td>{{ row.excel_row }}</td><td>{{ row.name or '-' }}</td><td>{{ row.nis or 'Otomatis' }}</td><td>{{ row.class_name or '-' }}</td><td>{{ row.guardian_name or '-' }}</td><td><span>{{ row.status }}</span></td></tr>{% endfor %}</tbody></table></div>
+  <form method="post" class="import-confirm-actions"><input type="hidden" name="action" value="commit"><input type="hidden" name="token" value="{{ token }}"><button class="btn btn-primary" type="submit" {% if not valid_count %}disabled{% endif %}><i class="fa-solid fa-file-import"></i> Simpan {{ valid_count }} Data Valid</button><a class="btn btn-outline" href="{{ url_for('bulk_students') }}">Batalkan</a></form>
+</section>
 {% endif %}
 {% endblock %}

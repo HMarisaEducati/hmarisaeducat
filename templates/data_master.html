@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Data Master{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/data_master_patch.css') }}?v=20260714-1">{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin · Pengaturan Dinamis</span><h1>Data Master</h1><p>Kelola kelas, guru, bidang pelajaran, tahun ajaran, dan akses pengguna tanpa mengubah kode portal.</p></div></div>
+
+<div class="master-tabs data-master-tabs">
+  <a class="{{ 'active' if tab=='classes' else '' }}" href="{{ url_for('data_master', tab='classes') }}">Manajemen Kelas</a>
+  <a class="{{ 'active' if tab=='teachers' else '' }}" href="{{ url_for('data_master', tab='teachers') }}">Guru/Wali Kelas</a>
+  <a class="{{ 'active' if tab=='subjects' else '' }}" href="{{ url_for('data_master', tab='subjects') }}">Bidang Pelajaran</a>
+  <a class="{{ 'active' if tab=='years' else '' }}" href="{{ url_for('data_master', tab='years') }}">Tahun Ajaran</a>
+  {% if current_user.is_superadmin %}<a class="{{ 'active' if tab=='users' else '' }}" href="{{ url_for('data_master', tab='users') }}">Manajemen Pengguna</a>{% endif %}
+</div>
+
+{% if tab=='classes' %}
+<section class="card"><div class="card-head"><div><h2>Tambah Kelas</h2><p class="muted">Kode dan urutan dibuat otomatis oleh sistem.</p></div></div>
+  <form method="post" class="form-grid form-grid-3">
+    <input type="hidden" name="tab" value="classes"><input type="hidden" name="action" value="add_class">
+    <label>Nama Kelas<input name="name" required></label>
+    <label>Wali Kelas<select name="teacher_name"><option value="">Belum ditentukan</option>{% for teacher in teachers if teacher.is_active %}<option value="{{ teacher.full_name }}{% if teacher.title %}, {{ teacher.title }}{% endif %}">{{ teacher.full_name }}{% if teacher.title %}, {{ teacher.title }}{% endif %}</option>{% endfor %}</select></label>
+    <label>Tahun Ajaran Mulai<select name="academic_year_start" required>{% for y in academic_year_options %}<option value="{{ y }}" {% if y=='2026/2027' %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+    <label class="span-2">Catatan<input name="notes"></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit">Simpan Kelas</button></div>
+  </form>
+</section>
+<section class="card"><div class="card-head"><div><h2>Database Kelas</h2><p class="muted">Ubah wali kelas tanpa membuat kelas baru.</p></div><span class="badge">{{ classes|length }} kelas</span></div>
+  <div class="table-wrap"><table class="data-master-table"><thead><tr><th>Kelas</th><th>Wali Kelas</th><th>Tahun Mulai</th><th>Catatan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+  {% for row in classes %}<tr><td><strong>{{ row.name }}</strong></td><td>{{ row.teacher_name or '-' }}</td><td>{{ row.academic_year_start or '-' }}</td><td>{{ row.notes or '-' }}</td><td><span class="status-pill {{ 'active' if row.is_active else 'inactive' }}">{{ 'Aktif' if row.is_active else 'Nonaktif' }}</span></td><td><div class="data-master-actions">
+    <details class="inline-edit"><summary class="btn btn-small btn-outline">Edit</summary><div class="inline-edit-panel"><form method="post" class="form-grid"><input type="hidden" name="tab" value="classes"><input type="hidden" name="action" value="update_class"><input type="hidden" name="id" value="{{ row.id }}"><label>Nama Kelas<input name="name" value="{{ row.name }}" required></label><label>Wali Kelas<select name="teacher_name"><option value="">Belum ditentukan</option>{% for teacher in teachers if teacher.is_active %}{% set display=teacher.full_name ~ (', ' ~ teacher.title if teacher.title else '') %}<option value="{{ display }}" {% if row.teacher_name==display %}selected{% endif %}>{{ display }}</option>{% endfor %}</select></label><label>Tahun Ajaran Mulai<select name="academic_year_start">{% for y in academic_year_options %}<option value="{{ y }}" {% if row.academic_year_start==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label><label>Catatan<input name="notes" value="{{ row.notes or '' }}"></label><div class="button-row"><button class="btn btn-primary" type="submit">Simpan Perubahan</button></div></form></div></details>
+    <form method="post"><input type="hidden" name="tab" value="classes"><input type="hidden" name="action" value="toggle_class"><input type="hidden" name="id" value="{{ row.id }}"><button class="btn btn-small btn-outline" type="submit">{{ 'Nonaktifkan' if row.is_active else 'Aktifkan' }}</button></form>
+    <form method="post" onsubmit="return confirm('Hapus kelas ini secara permanen? Data yang masih terhubung akan membuat penghapusan ditolak.');"><input type="hidden" name="tab" value="classes"><input type="hidden" name="action" value="delete_class"><input type="hidden" name="id" value="{{ row.id }}"><button class="btn btn-small btn-danger" type="submit">Hapus</button></form>
+  </div></td></tr>{% else %}<tr><td colspan="6" class="empty">Belum ada data kelas.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+
+{% elif tab=='teachers' %}
+<section class="card"><div class="card-head"><div><h2>Tambah Guru/Wali Kelas</h2><p class="muted">Pilih jabatan dari daftar agar penulisan konsisten.</p></div></div>
+  <form method="post" class="form-grid form-grid-3"><input type="hidden" name="tab" value="teachers"><input type="hidden" name="action" value="add_teacher"><label>Nama Lengkap<input name="full_name" required></label><label>Gelar<input name="title"></label><label>Nomor Kontak<input name="phone"></label><label>Kelas<select name="class_name"><option value="">Belum ditentukan</option>{% for c in CLASSES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></label><label>Jabatan<select name="position" required>{% for position in teacher_positions %}<option value="{{ position }}">{{ position }}</option>{% endfor %}</select></label><label>Catatan<input name="notes"></label><div class="form-action"><button class="btn btn-primary" type="submit">Simpan Guru</button></div></form>
+</section>
+<section class="card"><div class="card-head"><div><h2>Database Guru</h2></div><span class="badge">{{ teachers|length }} guru</span></div><div class="table-wrap"><table class="data-master-table"><thead><tr><th>Nama</th><th>Kelas</th><th>Jabatan</th><th>Kontak</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+{% for row in teachers %}<tr><td><strong>{{ row.full_name }}</strong>{% if row.title %}<small>, {{ row.title }}</small>{% endif %}</td><td>{{ row.class_name or '-' }}</td><td>{{ row.position }}</td><td>{{ row.phone or '-' }}</td><td><span class="status-pill {{ 'active' if row.is_active else 'inactive' }}">{{ 'Aktif' if row.is_active else 'Nonaktif' }}</span></td><td><div class="data-master-actions">
+<details class="inline-edit"><summary class="btn btn-small btn-outline">Edit</summary><div class="inline-edit-panel"><form method="post" class="form-grid form-grid-3"><input type="hidden" name="tab" value="teachers"><input type="hidden" name="action" value="update_teacher"><input type="hidden" name="id" value="{{ row.id }}"><label>Nama Lengkap<input name="full_name" value="{{ row.full_name }}" required></label><label>Gelar<input name="title" value="{{ row.title or '' }}"></label><label>Nomor Kontak<input name="phone" value="{{ row.phone or '' }}"></label><label>Kelas<select name="class_name"><option value="">Belum ditentukan</option>{% for c in CLASSES %}<option value="{{ c }}" {% if row.class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label><label>Jabatan<select name="position">{% for position in teacher_positions %}<option value="{{ position }}" {% if row.position==position %}selected{% endif %}>{{ position }}</option>{% endfor %}</select></label><label>Catatan<input name="notes" value="{{ row.notes or '' }}"></label><div class="button-row"><button class="btn btn-primary" type="submit">Simpan Perubahan</button></div></form></div></details>
+<form method="post"><input type="hidden" name="tab" value="teachers"><input type="hidden" name="action" value="toggle_teacher"><input type="hidden" name="id" value="{{ row.id }}"><button class="btn btn-small btn-outline" type="submit">{{ 'Nonaktifkan' if row.is_active else 'Aktifkan' }}</button></form>
+<form method="post" onsubmit="return confirm('Hapus data guru secara permanen?');"><input type="hidden" name="tab" value="teachers"><input type="hidden" name="action" value="delete_teacher"><input type="hidden" name="id" value="{{ row.id }}"><button class="btn btn-small btn-danger" type="submit">Hapus</button></form>
+</div></td></tr>{% else %}<tr><td colspan="6" class="empty">Belum ada data guru.</td></tr>{% endfor %}</tbody></table></div></section>
+
+{% elif tab=='subjects' %}
+<section class="card" id="add-subject-form">
+  <div class="card-head"><div><h2>Tambah Bidang Pelajaran</h2><p class="muted">Kelas mengikuti pilihan database dan dapat diubah bila diperlukan.</p></div></div>
+  <form method="post" class="form-grid form-grid-3">
+    <input type="hidden" name="tab" value="subjects">
+    <input type="hidden" name="action" value="add_subject">
+    <input type="hidden" name="subject_class_filter" value="{{ subject_class_filter }}">
+    <label>Bidang Pelajaran<input name="name" required></label>
+    <label>Kelas<select name="class_name" required><option value="">Pilih kelas</option>{% for c in class_filter_options %}<option value="{{ c }}" {% if subject_class_filter==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Catatan<input name="notes"></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit">Simpan Bidang</button></div>
+  </form>
+</section>
+<section class="card">
+  <div class="card-head"><div><h2>Database Bidang Pelajaran</h2><p class="muted">Tampilkan bidang pelajaran berdasarkan kelas agar daftar lebih mudah diperiksa.</p></div><span class="badge">{{ subjects|length }} bidang</span></div>
+  <form method="get" class="database-filter-bar">
+    <input type="hidden" name="tab" value="subjects">
+    <label>Pilih Kelas
+      <select name="subject_class" onchange="this.form.submit()">
+        {% for c in class_filter_options %}<option value="{{ c }}" {% if subject_class_filter==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <noscript><button class="btn btn-primary" type="submit">Tampilkan</button></noscript>
+    <a class="btn btn-outline" href="#add-subject-form">Tambah Bidang untuk Kelas Ini</a>
+  </form>
+  <div class="selected-filter-note"><i class="fa-solid fa-filter"></i> Menampilkan bidang pelajaran kelas <strong>{{ subject_class_filter or 'Belum dipilih' }}</strong>.</div>
+  <div class="table-wrap"><table class="data-master-table"><thead><tr><th>Bidang Pelajaran</th><th>Kelas</th><th>Catatan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+  {% for row in subjects %}<tr><td><strong>{{ row.name }}</strong></td><td>{{ row.class_name }}</td><td>{{ row.notes or '-' }}</td><td><span class="status-pill {{ 'active' if row.is_active else 'inactive' }}">{{ 'Aktif' if row.is_active else 'Nonaktif' }}</span></td><td><div class="data-master-actions">
+  <details class="inline-edit"><summary class="btn btn-small btn-outline">Edit</summary><div class="inline-edit-panel"><form method="post" class="form-grid"><input type="hidden" name="tab" value="subjects"><input type="hidden" name="action" value="update_subject"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="subject_class_filter" value="{{ subject_class_filter }}"><label>Bidang Pelajaran<input name="name" value="{{ row.name }}" required></label><label>Kelas<select name="class_name" required>{% for c in class_filter_options %}<option value="{{ c }}" {% if row.class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label><label>Catatan<input name="notes" value="{{ row.notes or '' }}"></label><div class="button-row"><button class="btn btn-primary" type="submit">Simpan Perubahan</button></div></form></div></details>
+  <form method="post"><input type="hidden" name="tab" value="subjects"><input type="hidden" name="action" value="toggle_subject"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="subject_class_filter" value="{{ subject_class_filter }}"><button class="btn btn-small btn-outline" type="submit">{{ 'Nonaktifkan' if row.is_active else 'Aktifkan' }}</button></form>
+  <form method="post" onsubmit="return confirm('Hapus bidang pelajaran secara permanen?');"><input type="hidden" name="tab" value="subjects"><input type="hidden" name="action" value="delete_subject"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="subject_class_filter" value="{{ subject_class_filter }}"><button class="btn btn-small btn-danger" type="submit">Hapus</button></form>
+  </div></td></tr>{% else %}<tr><td colspan="5" class="empty">Belum ada bidang pelajaran untuk kelas {{ subject_class_filter }}.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+
+{% elif tab=='years' %}
+<section class="card" id="add-year-form">
+  <div class="card-head"><div><h2>Tambah Tahun Ajaran</h2><p class="muted">Periode dibuat otomatis berdasarkan tahun ajaran dan semester.</p></div></div>
+  <form method="post" class="form-grid form-grid-3">
+    <input type="hidden" name="tab" value="years"><input type="hidden" name="action" value="add_year"><input type="hidden" name="year_filter_value" value="{{ year_filter }}">
+    <label>Tahun Ajaran<select name="name" required>{% for y in academic_year_options %}<option value="{{ y }}" {% if year_filter==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+    <label>Semester<select name="semester"><option>Semester 1</option><option>Semester 2</option></select></label>
+    <label>Periode<input value="Terisi otomatis setelah disimpan" readonly></label>
+    <label class="checkbox-line"><input type="checkbox" name="is_primary"> Jadikan tahun ajaran utama</label>
+    <div class="form-action"><button class="btn btn-primary" type="submit">Simpan Tahun Ajaran</button></div>
+  </form>
+</section>
+<section class="card">
+  <div class="card-head"><div><h2>Database Tahun Ajaran</h2><p class="muted">Pilih tahun ajaran untuk melihat Semester 1 dan Semester 2 secara berdampingan.</p></div><span class="badge">{{ years|length }} semester</span></div>
+  <form method="get" class="database-filter-bar">
+    <input type="hidden" name="tab" value="years">
+    <label>Pilih Tahun Ajaran
+      <select name="year_filter" onchange="this.form.submit()">
+        {% for y in year_filter_options %}<option value="{{ y }}" {% if year_filter==y %}selected{% endif %}>{{ y }}</option>{% endfor %}
+      </select>
+    </label>
+    <noscript><button class="btn btn-primary" type="submit">Tampilkan</button></noscript>
+    <a class="btn btn-outline" href="#add-year-form">Tambah Semester untuk Tahun Ini</a>
+  </form>
+  <div class="selected-filter-note"><i class="fa-solid fa-calendar-days"></i> Menampilkan semester untuk tahun ajaran <strong>{{ year_filter }}</strong>.</div>
+  <div class="table-wrap"><table class="data-master-table"><thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>Periode</th><th>Utama</th><th>Aksi</th></tr></thead><tbody>
+  {% for row in years %}<tr><td><strong>{{ row.name }}</strong></td><td>{{ row.semester }}</td><td>{% if row.semester=='Semester 1' %}Juli–Desember {{ row.name.split('/')[0] }}{% else %}Januari–Juni {{ row.name.split('/')[1] }}{% endif %}</td><td>{{ 'Ya' if row.is_primary else 'Tidak' }}</td><td><div class="data-master-actions">
+  <details class="inline-edit"><summary class="btn btn-small btn-outline">Edit</summary><div class="inline-edit-panel"><form method="post" class="form-grid"><input type="hidden" name="tab" value="years"><input type="hidden" name="action" value="update_year"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="year_filter_value" value="{{ year_filter }}"><label>Tahun Ajaran<select name="name">{% for y in academic_year_options %}<option value="{{ y }}" {% if row.name==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label><label>Semester<select name="semester"><option {% if row.semester=='Semester 1' %}selected{% endif %}>Semester 1</option><option {% if row.semester=='Semester 2' %}selected{% endif %}>Semester 2</option></select></label><label class="checkbox-line"><input type="checkbox" name="is_primary" {% if row.is_primary %}checked{% endif %}> Jadikan utama</label><div class="button-row"><button class="btn btn-primary" type="submit">Simpan Perubahan</button></div></form></div></details>
+  {% if not row.is_primary %}<form method="post"><input type="hidden" name="tab" value="years"><input type="hidden" name="action" value="set_primary_year"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="year_filter_value" value="{{ year_filter }}"><button class="btn btn-small btn-outline" type="submit">Jadikan Utama</button></form>{% endif %}
+  <form method="post" onsubmit="return confirm('Hapus tahun ajaran ini secara permanen?');"><input type="hidden" name="tab" value="years"><input type="hidden" name="action" value="delete_year"><input type="hidden" name="id" value="{{ row.id }}"><input type="hidden" name="year_filter_value" value="{{ year_filter }}"><button class="btn btn-small btn-danger" type="submit">Hapus</button></form>
+  </div></td></tr>{% else %}<tr><td colspan="5" class="empty">Belum ada semester untuk tahun ajaran {{ year_filter }}.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+
+{% elif tab=='users' and current_user.is_superadmin %}
+<div class="dashboard-two-col user-management-grid">
+<section class="card"><div class="card-head"><div><h2>Akun Saya</h2><p class="muted">Perbarui nama, username, atau kata sandi Admin Utama.</p></div><span class="badge">Admin Utama</span></div><form method="post" action="{{ url_for('user_management') }}" class="form-grid"><input type="hidden" name="action" value="profile"><label>Nama Lengkap<input name="full_name" value="{{ current_user.full_name }}" required></label><label>Username<input name="username" value="{{ current_user.username }}" required></label><div class="divider-label">Ganti kata sandi — boleh dikosongkan</div><label>Kata Sandi Lama<input type="password" name="old_password"></label><label>Kata Sandi Baru<input type="password" name="new_password" minlength="8"></label><label>Konfirmasi Kata Sandi<input type="password" name="confirm_password" minlength="8"></label><button class="btn btn-primary" type="submit">Simpan Perubahan Akun</button></form></section>
+<section class="card"><div class="card-head"><div><h2>Tambah Pengguna</h2><p class="muted">Hanya Admin Utama yang dapat menambah akun.</p></div></div><form method="post" action="{{ url_for('user_management') }}" class="form-grid" data-role-form><input type="hidden" name="action" value="create"><label>Nama Lengkap<input name="full_name" required></label><label>Username<input name="username" required></label><label>Peran<select name="role" data-role-select required><option value="admin">Admin</option><option value="bendahara">Bendahara</option><option value="guru">Guru</option></select></label><label data-class-field>Kelas yang Diampu<select name="assigned_class"><option value="">Pilih kelas</option>{% for c in CLASSES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></label><label>Password Awal<input type="password" name="password" minlength="8" required></label><label>Konfirmasi Password<input type="password" name="confirm_password" minlength="8" required></label><button class="btn btn-primary" type="submit">Tambah Pengguna</button></form></section>
+</div>
+<section class="card"><div class="card-head"><div><h2>Daftar Pengguna</h2><p class="muted">Akun wali santri tidak ditampilkan.</p></div><span class="badge">{{ users|length }} akun staf</span></div><div class="user-account-list">{% for user in users %}<article class="user-account-card {% if not user.is_active %}account-disabled{% endif %}"><div class="user-account-summary"><span class="user-avatar">{{ user.full_name[:1]|upper }}</span><div><strong>{{ user.full_name }}</strong><small>@{{ user.username }} · {{ user.role_label }}{% if user.assigned_class %} · {{ user.assigned_class }}{% endif %}</small><span>Terakhir login: {{ user.last_login_at|tanggal_id if user.last_login_at else 'Belum pernah login' }}</span></div><span class="badge">{{ 'Aktif' if user.is_active else 'Nonaktif' }}</span></div>{% if not user.is_superadmin %}<details class="account-edit-details"><summary><i class="fa-solid fa-pen-to-square"></i> Edit Akun</summary><form method="post" action="{{ url_for('user_management') }}" class="form-grid form-grid-3" data-role-form><input type="hidden" name="action" value="update"><input type="hidden" name="user_id" value="{{ user.id }}"><label>Nama<input name="full_name" value="{{ user.full_name }}" required></label><label>Username<input name="username" value="{{ user.username }}" required></label><label>Peran<select name="role" data-role-select required><option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option><option value="bendahara" {% if user.role=='bendahara' %}selected{% endif %}>Bendahara</option><option value="guru" {% if user.role=='guru' %}selected{% endif %}>Guru</option></select></label><label data-class-field>Kelas<select name="assigned_class"><option value="">Pilih kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if user.assigned_class==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label><label>Password Baru <small>(opsional)</small><input type="password" name="new_password" minlength="8"></label><div class="button-row"><button class="btn btn-primary" type="submit">Simpan</button></div></form></details><form method="post" action="{{ url_for('user_management') }}" class="inline-toggle-form"><input type="hidden" name="action" value="toggle"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn {{ 'btn-danger' if user.is_active else 'btn-outline' }}" type="submit">{{ 'Nonaktifkan Akun' if user.is_active else 'Aktifkan Kembali' }}</button></form>{% else %}<p class="superadmin-note"><i class="fa-solid fa-shield-halved"></i> Akun ini dikelola melalui bagian Akun Saya.</p>{% endif %}</article>{% endfor %}</div></section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  document.querySelectorAll('[data-role-form]').forEach(form => {
+    const role = form.querySelector('[data-role-select]');
+    const field = form.querySelector('[data-class-field]');
+    const select = field?.querySelector('select');
+    const sync = () => { const teacher = role?.value === 'guru'; if (field) field.style.display = teacher ? '' : 'none'; if (select) select.required = teacher; if (select && !teacher) select.value = ''; };
+    role?.addEventListener('change', sync); sync();
+  });
+})();
+</script>
+{% endblock %}

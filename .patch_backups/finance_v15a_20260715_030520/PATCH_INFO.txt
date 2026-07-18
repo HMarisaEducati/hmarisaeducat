@@ -1,0 +1,4 @@
+Patch: Keuangan V15-A — Fondasi Database dan Pengaturan
+Target: /home/HMarisaEducation/portal-tpq-hmarisa-final
+Tanggal: 20260715_030520
+Database sebelum migrasi: /home/HMarisaEducation/portal-tpq-hmarisa-final/instance/tpq_hmarisa.db

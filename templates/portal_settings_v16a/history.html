@@ -1,0 +1,11 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<div class="ps16-history-grid">
+  <section class="ps16-form-card"><div class="ps16-section-head"><div><h3>Versi Pengaturan</h3><p>Versi lama tidak dihapus dan dapat dipulihkan sebagai versi baru.</p></div></div>
+    <div class="ps16-version-list">{% for row in rows %}<article><div><strong>Versi {{ row.version_no }}</strong><span class="ps16-status-{{ row.status }}">{{ 'Aktif' if row.id == active_settings.id else 'Arsip' }}</span><p>{{ row.tpq_name }} · {{ row.academic_year }} · {{ row.semester }}</p><small>{{ format_wib(row.published_at) }}</small></div>{% if row.id != active_settings.id %}<form method="post" action="{{ url_for('portal_settings_restore_v16a', version_id=row.id) }}" data-confirm="Pulihkan versi ini sebagai pengaturan aktif baru?"><input type="hidden" name="reason" value="Pulihkan melalui Riwayat"><button class="ps16-btn ps16-btn-secondary" type="submit"><i class="fa-solid fa-clock-rotate-left"></i> Pulihkan</button></form>{% endif %}</article>{% else %}<div class="ps16-empty">Belum ada riwayat versi.</div>{% endfor %}</div>
+  </section>
+  <section class="ps16-form-card"><div class="ps16-section-head"><div><h3>100 Aktivitas Terakhir</h3><p>Catatan ini tidak dapat diedit melalui antarmuka biasa.</p></div></div>
+    <div class="ps16-audit-list">{% for row in audits %}<article><i class="fa-solid fa-clock-rotate-left"></i><div><strong>{{ row.action }}</strong><p>{{ row.section }} · {{ row.user_name }}</p><small>{{ format_wib(row.created_at) }}{% if row.reason %} · {{ row.reason }}{% endif %}</small></div></article>{% else %}<div class="ps16-empty">Belum ada aktivitas pengaturan.</div>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+<aside class="card finance-v15a-audit-panel">
+  <div class="card-head"><div><h2>Aktivitas Terbaru</h2><p class="muted">Catatan teknis perubahan pengaturan.</p></div><i class="fa-solid fa-clock-rotate-left"></i></div>
+  <div class="finance-v15a-audit-list">
+    {% for log in audit_logs %}
+    <div><span class="finance-v15a-audit-dot"></span><p><strong>{{ log.user_name }}</strong> {{ log.action|lower }}<small>{{ format_wib(log.created_at) }} · {{ log.entity_type }}</small></p></div>
+    {% else %}
+    <div class="finance-v15a-empty-state compact"><strong>Belum ada aktivitas.</strong><span>Perubahan pertama akan tercatat otomatis.</span></div>
+    {% endfor %}
+  </div>
+</aside>

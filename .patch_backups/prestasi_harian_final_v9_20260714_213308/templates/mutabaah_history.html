@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Jurnal {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+{% set active_tab = 'history' %}
+{% include '_progress_student_header.html' %}
+{% include '_journal_tabs.html' %}
+
+<section class="card journal-main-card">
+  <div class="card-head">
+    <div><h2>Riwayat Jurnal Mutabaah</h2><p class="muted">Halaman khusus untuk melihat, mencari, dan mengelola seluruh jurnal.</p></div>
+    <span class="step-badge">Halaman 2 dari 3</span>
+  </div>
+
+  <form method="get" class="history-filter-grid">
+    <label>Bulan<select name="month"><option value="">Semua Bulan</option>{% for m in ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] %}<option value="{{ m }}" {% if month_filter == m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+    <label>Tahun<input type="number" name="year" value="{{ year_filter or '' }}" placeholder="2026"></label>
+    <label>Bidang Pelajaran<select name="subject"><option value="">Semua Bidang</option>{% for item in subjects %}<option value="{{ item }}" {% if subject_filter == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+    <label>Kehadiran<select name="attendance"><option value="">Semua Kehadiran</option>{% for item in ['Hadir','Sakit','Izin','Tanpa Keterangan'] %}<option value="{{ item }}" {% if attendance_filter == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+    <label>Kata Kunci<input name="keyword" value="{{ keyword }}" placeholder="Materi, bacaan, atau catatan"></label>
+    <label>Tampilkan
+      <select name="per_page">
+        {% for size in [10,25,50,100] %}<option value="{{ size }}" {% if per_page == size %}selected{% endif %}>{{ size }} data</option>{% endfor %}
+      </select>
+      <small class="field-help">Jumlah baris per halaman, bukan batas total jurnal.</small>
+    </label>
+    <div class="history-filter-actions"><button class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button><a class="btn btn-outline" href="{{ url_for('mutabaah_history', student_id=student.id) }}">Reset</a></div>
+  </form>
+
+  <div class="history-result-summary">
+    <span><strong>{{ total_entries }}</strong> jurnal sesuai filter</span>
+    <span>Total jurnal aktif: {{ all_total }}</span>
+  </div>
+
+  <div class="table-wrap desktop-history-table">
+    <table class="journal-history-table">
+      <thead><tr><th>Tanggal</th><th>Bidang & Materi</th><th>Jenjang Tahsin</th><th>Bacaan</th><th>Keterangan</th><th>Evaluasi</th><th>Aksi</th></tr></thead>
+      <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td><strong>{{ entry.date|tanggal_id }}</strong><small class="table-sub">{{ entry.created_by or 'Belum diisi' }}</small></td>
+        <td><strong>{{ entry.subject or 'Belum diisi' }}</strong><small class="table-sub">{{ entry.material or 'Belum diisi' }}</small></td>
+        <td><span class="status-pill neutral">{{ entry.tahsin_level or 'Belum diisi' }}</span></td>
+        <td>{{ entry.tilawati or entry.alquran or 'Belum diisi' }}</td>
+        <td><span class="status-pill status-{{ (entry.keterangan or 'kosong')|lower }}">{{ entry.keterangan or 'Belum diisi' }}</span><small class="table-sub">{{ entry.notes or 'Belum diisi' }}</small></td>
+        <td>{{ entry.attendance or 'Hadir' }}<small class="table-sub">Adab {{ entry.adab_score or 80 }} · {{ 'Tepat waktu' if entry.on_time else 'Tidak tepat waktu' }}</small></td>
+        <td><div class="table-actions journal-action-buttons"><a href="{{ url_for('mutabaah_detail', student_id=student.id, entry_index=entry._index) }}">Lihat</a><a href="{{ url_for('edit_mutabaah', student_id=student.id, entry_index=entry._index) }}">Edit</a><form method="post" action="{{ url_for('delete_mutabaah', student_id=student.id, entry_index=entry._index) }}" onsubmit="return confirm('Arsipkan jurnal ini? Riwayat tetap tersimpan di database.')"><button>Hapus</button></form></div></td>
+      </tr>
+      {% else %}<tr><td colspan="7" class="empty">Belum ada jurnal sesuai filter.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-history-cards">
+    {% for entry in entries %}
+    <article>
+      <div class="mobile-history-head"><div><strong>{{ entry.date|tanggal_id }}</strong><small>{{ entry.subject or 'Belum diisi' }}</small></div><span class="status-pill status-{{ (entry.keterangan or 'kosong')|lower }}">{{ entry.keterangan or 'Belum diisi' }}</span></div>
+      <dl><div><dt>Materi</dt><dd>{{ entry.material or 'Belum diisi' }}</dd></div><div><dt>Jenjang</dt><dd>{{ entry.tahsin_level or 'Belum diisi' }}</dd></div><div><dt>Bacaan</dt><dd>{{ entry.tilawati or entry.alquran or 'Belum diisi' }}</dd></div><div><dt>Evaluasi</dt><dd>{{ entry.attendance or 'Hadir' }} · Adab {{ entry.adab_score or 80 }}</dd></div></dl>
+      <p>{{ entry.notes or 'Belum diisi' }}</p>
+      <div class="button-row"><a class="btn btn-small btn-outline" href="{{ url_for('mutabaah_detail', student_id=student.id, entry_index=entry._index) }}">Lihat</a><a class="btn btn-small btn-primary" href="{{ url_for('edit_mutabaah', student_id=student.id, entry_index=entry._index) }}">Edit</a><form method="post" action="{{ url_for('delete_mutabaah', student_id=student.id, entry_index=entry._index) }}" onsubmit="return confirm('Arsipkan jurnal ini?')"><button class="btn btn-small btn-danger">Hapus</button></form></div>
+    </article>
+    {% else %}<div class="progress-empty-state"><i class="fa-solid fa-folder-open"></i><strong>Belum ada jurnal</strong><p>Tambahkan jurnal pada menu Tambah Jurnal.</p></div>{% endfor %}
+  </div>
+
+  {% if page_count > 1 %}
+  <nav class="pagination" aria-label="Navigasi riwayat jurnal">
+    {% if page > 1 %}<a href="{{ url_for('mutabaah_history', student_id=student.id, page=page-1, per_page=per_page, month=month_filter, year=year_filter, subject=subject_filter, attendance=attendance_filter, keyword=keyword) }}">Sebelumnya</a>{% endif %}
+    <span>Halaman {{ page }} dari {{ page_count }}</span>
+    {% if page < page_count %}<a href="{{ url_for('mutabaah_history', student_id=student.id, page=page+1, per_page=per_page, month=month_filter, year=year_filter, subject=subject_filter, attendance=attendance_filter, keyword=keyword) }}">Berikutnya</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

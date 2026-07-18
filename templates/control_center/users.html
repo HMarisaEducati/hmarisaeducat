@@ -1,0 +1,162 @@
+{% extends "control_center/base.html" %}
+{% block title %}Manajemen Pengguna{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><a href="{{ url_for('control_center_users') }}">Pengguna</a>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-users-gear" style="color:var(--cc-accent)"></i> Manajemen Pengguna</div>
+    <div class="cc-page-subtitle">Kelola akun, role, dan status pengguna sistem TPQ HMarisa</div>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('control_center_user_add') }}" class="cc-btn cc-btn-primary">
+      <i class="fa-solid fa-user-plus"></i> Tambah Pengguna
+    </a>
+  </div>
+</div>
+
+<!-- Stat Summary -->
+<div class="cc-stat-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
+  {% for role_key, label in [('admin_utama','Super Admin'),('admin','Admin'),('bendahara','Bendahara'),('guru','Guru'),('guardian','Wali')] %}
+  <div class="cc-stat-card" style="padding:14px">
+    <div class="cc-stat-icon {{ loop.cycle('purple','blue','yellow','green','gray') }}">
+      <i class="fa-solid {{ loop.cycle('fa-crown','fa-user-tie','fa-coins','fa-chalkboard-user','fa-user') }}"></i>
+    </div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value" style="font-size:1.3rem">{{ role_counts.get(role_key, 0) }}</div>
+      <div class="cc-stat-label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="cc-card">
+  <!-- Toolbar -->
+  <div class="cc-toolbar">
+    <div class="cc-toolbar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="tableFilter" placeholder="Cari nama, username...">
+    </div>
+    <select id="roleFilter" onchange="filterTable()">
+      <option value="">Semua Role</option>
+      <option value="admin_utama">Super Admin</option>
+      <option value="admin">Admin</option>
+      <option value="bendahara">Bendahara</option>
+      <option value="guru">Guru</option>
+      <option value="guardian">Wali Santri</option>
+    </select>
+    <select id="statusFilter" onchange="filterTable()">
+      <option value="">Semua Status</option>
+      <option value="aktif">Aktif</option>
+      <option value="nonaktif">Nonaktif</option>
+    </select>
+    <span class="cc-toolbar-count" id="rowCount">{{ users|length }} pengguna</span>
+  </div>
+
+  <!-- Table -->
+  <div class="cc-table-wrapper">
+    <table class="cc-table" id="userTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Pengguna</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Kelas</th>
+          <th>Login Terakhir</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr data-role="{{ u.role }}" data-status="{{ 'aktif' if u.is_active else 'nonaktif' }}">
+          <td style="color:var(--cc-text-muted);font-size:.75rem">{{ loop.index }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="cc-avatar" style="background:{{ loop.cycle('linear-gradient(135deg,#059669,#047857)','linear-gradient(135deg,#3b82f6,#2563eb)','linear-gradient(135deg,#7c3aed,#6d28d9)','linear-gradient(135deg,#d97706,#b45309)') }}">{{ u.full_name[:1]|upper }}</div>
+              <div>
+                <div style="font-weight:600;font-size:.82rem">{{ u.full_name }}</div>
+                <div style="font-size:.72rem;color:var(--cc-text-muted)">Dibuat {{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</div>
+              </div>
+            </div>
+          </td>
+          <td><code style="font-size:.78rem;background:var(--cc-bg);padding:2px 6px;border-radius:4px">{{ u.username }}</code></td>
+          <td><span class="cc-badge role-{{ u.role }}">{{ u.role_label }}</span></td>
+          <td>{{ u.assigned_class or '—' }}</td>
+          <td style="font-size:.78rem;color:var(--cc-text-muted)">
+            {{ u.last_login_at.strftime('%d/%m/%Y %H:%M') if u.last_login_at else 'Belum pernah' }}
+          </td>
+          <td>
+            <span class="cc-badge {% if u.is_active %}cc-badge-green{% else %}cc-badge-red{% endif %}">
+              <i class="fa-solid {% if u.is_active %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+              {{ 'Aktif' if u.is_active else 'Nonaktif' }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:nowrap">
+              <a href="{{ url_for('control_center_user_edit', user_id=u.id) }}" class="cc-btn cc-btn-ghost cc-btn-sm cc-tooltip" data-tip="Edit">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+              <form method="post" action="{{ url_for('control_center_user_toggle', user_id=u.id) }}" style="display:inline">
+                <button type="submit" class="cc-btn cc-btn-ghost cc-btn-sm cc-tooltip"
+                  data-tip="{{ 'Nonaktifkan' if u.is_active else 'Aktifkan' }}"
+                  {% if u.id == current_user.id %}disabled title="Tidak bisa menonaktifkan diri sendiri"{% endif %}>
+                  <i class="fa-solid {{ 'fa-user-slash' if u.is_active else 'fa-user-check' }}"></i>
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('control_center_user_reset_password', user_id=u.id) }}" style="display:inline"
+                onsubmit="return confirm('Reset password {{ u.username }} ke password default?')">
+                <button type="submit" class="cc-btn cc-btn-warning cc-btn-sm cc-tooltip" data-tip="Reset Password">
+                  <i class="fa-solid fa-key"></i>
+                </button>
+              </form>
+              {% if u.id != current_user.id %}
+              <form method="post" action="{{ url_for('control_center_user_delete', user_id=u.id) }}" style="display:inline"
+                onsubmit="return confirm('Hapus pengguna {{ u.full_name }}? Tindakan ini tidak dapat dibatalkan.')">
+                <button type="submit" class="cc-btn cc-btn-danger cc-btn-sm cc-tooltip" data-tip="Hapus">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="cc-empty">
+              <i class="fa-solid fa-users"></i>
+              <p>Belum ada pengguna terdaftar.</p>
+              <a href="{{ url_for('control_center_user_add') }}" class="cc-btn cc-btn-primary cc-btn-sm">Tambah Pengguna</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterTable() {
+  const roleVal   = document.getElementById('roleFilter').value.toLowerCase();
+  const statusVal = document.getElementById('statusFilter').value.toLowerCase();
+  const rows = document.querySelectorAll('#userTable tbody tr[data-role]');
+  let visible = 0;
+  rows.forEach(function(row) {
+    const roleMatch   = !roleVal   || row.dataset.role   === roleVal;
+    const statusMatch = !statusVal || row.dataset.status === statusVal;
+    const textMatch   = !document.getElementById('tableFilter').value ||
+      row.textContent.toLowerCase().includes(document.getElementById('tableFilter').value.toLowerCase());
+    row.style.display = (roleMatch && statusMatch && textMatch) ? '' : 'none';
+    if (row.style.display !== 'none') visible++;
+  });
+  document.getElementById('rowCount').textContent = visible + ' pengguna';
+}
+
+document.getElementById('tableFilter').addEventListener('input', filterTable);
+</script>
+{% endblock %}

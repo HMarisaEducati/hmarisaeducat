@@ -1,0 +1,35 @@
+PATCH PORTAL TPQ HMARISA — SILABUS FINAL V5
+
+A. PERBAIKAN UTAMA PREVIEW PDF
+1. Menghapus iframe sebagai tampilan utama Preview PDF.
+2. Memperbaiki masalah Android/Chrome yang hanya menampilkan kartu “PDF — Buka”.
+3. PDF final dirender menjadi PNG per halaman menggunakan PyMuPDF.
+4. Semua halaman langsung terlihat di website dan dapat digulir.
+5. Halaman berikutnya menggunakan lazy loading agar lebih ringan.
+6. Tombol Buka/Cetak dan Unduh PDF tetap tersedia.
+7. Preview berasal dari byte PDF final yang sama, sehingga isinya sama dengan file yang diunduh.
+8. Cache PNG ditempatkan di instance/document_preview_pages dan dibersihkan otomatis setelah 24 jam.
+9. Route halaman PNG dilindungi autentikasi/admin dan mendukung akses guru sesuai kelas tugas.
+
+B. FITUR YANG DIPERBAIKI
+1. Preview Silabus Bulanan per data.
+2. Preview Database Silabus Bulanan.
+3. Preview Rekap Silabus Semester.
+4. Preview Database Santri.
+5. Mekanisme ini menjadi standar bagi Preview PDF baru berikutnya.
+
+C. SELURUH PERBAIKAN V4 TETAP DISERTAKAN
+1. Detail Silabus /curriculum/<id>/detail tidak lagi error karena class_teacher di Jinja.
+2. PDF Silabus Bulanan A4 landscape dengan kop surat final.
+3. Export Database Silabus mempertahankan kolom:
+   Bulan/Tahun, Kelas, Bidang Pelajaran, Materi Pokok, Target, Status, Versi.
+4. Export PDF dan Excel menggunakan format resmi landscape.
+5. Template Import cocok satu-ke-satu dengan Tambah Rencana Bulanan.
+6. Import memiliki tahap pratinjau dan validasi.
+7. Rekap Silabus Semester tersedia untuk PDF dan Excel.
+8. Alat reset Silabus membuat backup SQLite terlebih dahulu.
+9. Preview global tersedia sebelum tindakan download.
+
+D. KOP SURAT FINAL
+File:
+static/img/kop_surat_tpq_hmarisa.png

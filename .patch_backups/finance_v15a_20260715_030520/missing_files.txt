@@ -1,0 +1,5 @@
+finance_v15a.py
+templates/finance_v15a/settings.html
+templates/finance_v15a/_audit_panel.html
+static/css/finance_v15a.css
+static/js/finance_v15a.js

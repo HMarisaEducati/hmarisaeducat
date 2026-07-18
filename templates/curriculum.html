@@ -1,87 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Silabus & Kurikulum Pekanan{% endblock %}
+{% block title %}Silabus Bulanan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/silabus_final.css') }}?v=20260715-1">{% endblock %}
 {% block content %}
-<div class="page-heading">
-  <div>
-    <span class="eyebrow">Admin · Perencanaan Kelas</span>
-    <h1>Silabus & Kurikulum Pekanan</h1>
-    <p>Isi rencana pembelajaran per kelas. Setiap baris dapat diedit atau dihapus bila ada kesalahan.</p>
+<div class="silabus-page">
+<div class="page-heading curriculum-heading">
+  <div><span class="eyebrow">Admin · Silabus Bulanan</span><h1>Silabus & Kurikulum Bulanan</h1><p>Tambahkan silabus secara manual, pilih materi dari Bank Silabus, atau isi otomatis melalui Import Excel.</p></div>
+  <div class="button-row curriculum-top-actions">
+    <a class="btn btn-gold" href="{{ url_for('curriculum_import') }}"><i class="fa-solid fa-file-import"></i> Import Silabus</a>
+    <a class="btn btn-outline" href="{{ url_for('curriculum_preview', document_type='template') }}"><i class="fa-solid fa-file-excel"></i> Template Import</a>
+    <a class="btn btn-outline" href="{{ url_for('curriculum_semester') }}"><i class="fa-solid fa-layer-group"></i> Rekap Semester</a>
+    <a class="btn btn-primary" href="{{ url_for('curriculum_preview', document_type='database') }}"><i class="fa-solid fa-eye"></i> Preview Export</a>
+    <a class="btn btn-outline" href="{{ url_for('curriculum_database') }}"><i class="fa-solid fa-database"></i> Buka Database Silabus</a>
   </div>
 </div>
-
 <section class="card">
-  <div class="card-head">
-    <div class="card-title-icon"><i class="fa-solid fa-pen-to-square"></i><h2>Tambah Rencana Pekanan</h2></div>
-    <span class="muted">Tabel akan tersimpan otomatis ke database setelah tombol Simpan ditekan.</span>
-  </div>
-  <form method="post" class="form-grid form-grid-3">
-    <label>Kelas
-      <select name="class_name" required>
-        <option value="">Pilih kelas</option>
-        {% for c in CLASSES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
-      </select>
-    </label>
-    <label>Pekan Ke-
-      <input type="number" name="week_number" value="1" min="1" max="60" required>
-    </label>
-    <label>Bidang Pelajaran
-      <input name="subject" placeholder="Contoh: BTQ, Tahfidz, Fiqih" required>
-    </label>
-    <label class="full-field">Materi Pokok
-      <input name="topic" placeholder="Contoh: Harakat fathah, kasrah, dan dhommah" required>
-    </label>
-    <label>Target Pembelajaran
-      <textarea name="learning_target" rows="3" placeholder="Kemampuan yang diharapkan dikuasai santri"></textarea>
-    </label>
-    <label>Kegiatan Pembelajaran
-      <textarea name="activities" rows="3" placeholder="Pembukaan, inti, praktik, evaluasi"></textarea>
-    </label>
-    <label>Catatan Guru
-      <textarea name="notes" rows="3" placeholder="Media, tugas rumah, atau tindak lanjut"></textarea>
-    </label>
-    <div class="form-action full-field"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Silabus Pekanan</button></div>
+  <div class="card-head"><h2>Tambah Rencana Bulanan</h2><span class="muted">Materi bank dapat mengisi target dan rencana pekan secara otomatis.</span></div>
+  <form method="post" class="form-grid form-grid-3" id="curriculum-form">
+    <label>Kelas<select name="class_name" id="curr-class" required><option value="">Pilih kelas</option>{% for c in CLASSES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></label>
+    <label>Bulan<select name="month" id="curr-month" required>{% for m in MONTHS %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select></label>
+    <label>Tahun Ajaran<select name="academic_year" id="curr-academic-year" required>{% for y in academic_year_options %}<option value="{{ y }}" {% if primary_year and primary_year.name==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+    <label>Semester<input id="curr-semester" value="Semester 1" readonly></label>
+    <label>Bidang Pelajaran<select name="subject" id="curr-subject" required><option value="">Pilih kelas terlebih dahulu</option></select></label>
+    <label>Materi Pokok<select name="topic_select" id="curr-topic-select"><option value="">Materi Lainnya / Isi Manual</option></select><input name="topic" id="curr-topic" placeholder="Atau isi Materi Pokok manual" required></label>
+    <label>Status<select name="status"><option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif</option></select></label>
+    <label>Versi<input type="number" name="version" min="1" value="1"></label>
+    <label class="span-2">Target Pembelajaran<textarea name="learning_target" id="curr-target" rows="3"></textarea></label>
+    <input type="hidden" name="source_type" id="curr-source" value="Input Manual">
+    <label>Rencana Materi Pekan 1<textarea name="week1" id="week1" rows="3"></textarea></label>
+    <label>Rencana Materi Pekan 2<textarea name="week2" id="week2" rows="3"></textarea></label>
+    <label>Rencana Materi Pekan 3<textarea name="week3" id="week3" rows="3"></textarea></label>
+    <label>Rencana Materi Pekan 4<textarea name="week4" id="week4" rows="3"></textarea></label>
+    <label>Rencana Materi Pekan 5<textarea name="week5" id="week5" rows="3"></textarea></label>
+    <label>Catatan Guru<textarea name="notes" id="curr-notes" rows="3"></textarea></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Silabus Bulanan</button></div>
   </form>
 </section>
-
-<section class="card">
-  <div class="card-head">
-    <div class="card-title-icon"><i class="fa-solid fa-table-list"></i><h2>Database Silabus Pekanan</h2></div>
-  </div>
-  <form method="get" class="search-filter-form compact-filter-form">
-    <label>Kelas
-      <select name="class_name">
-        <option value="">Semua kelas</option>
-        {% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
-      </select>
-    </label>
-    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
-    {% if class_filter %}<a class="btn btn-outline" href="{{ url_for('curriculum') }}">Reset</a>{% endif %}
-  </form>
-
-  <div class="table-wrap spaced-top">
-    <table>
-      <thead><tr><th>Pekan</th><th>Kelas</th><th>Bidang & Materi</th><th>Target / Kegiatan</th><th>Aksi</th></tr></thead>
-      <tbody>
-      {% for row in rows %}
-        <tr>
-          <td><strong>Pekan {{ row.week_number }}</strong></td>
-          <td><span class="badge">{{ row.class_name }}</span></td>
-          <td><strong>{{ row.subject }}</strong><small class="table-sub">{{ row.topic }}</small></td>
-          <td>{{ row.learning_target or '-' }}<small class="table-sub">{{ row.activities or '' }}</small></td>
-          <td>
-            <div class="table-actions">
-              <a href="{{ url_for('edit_curriculum', row_id=row.id) }}"><i class="fa-solid fa-pen"></i> Edit</a>
-              <form method="post" action="{{ url_for('delete_curriculum', row_id=row.id) }}" onsubmit="return confirm('Hapus silabus pekanan ini?')">
-                <button type="submit"><i class="fa-solid fa-trash"></i> Hapus</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-      {% else %}
-        <tr><td colspan="5" class="empty">Tabel masih kosong. Silakan isi rencana pekanan melalui formulir di atas.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
+</div>
+<script type="application/json" id="curriculum-bank-data">{{ bank_data|tojson }}</script>
+<script type="application/json" id="subject-map-data">{{ subject_map|tojson }}</script>
 {% endblock %}
+{% block scripts %}<script>
+(() => {
+ const bank=JSON.parse(document.getElementById('curriculum-bank-data').textContent||'[]');
+ const subjectMap=JSON.parse(document.getElementById('subject-map-data').textContent||'{}');
+ const cls=document.getElementById('curr-class'), month=document.getElementById('curr-month'), academic=document.getElementById('curr-academic-year'), semester=document.getElementById('curr-semester'), subject=document.getElementById('curr-subject'), select=document.getElementById('curr-topic-select'), topic=document.getElementById('curr-topic'), target=document.getElementById('curr-target'), source=document.getElementById('curr-source');
+ const semesterOne=['Juli','Agustus','September','Oktober','November','Desember'];
+ function updateSemester(){ semester.value=semesterOne.includes(month.value)?'Semester 1':'Semester 2'; }
+ function bankYear(){const parts=academic.value.split('/'); return Number(semesterOne.includes(month.value)?parts[0]:parts[1]);}
+ function subjects(){subject.innerHTML='<option value="">Pilih bidang pelajaran</option>'+(subjectMap[cls.value]||[]).map(x=>`<option value="${x}">${x}</option>`).join('');topics();}
+ function topics(){updateSemester();const rows=bank.filter(x=>x.class_name===cls.value&&x.subject===subject.value&&x.month===month.value&&Number(x.year)===bankYear());const unique=[];rows.forEach(x=>{if(!unique.some(y=>y.topic===x.topic))unique.push(x)});select.innerHTML='<option value="">Materi Lainnya / Isi Manual</option>'+unique.map(x=>`<option value="${x.code}">${x.topic}</option>`).join('');}
+ function apply(){const chosen=bank.find(x=>x.code===select.value);if(!chosen){source.value='Input Manual';return;}const related=bank.filter(x=>x.class_name===chosen.class_name&&x.subject===chosen.subject&&x.month===chosen.month&&Number(x.year)===Number(chosen.year));topic.value=chosen.topic;target.value=chosen.target||'';source.value='Bank Silabus';for(let i=1;i<=5;i++){const r=related.find(x=>Number(x.week)===i);document.getElementById('week'+i).value=r?r.topic:'';}document.getElementById('curr-notes').value=chosen.agenda?`Agenda Kaldik: ${chosen.agenda}`:'';}
+ cls.addEventListener('change',subjects);subject.addEventListener('change',topics);month.addEventListener('change',topics);academic.addEventListener('change',topics);select.addEventListener('change',apply);updateSemester();subjects();
+})();
+</script>{% endblock %}

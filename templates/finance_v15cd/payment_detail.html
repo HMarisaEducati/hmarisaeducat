@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Detail Pembayaran{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/finance_administration_v15b2.css') }}?v=20260715-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15cd.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page finance-v15cd-page">
+  <div class="finance-page-heading"><div><span class="eyebrow">{{ payment.transaction_number }}</span><h1>Detail Pembayaran</h1><p>{{ student.name if student else 'Santri tidak ditemukan' }} · {{ student.class_name if student else 'Belum diisi' }}</p></div><a class="btn btn-outline" href="{{ url_for('finance_payments') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a></div>
+  {% include "finance_v15b/_tabs.html" %}
+  <section class="finance-detail-grid">
+    <article class="finance-panel"><div class="finance-panel-head"><div><h2>Informasi Transaksi</h2><p>Transaksi tersimpan sebagai riwayat administrasi.</p></div><span class="finance-status {{ 'status-belum-lunas' if payment.is_cancelled else 'status-lunas' }}">{{ 'Dibatalkan' if payment.is_cancelled else 'Aktif' }}</span></div>
+      <dl class="finance-detail-list">
+        <div><dt>Nomor Transaksi</dt><dd>{{ payment.transaction_number }}</dd></div><div><dt>Tanggal</dt><dd>{{ payment.payment_date.strftime('%d/%m/%Y') }}</dd></div>
+        <div><dt>Nama Santri</dt><dd>{{ student.name if student else 'Belum diisi' }}</dd></div><div><dt>Kelas</dt><dd>{{ student.class_name if student else 'Belum diisi' }}</dd></div>
+        <div><dt>Nomor Tagihan</dt><dd><a href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}">{{ bill.bill_number }}</a></dd></div><div><dt>Jenis Tagihan</dt><dd>{{ charge.name if charge else 'Belum diisi' }}</dd></div>
+        <div><dt>Periode</dt><dd>{{ bill.period_label }} {{ bill.period_year }}</dd></div><div><dt>Nominal Dibayar</dt><dd><strong>{{ payment.amount|rupiah }}</strong></dd></div>
+        <div><dt>Metode</dt><dd>{{ payment.method }}</dd></div><div><dt>Rekening Tujuan</dt><dd>{{ channel.label if channel else 'Tidak digunakan' }}</dd></div>
+        <div><dt>Admin/Penerima</dt><dd>{{ payment.receiver_name or 'Belum diisi' }}</dd></div><div><dt>Dibuat Oleh</dt><dd>{{ creator.full_name if creator else 'Sistem' }}</dd></div>
+        <div class="wide"><dt>Catatan</dt><dd>{{ payment.notes or 'Belum diisi' }}</dd></div>
+        {% if payment.is_cancelled %}<div class="wide"><dt>Alasan Pembatalan</dt><dd>{{ payment.cancellation_reason or 'Belum diisi' }}</dd></div>{% endif %}
+      </dl>
+      <div class="finance-detail-primary-actions"><a class="btn btn-primary" href="{{ url_for('finance_payment_receipt', payment_id=payment.id) }}"><i class="fa-solid fa-eye"></i> Preview Bukti</a><a class="btn btn-outline" href="{{ url_for('finance_payment_receipt_pdf', payment_id=payment.id) }}"><i class="fa-solid fa-file-pdf"></i> Download PDF</a>{% if payment.proof_path %}<a class="btn btn-outline" href="{{ url_for('finance_payment_proof', payment_id=payment.id) }}" target="_blank"><i class="fa-solid fa-paperclip"></i> Bukti Transfer</a>{% endif %}</div>
+    </article>
+    <aside class="finance-panel"><div class="finance-panel-head"><div><h2>Riwayat Aktivitas</h2><p>Waktu ditampilkan dalam WIB.</p></div></div><div class="finance-timeline">{% for log in audit_logs %}<article><span></span><div><strong>{{ log.action }}</strong><small>{{ log.user_name }} · {{ format_wib(log.created_at) }}</small></div></article>{% else %}<div class="finance-empty compact"><strong>Belum ada aktivitas tambahan</strong></div>{% endfor %}</div></aside>
+  </section>
+  {% if not payment.is_cancelled %}<section class="finance-panel danger-zone"><div><div><h2>Batalkan Transaksi</h2><p>Data tidak dihapus. Tagihan akan dihitung ulang otomatis.</p></div><form method="post" action="{{ url_for('finance_payment_cancel', payment_id=payment.id) }}" data-confirm="Transaksi akan dibatalkan dan status tagihan dihitung ulang. Lanjutkan?"><input name="reason" placeholder="Alasan pembatalan transaksi" required><button class="btn btn-danger" type="submit">Batalkan Transaksi</button></form></div></section>{% endif %}
+</div>
+{% endblock %}

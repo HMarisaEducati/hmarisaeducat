@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Nilai Akademik {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+{% include '_eraport_student_header_v10.html' %}
+{% include '_eraport_tabs_v10.html' %}
+<form method="post" class="card er10-section-card">
+  <div class="card-head"><div><h2>Nilai Akademik</h2><p class="muted">KKM 70. Nilai valid 60–100.</p></div></div>
+  <div class="table-wrap"><table class="er10-table"><thead><tr><th>Mata Pelajaran</th><th>Nilai</th><th>Predikat</th><th>Keterangan</th><th>Status KKM</th></tr></thead><tbody>
+  {% for subject in subjects %}{% set raw=scores.get(subject) %}{% set info=score_predicate(raw) %}<tr><td><strong>{{ subject }}</strong></td><td><input class="er10-score live-score" type="number" min="60" max="100" name="score_{{ loop.index0 }}" value="{{ raw if raw not in [None,'',0,'0'] else '' }}" data-pred="pred-{{ loop.index }}" data-note="note-{{ loop.index }}" data-status="status-{{ loop.index }}" placeholder="Belum diisi"></td><td id="pred-{{ loop.index }}">{{ info[0] or 'Belum diisi' }}</td><td id="note-{{ loop.index }}">{{ info[1] }}</td><td id="status-{{ loop.index }}">{{ info[2] }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% set next_label='Hafalan' %}{% include '_eraport_actions_v10.html' %}
+</form>
+{% endblock %}
+{% block scripts %}<script>
+function erPred(v){if(!v)return['Belum diisi','Belum diisi','Belum diisi'];v=Number(v);if(v<60||v>100)return['Belum diisi','Nilai tidak valid','Belum diisi'];if(v>=91)return['A','Sangat Baik','Tuntas'];if(v>=81)return['B','Baik','Tuntas'];if(v>=71)return['C','Cukup','Tuntas'];return['D','Perlu Bimbingan',v>=70?'Tuntas':'Belum Tuntas'];}
+document.querySelectorAll('.live-score').forEach(el=>el.addEventListener('input',()=>{const x=erPred(el.value);document.getElementById(el.dataset.pred).textContent=x[0];document.getElementById(el.dataset.note).textContent=x[1];document.getElementById(el.dataset.status).textContent=x[2];}));
+</script>{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card ps16x-form" method="post" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Bagian Dashboard & Modul</h3><p>Pilih bagian yang tampil. Menyembunyikan kartu tidak menghapus data dan tidak mengubah route atau hak akses.</p></div><label class="ps16x-switch"><input type="checkbox" name="enabled" {% if draft_payload.enabled %}checked{% endif %}><span></span> Aktifkan pengaturan bagian</label></div>
+  <div class="ps16x-visibility-grid">
+    <section><h4>Portal Admin</h4>{% for key,label in [('admin_show_date','Kartu tanggal'),('admin_show_stats','Kartu ringkasan'),('admin_show_hadith','Hadis Dashboard'),('admin_show_monthly_winners','Santri Terbaik Bulanan'),('admin_show_monthly_poster','Poster Prestasi Bulanan'),('admin_show_syllabus','Silabus Bulanan')] %}<label><input type="checkbox" name="{{ key }}" {% if draft_payload[key] %}checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</section>
+    <section><h4>Portal Wali</h4>{% for key,label in [('guardian_show_date','Kartu tanggal'),('guardian_show_stats','Kartu ringkasan'),('guardian_show_mutabaah','Mutabaah terbaru'),('guardian_show_hafalan','Progres hafalan'),('guardian_show_finance','Administrasi iuran'),('guardian_show_access_note','Catatan akses wali'),('guardian_show_monthly_winner_entry','Santri Terbaik pada halaman masuk')] %}<label><input type="checkbox" name="{{ key }}" {% if draft_payload[key] %}checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</section>
+  </div>
+  {% include "portal_settings_v16/_section_actions.html" %}
+</form>
+{% endblock %}

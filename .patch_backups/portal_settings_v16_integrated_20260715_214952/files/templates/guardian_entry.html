@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Portal Wali Santri — TPQ HMarisa{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/guardian_entry.css') }}?v=20260714-1">
+{% endblock %}
+{% block auth_content %}
+<section class="guardian-entry final-entry">
+  <div class="guardian-hero">
+    <div class="guardian-brand-main">
+      <span class="guardian-logo"><img src="{{ url_for('static', filename='img/logo_portal_cropped.png') }}" alt="Logo TPQ HMarisa"></span>
+      <div><span class="eyebrow light">Portal Pendidikan Al-Qur'an</span><h1>TPQ HMarisa</h1><p>Akses perkembangan dan dokumen ananda dengan aman.</p></div>
+    </div>
+    {% if daily_hadith %}
+    <article class="daily-hadith-card">
+      <span class="hadith-label">Hadis Harian</span>
+      <p class="hadith-arabic">{{ daily_hadith.arabic }}</p>
+      <p class="hadith-translation">“{{ daily_hadith.translation }}”</p>
+      <small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %}</small>
+    </article>
+    {% endif %}
+  </div>
+  <div class="guardian-form-side">
+    <div class="guardian-form-card">
+      <span class="eyebrow">Portal Wali Santri</span><h2>Buka Data Ananda</h2><p>Pilih kelas terlebih dahulu, kemudian nama santri akan muncul otomatis.</p>
+      <form method="post" class="form-grid" id="guardian-entry-form">
+        <label>Kelas<select name="class_name" id="guardian-class" required><option value="">-- Pilih Kelas --</option>{% for c in classes or CLASSES %}<option value="{{ c }}" {% if class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+        <label>Nama Santri<select name="student_id" id="guardian-student" required disabled><option value="">Pilih kelas terlebih dahulu</option></select></label>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-folder-open"></i> Buka Data Ananda</button>
+      </form>
+      <p class="form-help">Nama santri belum tersedia? Silakan menghubungi Admin TPQ HMarisa.</p>
+      <section class="weekly-public-card">
+        <h3><i class="fa-solid fa-award"></i> Santri Terbaik Bulan Ini{% if monthly_period_label %} — {{ monthly_period_label }}{% endif %}</h3>
+        {% for c in classes or CLASSES %}
+          {% set winner = monthly_winners.get(c) if monthly_winners else none %}
+          <div class="winner-line"><span>{{ c }}</span><strong>{{ winner.student.public_name or winner.student.nickname or winner.student.name if winner else 'Belum ada hasil penilaian bulan ini' }}</strong></div>
+        {% endfor %}
+      </section>
+      <div class="admin-access"><span>Pengelola TPQ?</span><a href="{{ url_for('admin_login') }}">Login Admin</a></div>
+    </div>
+  </div>
+</section>
+<script type="application/json" id="guardian-student-data">{{ students_by_class|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById('guardian-student-data').textContent || '{}');
+  const classSelect = document.getElementById('guardian-class');
+  const studentSelect = document.getElementById('guardian-student');
+  const selected = {{ student_id|default(0)|tojson }};
+  function updateStudents() {
+    const rows = data[classSelect.value] || [];
+    studentSelect.innerHTML = '<option value="">-- Pilih Nama Santri --</option>' + rows.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    studentSelect.disabled = !classSelect.value;
+    if (selected) studentSelect.value = String(selected);
+  }
+  classSelect.addEventListener('change', updateStudents); updateStudents();
+})();
+</script>
+{% endblock %}

@@ -2,10 +2,11 @@
 {% block title %}Sistem Keuangan{% endblock %}
 {% block content %}
 <div class="page-heading">
-  <div><span class="eyebrow">Admin · Keuangan</span><h1>Sistem Keuangan</h1><p>Input, cari, edit, verifikasi, dan ekspor administrasi santri.</p></div>
+  <div><span class="eyebrow">Admin · Keuangan</span><h1>Keuangan Lama</h1><p>Input, cari, edit, verifikasi, dan ekspor administrasi santri.</p></div>
   <div class="button-row">
     <a class="btn btn-primary" href="#input-tagihan"><i class="fa-solid fa-plus"></i> Input</a>
     <a class="btn btn-outline" href="#edit-data"><i class="fa-solid fa-pen"></i> Edit</a>
+    <a class="btn btn-outline" href="{{ url_for('finance_settings_general') }}"><i class="fa-solid fa-gear"></i> Pengaturan</a>
     <a class="btn btn-outline" href="{{ url_for('backup_financial') }}"><i class="fa-solid fa-file-csv"></i> Ekspor</a>
   </div>
 </div>

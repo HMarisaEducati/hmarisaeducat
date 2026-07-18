@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading preview-page-heading">
+  <div>
+    <span class="eyebrow">Pratinjau sebelum unduh</span>
+    <h1>{{ title }}</h1>
+    <p>{{ subtitle }}</p>
+  </div>
+  <div class="button-row preview-top-actions">
+    {% if edit_url %}<a class="btn btn-outline" href="{{ edit_url }}"><i class="fa-solid fa-pen-to-square"></i> Edit/Koreksi</a>{% endif %}
+    <a class="btn btn-outline" href="{{ back_url }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+  </div>
+</div>
+
+<section class="card global-preview-card">
+  <div class="card-head preview-card-head">
+    <div>
+      <h2>Lihat dan Periksa</h2>
+      <p class="muted">{{ notice }}</p>
+    </div>
+    {% if orientation %}<span class="badge"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> {{ orientation }}</span>{% endif %}
+  </div>
+
+  {% if preview_kind == 'pdf-pages' %}
+  <div class="pdf-page-list" aria-label="Pratinjau {{ title }}">
+    {% for page_url in preview_pages %}
+    <figure class="pdf-page-card">
+      <figcaption>Halaman {{ loop.index }} dari {{ preview_page_count }}</figcaption>
+      <img src="{{ page_url }}" loading="{{ 'eager' if loop.first else 'lazy' }}" decoding="async" alt="{{ title }} — halaman {{ loop.index }}">
+    </figure>
+    {% else %}
+    <div class="preview-render-error"><i class="fa-regular fa-file-pdf"></i><p>Belum ada halaman yang dapat ditampilkan.</p></div>
+    {% endfor %}
+  </div>
+  {% elif preview_kind == 'pdf-fallback' %}
+  <div class="preview-render-error">
+    <i class="fa-regular fa-file-pdf"></i>
+    <p>Pratinjau halaman belum tersedia pada saat ini.</p>
+    <a class="btn btn-outline" target="_blank" rel="noopener" href="{{ preview_url }}">Buka PDF pada Tab Baru</a>
+  </div>
+  {% elif preview_kind == 'image' %}
+  <div class="image-preview-shell"><img src="{{ preview_url }}" alt="{{ title }}"></div>
+  {% elif preview_kind == 'table' %}
+  <div class="table-wrap global-preview-table-wrap">
+    <table class="global-preview-table">
+      <thead><tr>{% for header in preview_headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for row in preview_rows %}<tr>{% for value in row %}<td>{{ value or 'Belum diisi' }}</td>{% endfor %}</tr>{% else %}<tr><td colspan="{{ preview_headers|length }}" class="empty">Belum ada data untuk ditampilkan.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% elif preview_kind == 'summary' %}
+  <div class="preview-summary-grid">
+    {% for label, value in summary_items %}<article><small>{{ label }}</small><strong>{{ value or 'Belum diisi' }}</strong></article>{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="preview-action-bar">
+    <div class="preview-action-copy"><i class="fa-solid fa-circle-check"></i><span>Pastikan nama, periode, tabel, dan tanda tangan sudah benar sebelum mengunduh.</span></div>
+    <div class="button-row">
+      {% if print_url %}<a class="btn btn-gold" target="_blank" rel="noopener" href="{{ print_url }}"><i class="fa-solid fa-print"></i> Buka/Cetak</a>{% endif %}
+      {% for item in download_buttons %}<a class="btn {{ item.class }}" href="{{ item.url }}"><i class="fa-solid {{ item.icon }}"></i> {{ item.label }}</a>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

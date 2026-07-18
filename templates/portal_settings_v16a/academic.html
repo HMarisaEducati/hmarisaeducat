@@ -1,0 +1,12 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card" method="post" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Tahun Ajaran & Semester</h3><p>Setelah diterbitkan, periode ini menjadi tahun ajaran utama portal dan nilai awal Keuangan.</p></div><span class="ps16-draft-badge">Draft V{{ draft_settings.version_no }}</span></div>
+  <div class="ps16-form-grid ps16-form-grid-narrow">
+    <label><span>Tahun Ajaran Aktif *</span><select name="academic_year" required>{% for year in year_options %}<option value="{{ year }}" {{ 'selected' if draft_settings.academic_year == year else '' }}>{{ year }}</option>{% endfor %}</select></label>
+    <label><span>Semester Aktif *</span><select name="semester" required><option value="Semester 1" {{ 'selected' if draft_settings.semester == 'Semester 1' else '' }}>Semester 1</option><option value="Semester 2" {{ 'selected' if draft_settings.semester == 'Semester 2' else '' }}>Semester 2</option></select></label>
+  </div>
+  <div class="ps16-info-box"><i class="fa-solid fa-circle-info"></i><div><strong>Aman untuk data lama</strong><p>Perubahan hanya menetapkan periode utama. Raport, silabus, dan transaksi lama tidak dipindahkan atau dihapus.</p></div></div>
+  <div class="ps16-form-actions"><a class="ps16-btn ps16-btn-secondary" href="{{ url_for('portal_settings_v16a') }}">Batal</a><button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button></div>
+</form>
+{% endblock %}

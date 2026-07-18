@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Database Silabus Bulanan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/silabus_final.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="silabus-page">
+<div class="page-heading"><div><span class="eyebrow">Admin · Database Silabus</span><h1>Database Silabus Bulanan</h1><p>Lihat, filter, edit, dan ekspor seluruh Silabus Bulanan tanpa bercampur dengan halaman input.</p></div><div class="button-row"><a class="btn btn-primary" href="{{ url_for('curriculum') }}"><i class="fa-solid fa-plus"></i> Tambah Silabus Bulanan</a><a class="btn btn-outline" href="{{ url_for('curriculum_semester') }}"><i class="fa-solid fa-layer-group"></i> Rekap Semester</a><a class="btn btn-outline" href="{{ url_for('curriculum_preview', document_type='database', class_name=class_filter, month=month_filter, academic_year=academic_year_filter, semester=semester_filter, subject=subject_filter, status=status_filter, keyword=keyword) }}"><i class="fa-solid fa-eye"></i> Preview Export</a></div></div>
+<section class="card">
+  <div class="card-head"><h2>Filter Database</h2><span class="muted">Gunakan filter agar data mudah ditemukan.</span></div>
+  <form method="get" class="search-filter-form curriculum-filter-grid">
+    <label>Kelas<select name="class_name" id="silabus-filter-class"><option value="">Semua Kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Bulan<select name="month"><option value="">Semua Bulan</option>{% for m in MONTHS %}<option value="{{ m }}" {% if month_filter==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+    <label>Tahun Ajaran<select name="academic_year"><option value="">Semua Tahun</option>{% for y in academic_year_options %}<option value="{{ y }}" {% if academic_year_filter==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+    <label>Semester<select name="semester"><option value="">Semua Semester</option><option value="Semester 1" {% if semester_filter=='Semester 1' %}selected{% endif %}>Semester 1</option><option value="Semester 2" {% if semester_filter=='Semester 2' %}selected{% endif %}>Semester 2</option></select></label>
+    <label>Bidang Pelajaran<select name="subject" id="silabus-filter-subject"><option value="">Semua Bidang Pelajaran</option></select></label>
+    <label>Status<select name="status"><option value="">Semua Status</option><option value="Aktif" {% if status_filter=='Aktif' %}selected{% endif %}>Aktif</option><option value="Nonaktif" {% if status_filter=='Nonaktif' %}selected{% endif %}>Nonaktif</option></select></label>
+    <label>Kata Kunci<input name="keyword" value="{{ keyword }}" placeholder="Materi, target, atau catatan"></label>
+    <div class="filter-actions"><button class="btn btn-primary" type="submit">Tampilkan</button><a class="btn btn-outline" href="{{ url_for('curriculum_database') }}">Reset</a></div>
+  </form>
+</section>
+<section class="card">
+  <div class="card-head"><h2>Hasil Database</h2><span class="badge">{{ rows|length }} data</span></div>
+  <div class="table-wrap curriculum-desktop-table"><table><thead><tr><th>Bulan/Tahun</th><th>Kelas</th><th>Bidang Pelajaran</th><th>Materi Pokok</th><th>Target</th><th>Status</th><th>Versi</th><th>Aksi</th></tr></thead><tbody>{% for row in rows %}<tr><td><strong>{{ row.month }} {{ row.year }}</strong><small class="table-sub">{{ row.academic_year }}</small></td><td>{{ row.class_name }}</td><td>{{ row.subject }}</td><td>{{ row.topic }}</td><td>{{ curriculum_display_value(row.learning_target) }}</td><td><span class="badge {% if row.status=='Nonaktif' %}badge-muted{% endif %}">{{ row.status }}</span></td><td>V{{ row.version }}</td><td><div class="table-actions"><a href="{{ url_for('curriculum_detail', row_id=row.id) }}">Lihat</a><a href="{{ url_for('edit_curriculum', row_id=row.id) }}">Edit</a><a href="{{ url_for('curriculum_preview', document_type='single', row_id=row.id) }}">Preview PDF</a><form method="post" action="{{ url_for('delete_curriculum', row_id=row.id) }}"><button type="submit">{{ 'Aktifkan' if row.status=='Nonaktif' else 'Nonaktifkan' }}</button></form>{% if row.status=='Nonaktif' %}<details class="danger-details"><summary>Hapus</summary><form method="post" action="{{ url_for('destroy_curriculum', row_id=row.id) }}" class="delete-confirm-form"><p>Ketik <strong>HAPUS</strong> untuk menghapus permanen.</p><input name="confirm_text" required><button class="btn btn-danger btn-small" type="submit">Hapus Permanen</button></form></details>{% endif %}</div></td></tr>{% else %}<tr><td colspan="8" class="empty">Belum ada Silabus Bulanan pada filter ini.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="curriculum-mobile-list">{% for row in rows %}<article><div><span class="badge">{{ row.class_name }}</span><small>{{ row.month }} {{ row.year }} · {{ row.academic_year }} · V{{ row.version }}</small></div><h3>{{ row.subject }}</h3><strong>{{ row.topic }}</strong><p>{{ curriculum_display_value(row.learning_target) }}</p><div class="button-row"><a class="btn btn-small btn-primary" href="{{ url_for('curriculum_detail', row_id=row.id) }}">Lihat</a><a class="btn btn-small btn-outline" href="{{ url_for('edit_curriculum', row_id=row.id) }}">Edit</a><a class="btn btn-small btn-outline" href="{{ url_for('curriculum_preview', document_type='single', row_id=row.id) }}">Preview PDF</a></div></article>{% else %}<p class="empty">Belum ada data.</p>{% endfor %}</div>
+</section>
+</div>
+<script type="application/json" id="silabus-filter-subject-map">{{ subject_map|tojson }}</script>
+<script>
+(()=>{const cls=document.getElementById('silabus-filter-class'),sub=document.getElementById('silabus-filter-subject');
+const map=JSON.parse(document.getElementById('silabus-filter-subject-map').textContent||'{}');const selected={{ subject_filter|tojson }};
+function fill(){const values=cls.value?(map[cls.value]||[]):[...new Set(Object.values(map).flat())].sort();sub.innerHTML='<option value="">Semua Bidang Pelajaran</option>'+values.map(v=>`<option value="${v}">${v}</option>`).join('');if(values.includes(selected))sub.value=selected;}
+cls.addEventListener('change',fill);fill();})();
+</script>
+{% endblock %}

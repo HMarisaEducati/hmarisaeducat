@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Tracker Hafalan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+{% set active_tab = 'tracker' %}
+{% include '_progress_student_header.html' %}
+{% include '_journal_tabs.html' %}
+
+<section class="card journal-main-card">
+  <div class="card-head"><div><h2>Tracker Hafalan Juz 30</h2><p class="muted">Satu baris mewakili progres satu surat, bukan jurnal harian berulang.</p></div><span class="step-badge">Halaman 3 dari 3</span></div>
+
+  <div class="tracker-summary-grid">
+    <article><span class="tracker-summary-icon done"><i class="fa-solid fa-circle-check"></i></span><div><strong>{{ counts['Selesai'] }}</strong><small>Selesai</small></div></article>
+    <article><span class="tracker-summary-icon process"><i class="fa-solid fa-spinner"></i></span><div><strong>{{ counts['Proses'] }}</strong><small>Proses</small></div></article>
+    <article><span class="tracker-summary-icon waiting"><i class="fa-regular fa-circle"></i></span><div><strong>{{ counts['Belum Mulai'] }}</strong><small>Belum Mulai</small></div></article>
+    <article><span class="tracker-summary-icon total"><i class="fa-solid fa-chart-line"></i></span><div><strong>{{ counts['Selesai'] }}/37</strong><small>Progres Keseluruhan</small></div></article>
+  </div>
+  <div class="tracker-progress"><span style="width: {{ (counts['Selesai'] / 37 * 100)|round(1) }}%"></span></div>
+
+  <form method="get" class="tracker-filter-form">
+    <label>Status<select name="status"><option value="">Semua Status</option>{% for item in ['Belum Mulai','Proses','Selesai'] %}<option value="{{ item }}" {% if status_filter == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+    <label>Cari Surat<input name="keyword" value="{{ keyword }}" placeholder="Contoh: An-Naba"></label>
+    <div><button class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button><a class="btn btn-outline" href="{{ url_for('hafalan_tracker', student_id=student.id) }}">Reset</a></div>
+  </form>
+
+  <div class="tracker-explanation"><i class="fa-solid fa-lightbulb"></i><p><strong>Cara pakai:</strong> tekan <b>Mulai Hafalan</b> saat santri memulai surat, <b>Tandai Selesai</b> saat hafalan tuntas, atau buka <b>Update Progres</b> untuk mengubah tanggal, nilai, dan catatan.</p></div>
+
+  <div class="tracker-list">
+    {% for row in tracker_rows %}
+    <article class="tracker-item {% if selected_surah == row.surah %}selected{% endif %}" id="surah-{{ row.number }}">
+      <div class="tracker-number">{{ row.number }}</div>
+      <div class="tracker-main-info"><strong>{{ row.surah }}</strong><small>{{ row.history_count }} riwayat pembaruan</small></div>
+      <div><span class="tracker-status tracker-status-{{ row.status|lower|replace(' ','-') }}">{{ row.status }}</span></div>
+      <div class="tracker-date-cell"><small>Mulai</small><strong>{{ row.start_date|tanggal_id if row.start_date else 'Belum diisi' }}</strong></div>
+      <div class="tracker-date-cell"><small>Selesai</small><strong>{{ row.completion_date|tanggal_id if row.completion_date else 'Belum diisi' }}</strong></div>
+      <div class="tracker-score"><small>Nilai</small><strong>{{ row.score or '—' }}</strong></div>
+      <div class="tracker-actions">
+        {% if row.status == 'Belum Mulai' %}
+        <form method="post" action="{{ url_for('save_hafalan_tracker', student_id=student.id) }}"><input type="hidden" name="surah" value="{{ row.surah }}"><input type="hidden" name="status" value="Proses"><input type="hidden" name="start_date" value="{{ current_date }}"><button class="btn btn-small btn-primary">Mulai Hafalan</button></form>
+        {% elif row.status == 'Proses' %}
+        <form method="post" action="{{ url_for('save_hafalan_tracker', student_id=student.id) }}"><input type="hidden" name="surah" value="{{ row.surah }}"><input type="hidden" name="status" value="Selesai"><input type="hidden" name="completion_date" value="{{ current_date }}"><button class="btn btn-small btn-primary">Tandai Selesai</button></form>
+        {% endif %}
+        <details class="tracker-update-panel" {% if selected_surah == row.surah %}open{% endif %}>
+          <summary class="btn btn-small btn-outline">{{ 'Edit Catatan' if row.status == 'Selesai' else 'Update Progres' }}</summary>
+          <form method="post" action="{{ url_for('save_hafalan_tracker', student_id=student.id) }}">
+            <input type="hidden" name="surah" value="{{ row.surah }}">
+            <label>Status<select name="status">{% for item in ['Belum Mulai','Proses','Selesai'] %}<option value="{{ item }}" {% if row.status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+            <div class="tracker-form-two"><label>Tanggal Mulai<input type="date" name="start_date" value="{{ row.start_date or '' }}"></label><label>Tanggal Selesai<input type="date" name="completion_date" value="{{ row.completion_date or '' }}"></label></div>
+            <label>Nilai/Kelancaran (opsional)<input type="number" name="score" min="60" max="100" value="{{ row.score or '' }}"></label>
+            <label>Catatan Guru<textarea name="notes" rows="3" placeholder="Contoh: Ayat 1–15 sudah lancar">{{ row.notes }}</textarea></label>
+            <button class="btn btn-primary btn-small">Simpan Tracker</button>
+          </form>
+        </details>
+      </div>
+    </article>
+    {% else %}
+    <div class="progress-empty-state"><i class="fa-solid fa-book-quran"></i><strong>Tidak ada surat sesuai filter</strong><p>Ubah filter status atau kata kunci.</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

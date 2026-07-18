@@ -1,0 +1,5 @@
+- [Control Center architecture](control-center-arch.md) — CC dibangun sebagai install_* function (bukan Blueprint), daftarkan setelah semua modul lain di app.py
+- [Database URL override](db-url-override.md) — DATABASE_URL env var di Replit mengarah ke PostgreSQL; harus di-override ke SQLite saat run: `DATABASE_URL='sqlite:///tpq_hmarisa.db' python app.py`
+- [Sidebar Menu Dinamis](sidebar-menu-v1.md) — sidebar_menu_v1.py: model SidebarMenu, seed, context processor, admin CRUD di /admin/sidebar-menu
+- [CMS Builder v1](cms-builder-v1.md) — cms_module_v1.py: model CmsModule+CmsField+CmsRecord, route /control-center/cms-builder dan /m/<slug>/*, auto-register sidebar entry saat modul dibuat
+- [Global Komponen](global-components.md) — templates/components/_macros.html (page_toolbar, page_tabs, search_bar, pagination, modal, dsb), static/css/components.css, static/js/components.js — sudah di-include di base.html

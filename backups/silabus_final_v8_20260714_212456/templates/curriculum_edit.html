@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Edit Silabus Bulanan{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Database Silabus · Edit</span><h1>Edit Silabus {{ row.class_name }}</h1><p>{{ row.month }} {{ row.year }} · {{ row.subject }}</p></div><a class="btn btn-outline" href="{{ url_for('curriculum_detail', row_id=row.id) }}">Kembali</a></div>
+<section class="card narrow-card"><form method="post" class="form-grid form-grid-2">
+<label>Kelas<select name="class_name">{% for c in CLASSES %}<option value="{{ c }}" {% if row.class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+<label>Bulan<select name="month">{% for m in MONTHS %}<option value="{{ m }}" {% if row.month==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+<label>Tahun Ajaran<select name="academic_year">{% for y in academic_year_options %}<option value="{{ y }}" {% if row.academic_year==y %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></label>
+<label>Bidang Pelajaran<input name="subject" value="{{ row.subject }}"></label>
+<label>Materi Pokok<input name="topic" value="{{ row.topic }}"></label>
+<label class="span-2">Target Pembelajaran<textarea name="learning_target" rows="3">{{ row.learning_target }}</textarea></label>
+{% for i in range(1,6) %}<label>Rencana Materi Pekan {{ i }}<textarea name="week{{ i }}" rows="3">{{ row|attr('week' ~ i) }}</textarea></label>{% endfor %}
+<label>Catatan Guru<textarea name="notes" rows="3">{{ row.notes }}</textarea></label><div class="form-action"><button class="btn btn-primary">Simpan Perubahan</button></div></form></section>
+{% endblock %}

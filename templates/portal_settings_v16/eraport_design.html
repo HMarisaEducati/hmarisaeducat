@@ -1,0 +1,20 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card ps16x-form" method="post" data-dirty-form data-eraport-form>
+  <div class="ps16-section-head"><div><h3>Desain E-Raport</h3><p>Atur preset, warna, judul, Hadis, dan alamat footer. Data nilai, KKM, status, ukuran A4, dan keamanan tetap dikunci.</p></div><label class="ps16x-switch"><input type="checkbox" name="enabled" {% if draft_payload.enabled %}checked{% endif %}><span></span> Aktifkan desain dinamis</label></div>
+  <div class="ps16x-preset-grid"><button type="button" data-eraport-preset="current">Hijau–Emas Resmi</button><button type="button" data-eraport-preset="emerald">Emerald Modern</button><button type="button" data-eraport-preset="navy-gold">Navy–Emas</button><button type="button" data-eraport-preset="minimal">Minimalis Hijau</button></div>
+  <input type="hidden" name="preset" value="{{ draft_payload.preset }}" data-eraport-preset-input>
+  <div class="ps16-form-grid">
+    {% for key,label in [('primary','Hijau Utama'),('primary_dark','Warna Gelap'),('accent','Aksen Emas'),('accent_light','Aksen Terang'),('soft','Warna Lembut')] %}<label><span>{{ label }}</span><div class="ps16x-color"><input type="color" name="{{ key }}" value="{{ draft_payload[key] }}"><code>{{ draft_payload[key] }}</code></div></label>{% endfor %}
+    <label><span>Judul Raport</span><input type="text" name="title" value="{{ draft_payload.title }}"></label>
+    <label><span>Subjudul</span><input type="text" name="subtitle" value="{{ draft_payload.subtitle }}"></label>
+    <label class="ps16-span-2"><span>Teks Hadis/Motivasi</span><textarea name="quote" rows="3">{{ draft_payload.quote }}</textarea></label>
+    <label><span>Sumber</span><input type="text" name="quote_source" value="{{ draft_payload.quote_source }}"></label>
+    <label class="ps16x-checkbox"><input type="checkbox" name="show_quote" {% if draft_payload.show_quote %}checked{% endif %}><span>Tampilkan kotak Hadis</span></label>
+    <label><span>Alamat Footer</span><select name="footer_address_mode"><option value="portal" {% if draft_payload.footer_address_mode=='portal' %}selected{% endif %}>Ikuti Profil TPQ</option><option value="custom" {% if draft_payload.footer_address_mode=='custom' %}selected{% endif %}>Teks khusus</option></select></label>
+    <label><span>Alamat Khusus</span><input type="text" name="custom_footer_address" value="{{ draft_payload.custom_footer_address }}"></label>
+  </div>
+  <div class="ps16x-report-preview" style="--rp-primary:{{ draft_payload.primary }};--rp-dark:{{ draft_payload.primary_dark }};--rp-accent:{{ draft_payload.accent }};--rp-soft:{{ draft_payload.soft }}"><div class="rp-corner"></div><h3>{{ draft_payload.title }}</h3><strong>{{ draft_payload.subtitle }}</strong><span>Tahun Ajaran 2026/2027</span><div class="rp-box">Nama Santri · Kelas · Nilai Akademik · Perkembangan</div></div>
+  {% include "portal_settings_v16/_section_actions.html" %}
+</form>
+{% endblock %}

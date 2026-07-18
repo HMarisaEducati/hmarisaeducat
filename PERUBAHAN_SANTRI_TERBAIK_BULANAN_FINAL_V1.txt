@@ -1,0 +1,15 @@
+PATCH SANTRI TERBAIK BULANAN FINAL V1
+
+1. Seluruh tampilan Santri Terbaik Mingguan diubah menjadi Santri Terbaik Bulanan.
+2. Periode penilaian tanggal 1 sampai hari terakhir bulan.
+3. Proses otomatis dijalankan pada hari terakhir bulan pukul 17.00 WIB.
+4. Penentu saat skor sama: hafalan baru, kehadiran, ketepatan waktu, kualitas hafalan, lalu adab.
+5. Poster berjudul "Santri Terbaik" dan "Bulan <Nama Bulan> <Tahun>".
+6. Nama file contoh: santri_terbaik_juli_2026.png.
+7. Pratinjau poster Dashboard diperkecil menjadi maksimal 240 px desktop/tablet dan 220 px ponsel.
+8. Dashboard memberi pemberitahuan ketika poster siap diperiksa.
+9. Tombol: Unduh Poster, Buka WhatsApp, Hitung Ulang & Buat Ulang, Tandai Sudah Dipublikasikan.
+10. Portal Wali menampilkan Santri Terbaik Bulan Ini dan tetap menunjukkan hasil bulan terakhir sampai hasil baru tersedia.
+11. scheduled_weekly.py dipertahankan sebagai nama kompatibilitas tetapi logikanya sudah bulanan.
+12. scheduled_monthly.py disediakan untuk penamaan task yang lebih jelas.
+13. Tidak membawa database atau folder uploads.

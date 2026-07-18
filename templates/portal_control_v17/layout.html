@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Pusat Kendali Portal{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_control_v17.css') }}?v=20260716-1">{% endblock %}
+{% block content %}
+<section class="pc17-page">
+  <div class="page-heading pc17-heading">
+    <div><span class="eyebrow">Admin Utama · No-Code Builder</span><h1>{% block pc17_title %}Pusat Kendali Portal{% endblock %}</h1><p>{% block pc17_subtitle %}Kelola halaman, formulir, konten, menu, kontak, dan media tanpa mengubah kode.{% endblock %}</p></div>
+    <div class="pc17-safety"><i class="fa-solid fa-shield-halved"></i><span><strong>Aman & terversi</strong><small>Draft → Preview → Terbitkan</small></span></div>
+  </div>
+  {% include "portal_control_v17/_tabs.html" %}
+  {% block pc17_content %}{% endblock %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/portal_control_v17.js') }}?v=20260716-1"></script>{% block pc17_scripts %}{% endblock %}{% endblock %}

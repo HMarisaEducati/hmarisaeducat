@@ -1,0 +1,11 @@
+<nav class="journal-page-tabs" aria-label="Menu Mutabaah {{ student.name }}">
+  <a class="{% if active_tab == 'add' %}active{% endif %}" href="{{ url_for('academics', student_id=student.id) }}">
+    <i class="fa-solid fa-circle-plus"></i><span>Tambah Jurnal</span>
+  </a>
+  <a class="{% if active_tab == 'history' %}active{% endif %}" href="{{ url_for('mutabaah_history', student_id=student.id) }}">
+    <i class="fa-solid fa-clock-rotate-left"></i><span>Riwayat Jurnal</span>
+  </a>
+  <a class="{% if active_tab == 'tracker' %}active{% endif %}" href="{{ url_for('hafalan_tracker', student_id=student.id) }}">
+    <i class="fa-solid fa-book-quran"></i><span>Tracker Hafalan</span>
+  </a>
+</nav>

@@ -1,0 +1,7 @@
+PERBAIKAN SANTRI TERBAIK V3
+- Menggunakan artwork final hijau-emas yang disetujui pengguna.
+- Tidak menggunakan frame transparan.
+- Menampilkan tiga kelas: Ar Rahman, Ar Rahim, Al-Bayyan.
+- Nama pemenang ditulis dinamis pada tiga kartu.
+- Tidak menambahkan periode atau tanggal di poster.
+- Output baru memakai nama *_desain_final_v3.png agar tidak tertukar cache/file lama.

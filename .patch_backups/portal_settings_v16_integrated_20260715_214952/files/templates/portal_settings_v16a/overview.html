@@ -1,0 +1,32 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<div class="ps16-status-grid">
+  <article class="ps16-card ps16-active-card"><div class="ps16-card-icon"><i class="fa-solid fa-circle-check"></i></div><div><span>Sedang digunakan portal</span><h3>{{ active_settings.tpq_name }}</h3><p>{{ active_settings.academic_year }} · {{ active_settings.semester }}</p></div></article>
+  <article class="ps16-card"><div class="ps16-card-icon"><i class="fa-solid fa-pen-ruler"></i></div><div><span>Draft yang sedang disiapkan</span><h3>{{ draft_settings.tpq_name }}</h3><p>Belum memengaruhi pengguna portal.</p></div></article>
+</div>
+<div class="ps16-section-grid">
+  <a class="ps16-link-card" href="{{ url_for('portal_settings_profile_v16a') }}"><i class="fa-solid fa-school"></i><div><h3>Profil & Identitas TPQ</h3><p>Nama TPQ, yayasan, alamat, kontak, Kepala TPQ, dan deskripsi.</p></div><i class="fa-solid fa-chevron-right"></i></a>
+  <a class="ps16-link-card" href="{{ url_for('portal_settings_academic_v16a') }}"><i class="fa-solid fa-calendar-days"></i><div><h3>Tahun Ajaran & Semester</h3><p>Tetapkan periode aktif dari pilihan resmi sampai 2049/2050.</p></div><i class="fa-solid fa-chevron-right"></i></a>
+  <a class="ps16-link-card" href="{{ url_for('portal_settings_assets_v16a') }}"><i class="fa-solid fa-images"></i><div><h3>Aset Portal</h3><p>Logo, favicon, dan kop resmi dengan preview dan fallback aman.</p></div><i class="fa-solid fa-chevron-right"></i></a>
+</div>
+<div class="ps16-publish-panel">
+  <div><h3>Terbitkan draft</h3><p>Periksa preview terlebih dahulu. Penerbitan membuat versi baru dan versi sebelumnya tetap dapat dipulihkan.</p></div>
+  <div class="ps16-publish-actions">
+    <a class="ps16-btn ps16-btn-secondary" href="{{ url_for('portal_settings_preview_v16a') }}"><i class="fa-solid fa-eye"></i> Preview Draft</a>
+    <form method="post" action="{{ url_for('portal_settings_discard_v16a') }}" data-confirm="Draft akan dikembalikan ke pengaturan aktif. Lanjutkan?"><button class="ps16-btn ps16-btn-ghost" type="submit"><i class="fa-solid fa-rotate-left"></i> Batalkan Draft</button></form>
+    <button class="ps16-btn ps16-btn-primary" type="button" data-publish-open><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan</button>
+  </div>
+</div>
+<div class="ps16-modal" data-publish-modal hidden>
+  <div class="ps16-modal-backdrop" data-publish-close></div>
+  <div class="ps16-modal-card" role="dialog" aria-modal="true" aria-labelledby="publish-title">
+    <button class="ps16-modal-x" type="button" data-publish-close aria-label="Tutup">×</button>
+    <h3 id="publish-title">Terbitkan Pengaturan Portal?</h3>
+    <p>Nama, periode, dan aset draft akan menjadi pengaturan aktif. Portal tetap dapat dikembalikan melalui Riwayat.</p>
+    <form method="post" action="{{ url_for('portal_settings_publish_v16a') }}">
+      <label>Catatan perubahan <span>(opsional)</span><textarea name="reason" rows="3" placeholder="Contoh: Memperbarui logo dan tahun ajaran aktif"></textarea></label>
+      <div class="ps16-modal-actions"><button class="ps16-btn ps16-btn-secondary" type="button" data-publish-close>Batal</button><button class="ps16-btn ps16-btn-primary" type="submit">Ya, Terbitkan</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

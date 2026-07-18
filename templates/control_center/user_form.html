@@ -1,0 +1,223 @@
+{% extends "control_center/base.html" %}
+{% block title %}{{ 'Edit' if edit_mode else 'Tambah' }} Pengguna{% endblock %}
+{% block breadcrumb %}
+  <i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i>
+  <a href="{{ url_for('control_center_users') }}">Pengguna</a>
+  <i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i>
+  <span>{{ 'Edit' if edit_mode else 'Tambah' }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title">
+      <i class="fa-solid {{ 'fa-user-pen' if edit_mode else 'fa-user-plus' }}" style="color:var(--cc-accent)"></i>
+      {{ 'Edit Pengguna' if edit_mode else 'Tambah Pengguna Baru' }}
+    </div>
+    <div class="cc-page-subtitle">
+      {{ 'Ubah data, role, atau status akun ' + (target_user.full_name if edit_mode else '') if edit_mode else 'Buat akun baru untuk staf, guru, atau wali santri' }}
+    </div>
+  </div>
+  <a href="{{ url_for('control_center_users') }}" class="cc-btn cc-btn-secondary">
+    <i class="fa-solid fa-arrow-left"></i> Kembali
+  </a>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+  <form method="post" class="cc-form">
+    <div class="cc-form-section">
+      <div class="cc-form-section-title">Informasi Dasar</div>
+      <div class="cc-form-section-body">
+        <div class="cc-form-row">
+          <div class="cc-field">
+            <label>Nama Lengkap <span class="req">*</span></label>
+            <input type="text" name="full_name" value="{{ target_user.full_name if edit_mode else '' }}"
+              placeholder="cth. Ahmad Fauzi, S.Pd" required>
+          </div>
+          <div class="cc-field">
+            <label>Username <span class="req">*</span></label>
+            <input type="text" name="username" value="{{ target_user.username if edit_mode else '' }}"
+              placeholder="cth. ahmad.fauzi" required
+              {% if edit_mode and target_user.id == current_user.id %}readonly{% endif %}>
+            <span class="cc-field-hint">Huruf kecil, angka, titik, tanpa spasi</span>
+          </div>
+        </div>
+
+        <div class="cc-form-row">
+          <div class="cc-field">
+            <label>Role <span class="req">*</span></label>
+            <select name="role" id="roleSelect" onchange="handleRoleChange()" required>
+              <option value="">-- Pilih Role --</option>
+              <option value="admin_utama" {% if edit_mode and target_user.role == 'admin_utama' %}selected{% endif %}>Super Admin (Admin Utama)</option>
+              <option value="admin"       {% if edit_mode and target_user.role == 'admin' %}selected{% endif %}>Admin</option>
+              <option value="bendahara"   {% if edit_mode and target_user.role == 'bendahara' %}selected{% endif %}>Bendahara</option>
+              <option value="guru"        {% if edit_mode and target_user.role == 'guru' %}selected{% endif %}>Guru</option>
+              <option value="guardian"    {% if edit_mode and target_user.role == 'guardian' %}selected{% endif %}>Wali Santri</option>
+            </select>
+          </div>
+          <div class="cc-field" id="assignedClassField"
+            style="{{ '' if (edit_mode and target_user.role == 'guru') else 'display:none' }}">
+            <label>Kelas yang Diampu</label>
+            <select name="assigned_class">
+              <option value="">-- Semua Kelas --</option>
+              {% for cls in classes %}
+              <option value="{{ cls }}" {% if edit_mode and target_user.assigned_class == cls %}selected{% endif %}>{{ cls }}</option>
+              {% endfor %}
+            </select>
+            <span class="cc-field-hint">Hanya untuk role Guru — membatasi akses ke kelas tertentu</span>
+          </div>
+        </div>
+
+        <div class="cc-field">
+          <label>Status Akun</label>
+          <div style="display:flex;gap:16px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+              <input type="radio" name="is_active" value="1" {% if not edit_mode or target_user.is_active %}checked{% endif %}>
+              <span class="cc-badge cc-badge-green"><i class="fa-solid fa-circle-check"></i> Aktif</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+              <input type="radio" name="is_active" value="0" {% if edit_mode and not target_user.is_active %}checked{% endif %}>
+              <span class="cc-badge cc-badge-red"><i class="fa-solid fa-circle-xmark"></i> Nonaktif</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cc-form-section">
+      <div class="cc-form-section-title">{{ 'Ubah Password (kosongkan jika tidak diubah)' if edit_mode else 'Password' }}</div>
+      <div class="cc-form-section-body">
+        <div class="cc-form-row">
+          <div class="cc-field">
+            <label>Password {{ '' if edit_mode else '' }}<span class="req">{% if not edit_mode %}*{% endif %}</span></label>
+            <div style="position:relative">
+              <input type="password" name="password" id="passwordField"
+                placeholder="{{ 'Kosongkan jika tidak diubah' if edit_mode else 'Minimal 6 karakter' }}"
+                {% if not edit_mode %}required minlength="6"{% endif %}>
+              <button type="button" data-toggle-pw="passwordField"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--cc-text-muted)">
+                <i class="fa-solid fa-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="cc-field">
+            <label>Konfirmasi Password</label>
+            <div style="position:relative">
+              <input type="password" name="password_confirm" id="passwordConfirmField"
+                placeholder="Ulangi password">
+              <button type="button" data-toggle-pw="passwordConfirmField"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--cc-text-muted)">
+                <i class="fa-solid fa-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% if not edit_mode %}
+        <div style="font-size:.75rem;color:var(--cc-text-muted);background:var(--cc-bg);padding:10px 12px;border-radius:6px">
+          <i class="fa-solid fa-circle-info"></i>
+          Password default jika tidak diisi: <code>tpqhmarisa</code>. Minta pengguna mengganti password setelah login pertama.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px">
+      <a href="{{ url_for('control_center_users') }}" class="cc-btn cc-btn-secondary">Batal</a>
+      <button type="submit" class="cc-btn cc-btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i>
+        {{ 'Simpan Perubahan' if edit_mode else 'Buat Pengguna' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Info panel -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    {% if edit_mode %}
+    <div class="cc-card">
+      <div class="cc-card-header">
+        <div class="cc-card-title"><i class="fa-solid fa-circle-info"></i> Info Akun</div>
+      </div>
+      <div class="cc-card-body" style="padding-top:12px;padding-bottom:12px">
+        <div class="cc-sysinfo" style="grid-template-columns:1fr">
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">ID</span><span class="cc-sysinfo-val">#{{ target_user.id }}</span></div>
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Dibuat</span><span class="cc-sysinfo-val">{{ target_user.created_at.strftime('%d/%m/%Y') if target_user.created_at else '—' }}</span></div>
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Login Terakhir</span><span class="cc-sysinfo-val">{{ target_user.last_login_at.strftime('%d/%m/%Y %H:%M') if target_user.last_login_at else 'Belum pernah' }}</span></div>
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Santri Diasuh</span><span class="cc-sysinfo-val">{{ target_user.students|length }}</span></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="cc-card">
+      <div class="cc-card-header">
+        <div class="cc-card-title"><i class="fa-solid fa-shield-halved"></i> Hak Akses Role</div>
+      </div>
+      <div class="cc-card-body" style="font-size:.78rem">
+        <div id="roleInfo">
+          <p style="color:var(--cc-text-muted)">Pilih role untuk melihat hak aksesnya.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var roleDescriptions = {
+  admin_utama: {
+    icon: 'fa-crown', color: '#7c3aed',
+    label: 'Super Admin',
+    perms: ['Akses Control Center penuh','Kelola semua pengguna','Lihat & edit semua data','Backup & restore database','Pengaturan website','Semua modul']
+  },
+  admin: {
+    icon: 'fa-user-tie', color: '#3b82f6',
+    label: 'Admin',
+    perms: ['Dashboard admin','Database santri','Silabus & kurikulum','Prestasi harian','E-Raport','Perpustakaan','Hadis harian']
+  },
+  bendahara: {
+    icon: 'fa-coins', color: '#d97706',
+    label: 'Bendahara',
+    perms: ['Sistem keuangan (penuh)','Tagihan & pembayaran','Laporan keuangan','Audit trail keuangan']
+  },
+  guru: {
+    icon: 'fa-chalkboard-user', color: '#059669',
+    label: 'Guru',
+    perms: ['Silabus kelas yang diampu','Prestasi & hafalan santri','E-Raport kelas yang diampu','Perpustakaan (baca)']
+  },
+  guardian: {
+    icon: 'fa-user', color: '#6b7280',
+    label: 'Wali Santri',
+    perms: ['Portal wali (hanya anaknya)','Lihat perkembangan santri','Lihat tagihan & pembayaran','Lihat e-raport yang diterbitkan']
+  }
+};
+
+function handleRoleChange() {
+  var role = document.getElementById('roleSelect').value;
+  var classField = document.getElementById('assignedClassField');
+  classField.style.display = (role === 'guru') ? '' : 'none';
+
+  var info = document.getElementById('roleInfo');
+  if (!role || !roleDescriptions[role]) {
+    info.innerHTML = '<p style="color:var(--cc-text-muted)">Pilih role untuk melihat hak aksesnya.</p>';
+    return;
+  }
+  var r = roleDescriptions[role];
+  info.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    + '<i class="fa-solid ' + r.icon + '" style="color:' + r.color + ';font-size:1.1rem"></i>'
+    + '<strong style="color:' + r.color + '">' + r.label + '</strong>'
+    + '</div>'
+    + '<ul style="list-style:none;display:flex;flex-direction:column;gap:6px">'
+    + r.perms.map(function(p) {
+        return '<li style="display:flex;align-items:center;gap:8px">'
+          + '<i class="fa-solid fa-circle-check" style="color:#059669;font-size:.7rem"></i>'
+          + '<span>' + p + '</span></li>';
+      }).join('')
+    + '</ul>';
+}
+
+// Init on page load
+var initRole = document.getElementById('roleSelect').value;
+if (initRole) handleRoleChange();
+</script>
+{% endblock %}

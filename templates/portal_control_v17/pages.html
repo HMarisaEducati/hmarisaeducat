@@ -1,0 +1,11 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}Pengelola Halaman{% endblock %}
+{% block pc17_subtitle %}Buat halaman baru untuk Portal Admin, Portal Wali, atau publik dengan blok visual.{% endblock %}
+{% block pc17_content %}
+<div class="pc17-toolbar"><a class="btn btn-primary" href="{{ url_for('portal_control_page_edit_v17') }}"><i class="fa-solid fa-plus"></i> Tambah Halaman</a></div>
+<section class="card pc17-card">
+  {% if rows %}<div class="table-wrap"><table class="pc17-table"><thead><tr><th>Halaman</th><th>Target</th><th>Menu</th><th>Status</th><th>Versi</th><th>Aksi</th></tr></thead><tbody>
+  {% for row in rows %}<tr class="{{ 'is-archived' if row.archived_at else '' }}"><td><strong>{{ row.title }}</strong><small>/portal/page/{{ row.slug }}</small></td><td>{{ row.target_scope|title }}</td><td>{{ row.menu_label or 'Tidak tampil' }}</td><td><span class="pc17-badge {{ row.status }}">{{ 'Arsip' if row.archived_at else row.status|title }}</span></td><td>{{ row.version_no }}</td><td><div class="button-row"><a class="btn btn-outline" href="{{ url_for('portal_control_page_edit_v17', page_id=row.id) }}">Edit</a><a class="btn btn-outline" href="{{ url_for('portal_control_page_preview_v17', page_id=row.id) }}">Preview</a><form method="post" action="{{ url_for('portal_control_page_archive_v17', page_id=row.id) }}"><button class="btn btn-ghost" type="submit">{{ 'Pulihkan' if row.archived_at else 'Arsipkan' }}</button></form></div></td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<div class="empty-state"><i class="fa-solid fa-file-circle-plus"></i><h3>Belum ada halaman buatan</h3><p>Buat halaman pertama tanpa coding.</p></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Ringkasan Keuangan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page" data-finance-view="summary">
+  <div class="finance-page-heading">
+    <div><span class="eyebrow">Admin · Administrasi Iuran</span><h1>Sistem Keuangan</h1><p>Ringkasan tagihan dan status pembayaran santri.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('finance_bill_new') }}"><i class="fa-solid fa-plus"></i> Buat Tagihan</a>
+  </div>
+  {% include "finance_v15b/_tabs.html" %}
+
+  <section class="finance-stat-grid">
+    <article class="finance-stat"><span>Total Santri</span><strong>{{ total_students }}</strong><small>Santri aktif</small></article>
+    <article class="finance-stat status-paid"><span>Sudah Lunas</span><strong>{{ statuses.get('Lunas', 0) }}</strong><small>Tagihan lunas</small></article>
+    <article class="finance-stat status-partial"><span>Pembayaran Sebagian</span><strong>{{ statuses.get('Sebagian', 0) }}</strong><small>Masih memiliki sisa</small></article>
+    <article class="finance-stat status-unpaid"><span>Belum Lunas</span><strong>{{ statuses.get('Belum Lunas', 0) }}</strong><small>Perlu ditindaklanjuti</small></article>
+    <article class="finance-stat status-waived"><span>Dibebaskan</span><strong>{{ statuses.get('Dibebaskan', 0) }}</strong><small>Tidak dihitung tunggakan</small></article>
+  </section>
+
+  <section class="finance-panel finance-progress-panel">
+    <div class="finance-panel-head"><div><h2>Pembayaran Periode Aktif</h2><p>{{ current_month }} {{ current_year }} · {{ general.academic_year_active }} · {{ general.semester_active }}</p></div><strong>{{ percent }}%</strong></div>
+    <div class="finance-progress" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ percent }}%"></span></div>
+    <small>{{ active_total }} tagihan aktif pada periode ini.</small>
+  </section>
+
+  <section class="finance-panel">
+    <div class="finance-panel-head"><div><h2>Ringkasan per Kelas</h2><p>Status administrasi berdasarkan seluruh tagihan aktif.</p></div></div>
+    <div class="finance-class-grid">
+      {% for row in class_rows %}
+      <article class="finance-class-card">
+        <h3>{{ row.class_name }}</h3><p>{{ row.students }} santri aktif</p>
+        <dl><div><dt>Lunas</dt><dd>{{ row['Lunas'] }}</dd></div><div><dt>Sebagian</dt><dd>{{ row['Sebagian'] }}</dd></div><div><dt>Belum Lunas</dt><dd>{{ row['Belum Lunas'] }}</dd></div><div><dt>Dibebaskan</dt><dd>{{ row['Dibebaskan'] }}</dd></div></dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="finance-two-column">
+    <section class="finance-panel">
+      <div class="finance-panel-head"><div><h2>Pembayaran Terbaru</h2><p>Maksimal lima transaksi aktif terakhir.</p></div><a href="{{ url_for('finance_payments') }}">Lihat semua</a></div>
+      <div class="finance-list">
+        {% for payment in latest_payments %}
+          {% set bill = latest_bill_map.get(payment.bill_id) %}
+          {% set student = student_map.get(bill.santri_id) if bill else none %}
+          {% set charge = charge_map.get(bill.charge_type_id) if bill else none %}
+          <a class="finance-list-item" href="{{ url_for('finance_payment_detail_v15cd', payment_id=payment.id) }}"><span><strong>{{ student.name if student else 'Santri tidak ditemukan' }}</strong><small>{{ payment.transaction_number }} · {{ charge.name if charge else 'Tagihan' }}{% if bill %} · {{ bill.period_label }} {{ bill.period_year }}{% endif %}</small></span><b>{{ payment.amount|rupiah }}</b></a>
+        {% else %}
+          <div class="finance-empty compact"><i class="fa-solid fa-receipt"></i><strong>Belum ada pembayaran tercatat</strong><span>Transaksi pembayaran akan tampil di sini setelah disimpan.</span></div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="finance-panel">
+      <div class="finance-panel-head"><div><h2>Belum Lunas</h2><p>Daftar singkat tagihan yang perlu diperiksa.</p></div><a href="{{ url_for('finance_administration', status='Belum Lunas') }}">Lihat semua</a></div>
+      <div class="finance-list">
+        {% for bill in unpaid %}
+          {% set student = student_map.get(bill.santri_id) %}{% set charge = charge_map.get(bill.charge_type_id) %}
+          <a class="finance-list-item" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><span><strong>{{ student.name if student else 'Santri tidak ditemukan' }}</strong><small>{{ charge.name if charge else 'Tagihan' }} · {{ bill.period_label }} {{ bill.period_year }}</small></span><b>{{ bill.remaining_amount|rupiah }}</b></a>
+        {% else %}
+          <div class="finance-empty compact"><i class="fa-solid fa-circle-check"></i><strong>Tidak ada tunggakan</strong><span>Semua tagihan aktif sudah selesai.</span></div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script>{% endblock %}

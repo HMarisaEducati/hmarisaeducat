@@ -1,0 +1,26 @@
+PATCH SILABUS BULANAN FINAL V3 — TPQ HMarisa
+Tanggal: 14 Juli 2026
+
+CAKUPAN PERUBAHAN
+1. Memperbaiki halaman Detail Silabus yang sebelumnya menghasilkan 500 Internal Server Error.
+2. PDF Silabus per data menggunakan A4 landscape, kop surat berbentuk gambar, tabel identitas, tabel pekan 1–5, dan tanda tangan Kepala TPQ serta Guru/Wali Kelas.
+3. Export Database Silabus mempertahankan kolom Bulan/Tahun, Kelas, Bidang Pelajaran, Materi Pokok, Target, Status, dan Versi. Perubahan hanya pada format visual PDF/Excel.
+4. Template Import disamakan dengan formulir Tambah Rencana Bulanan: Kelas, Bulan, Tahun Ajaran, Semester, Bidang Pelajaran, Materi Pokok, Target Pembelajaran, Rencana Materi Pekan 1–5, Catatan Guru, Status, dan Versi.
+5. Import menggunakan tahap pratinjau dan validasi sebelum data disimpan.
+6. Menambahkan Rekap Silabus Semester dengan filter kelas, tahun ajaran, semester, serta unduhan PDF/Excel.
+7. Tampilan halaman Silabus, Detail, Import, Database, dan Rekap Semester dibuat responsif untuk HP, tablet, dan desktop.
+8. Menambahkan alat reset data silabus yang aman. Reset tidak berjalan otomatis dan selalu membuat cadangan database SQLite terlebih dahulu.
+
+CATATAN PENTING
+- Patch tidak menyertakan database produksi, folder instance, folder uploads, atau file .env.
+- Patch tidak menghapus data silabus secara otomatis.
+- File kop surat berada di static/img/kop_surat_tpq_hmarisa.png dan dapat diganti dengan gambar kop final pada lokasi yang sama tanpa mengubah kode.
+
+PERBAIKAN KHUSUS ERROR 500 DETAIL SILABUS
+- Penyebab dari Error Log PythonAnywhere: template curriculum_detail.html memanggil class_teacher(row.class_name), tetapi fungsi class_teacher tidak tersedia di konteks Jinja pada versi aktif.
+- Perbaikan: route curriculum_detail menghitung teacher_name di Python lalu mengirimkannya ke template.
+- Template menggunakan {{ teacher_name }} sehingga tidak lagi memanggil fungsi yang tidak tersedia.
+- Fungsi class_teacher juga ditambahkan ke context processor sebagai pengaman kompatibilitas.
+
+KOP SURAT FINAL
+- File static/img/kop_surat_tpq_hmarisa.png telah diganti dengan kop surat final yang dikirim pengguna (1179 x 272 piksel).

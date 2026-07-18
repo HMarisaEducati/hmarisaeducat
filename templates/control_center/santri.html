@@ -1,0 +1,178 @@
+{% extends "control_center/base.html" %}
+{% block title %}Data Santri{% endblock %}
+
+{% block breadcrumb %}
+<span class="cc-bc-sep">/</span>
+<span>Data Santri</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <h1 class="cc-page-title"><i class="fa-solid fa-child-reaching"></i> Data Santri</h1>
+    <p class="cc-page-sub">Pantau dan kelola seluruh data santri TPQ HMarisa</p>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('students') }}?tab=add" class="cc-btn cc-btn-primary" target="_blank">
+      <i class="fa-solid fa-plus"></i> Tambah Santri
+    </a>
+    <a href="{{ url_for('students') }}" class="cc-btn cc-btn-outline" target="_blank">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Modul Santri
+    </a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="cc-stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); margin-bottom: 2rem;">
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)"><i class="fa-solid fa-users"></i></div>
+    <div class="cc-stat-value">{{ total }}</div>
+    <div class="cc-stat-label">Total Santri</div>
+  </div>
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon" style="background:linear-gradient(135deg,#10b981,#34d399)"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="cc-stat-value">{{ active }}</div>
+    <div class="cc-stat-label">Aktif</div>
+  </div>
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><i class="fa-solid fa-circle-pause"></i></div>
+    <div class="cc-stat-value">{{ total - active }}</div>
+    <div class="cc-stat-label">Tidak Aktif</div>
+  </div>
+  {% for cls, cnt in by_class.items() %}
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)"><i class="fa-solid fa-school"></i></div>
+    <div class="cc-stat-value">{{ cnt }}</div>
+    <div class="cc-stat-label">{{ cls }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Filter & Search -->
+<div class="cc-card" style="margin-bottom:1.5rem">
+  <div class="cc-card-body" style="padding:1rem 1.5rem">
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+      <input type="text" id="santriSearch" placeholder="🔍 Cari nama atau NIS..." class="cc-input" style="flex:1;min-width:200px" oninput="filterSantri()">
+      <select id="santriClass" class="cc-input" style="width:180px" onchange="filterSantri()">
+        <option value="">Semua Kelas</option>
+        {% for cls in classes %}
+        <option value="{{ cls }}">{{ cls }}</option>
+        {% endfor %}
+      </select>
+      <select id="santriStatus" class="cc-input" style="width:140px" onchange="filterSantri()">
+        <option value="">Semua Status</option>
+        <option value="aktif">Aktif</option>
+        <option value="nonaktif">Tidak Aktif</option>
+      </select>
+      <span id="santriCount" class="cc-badge cc-badge-info">{{ santri_list|length }} santri</span>
+    </div>
+  </div>
+</div>
+
+<!-- Santri Table -->
+<div class="cc-card">
+  <div class="cc-card-body" style="padding:0">
+    <div class="cc-table-wrapper">
+      <table class="cc-table" id="santriTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>NIS</th>
+            <th>Nama Santri</th>
+            <th>Kelas</th>
+            <th>Wali</th>
+            <th>No. HP Wali</th>
+            <th>Status</th>
+            <th>Bergabung</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in santri_list %}
+          <tr data-name="{{ s.name|lower }}" data-nis="{{ s.nis|lower }}" data-class="{{ s.class_name }}" data-status="{{ 'aktif' if s.is_active else 'nonaktif' }}">
+            <td>{{ loop.index }}</td>
+            <td><code style="font-size:.8rem">{{ s.nis }}</code></td>
+            <td>
+              <div style="font-weight:600">{{ s.name }}</div>
+              {% if s.nickname %}<div style="font-size:.78rem;opacity:.6">{{ s.nickname }}</div>{% endif %}
+            </td>
+            <td><span class="cc-badge cc-badge-primary">{{ s.class_name }}</span></td>
+            <td>{{ s.guardian_name or '—' }}</td>
+            <td>
+              {% if s.guardian_phone %}
+              <a href="https://wa.me/62{{ s.guardian_phone.lstrip('0') }}" target="_blank" style="color:#10b981;text-decoration:none">
+                <i class="fa-brands fa-whatsapp"></i> {{ s.guardian_phone }}
+              </a>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if s.is_active %}
+              <span class="cc-badge cc-badge-success">Aktif</span>
+              {% else %}
+              <span class="cc-badge cc-badge-warning">Tidak Aktif</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap">{{ s.joined_date.strftime('%d/%m/%Y') if s.joined_date else '—' }}</td>
+            <td>
+              <div style="display:flex;gap:.4rem">
+                <a href="{{ url_for('student_detail', student_id=s.id) }}" class="cc-btn-icon" title="Lihat Detail" target="_blank">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+                <a href="{{ url_for('report_edit', student_id=s.id) }}" class="cc-btn-icon" title="Edit Raport" target="_blank">
+                  <i class="fa-solid fa-file-pen"></i>
+                </a>
+                <form method="POST" action="{{ url_for('toggle_student', student_id=s.id) }}" style="display:inline">
+                  <button type="submit" class="cc-btn-icon {% if s.is_active %}cc-btn-icon-warn{% endif %}" title="{{ 'Nonaktifkan' if s.is_active else 'Aktifkan' }}"
+                    onclick="return confirm('{{ 'Nonaktifkan' if s.is_active else 'Aktifkan' }} santri {{ s.name }}?')">
+                    <i class="fa-solid {{ 'fa-toggle-on' if s.is_active else 'fa-toggle-off' }}"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="cc-card-footer" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+    <span style="font-size:.85rem;opacity:.6">Menampilkan <strong id="visibleCount">{{ santri_list|length }}</strong> dari {{ santri_list|length }} santri</span>
+    <div style="display:flex;gap:.5rem">
+      <a href="/students/export.csv?download=1" class="cc-btn cc-btn-outline" style="font-size:.82rem">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+      <a href="{{ url_for('students') }}" class="cc-btn cc-btn-outline" style="font-size:.82rem" target="_blank">
+        <i class="fa-solid fa-table"></i> Kelola di Modul Santri
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterSantri() {
+  const q = document.getElementById('santriSearch').value.toLowerCase();
+  const cls = document.getElementById('santriClass').value;
+  const status = document.getElementById('santriStatus').value;
+  let visible = 0;
+  document.querySelectorAll('#santriTable tbody tr').forEach(row => {
+    const name = row.dataset.name || '';
+    const nis  = row.dataset.nis  || '';
+    const rowCls = row.dataset.class || '';
+    const rowStatus = row.dataset.status || '';
+    const matchQ = !q || name.includes(q) || nis.includes(q);
+    const matchCls = !cls || rowCls === cls;
+    const matchSt = !status || rowStatus === status;
+    if (matchQ && matchCls && matchSt) {
+      row.style.display = '';
+      visible++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  document.getElementById('santriCount').textContent = visible + ' santri';
+  document.getElementById('visibleCount').textContent = visible;
+}
+</script>
+{% endblock %}

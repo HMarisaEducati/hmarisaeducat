@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Sistem Keuangan{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><span class="eyebrow">Admin · Keuangan</span><h1>Sistem Keuangan</h1><p>Input, cari, edit, verifikasi, dan ekspor administrasi santri.</p></div>
+  <div class="button-row">
+    <a class="btn btn-primary" href="#input-tagihan"><i class="fa-solid fa-plus"></i> Input</a>
+    <a class="btn btn-outline" href="#edit-data"><i class="fa-solid fa-pen"></i> Edit</a>
+    <a class="btn btn-outline" href="{{ url_for('backup_financial') }}"><i class="fa-solid fa-file-csv"></i> Ekspor</a>
+  </div>
+</div>
+
+<section class="card" id="input-tagihan">
+  <div class="card-head"><h2>Buat Tagihan Baru</h2><span class="muted">Nominal awal Rp50.000 dan tetap dapat diubah.</span></div>
+  <form method="post" class="form-grid form-grid-3">
+    <label>Santri<select name="student_id" required>{% for student in students %}<option value="{{ student.id }}">{{ student.name }} — {{ student.class_name }}</option>{% endfor %}</select></label>
+    <label>Bulan<select name="month">{% for month in MONTHS %}<option>{{ month }}</option>{% endfor %}</select></label>
+    <label>Tahun<select name="year">{% for year in years %}<option>{{ year }}</option>{% endfor %}</select></label>
+    <label>Status<select name="status"><option>Belum Lunas</option><option>Menunggu Verifikasi</option><option>Lunas</option></select></label>
+    <label>Nominal<input type="number" name="nominal" value="50000" min="0" step="1000"></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Buat Tagihan</button></div>
+  </form>
+</section>
+
+<section class="card" id="edit-data">
+  <div class="card-head"><h2>Cari Administrasi Santri</h2><span class="muted">Gunakan tiga kolom agar tidak perlu menggulir satu per satu.</span></div>
+  <form method="get" class="search-filter-form finance-search-grid">
+    <label>Nama Santri<input name="q" value="{{ q }}" placeholder="Ketik nama santri"></label>
+    <label>Kelas<select name="class_name"><option value="">Semua kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Bulan<select name="month"><option value="">Semua bulan</option>{% for month in MONTHS %}<option value="{{ month }}" {% if month_filter == month %}selected{% endif %}>{{ month }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+    {% if q or class_filter or month_filter %}<a class="btn btn-outline" href="{{ url_for('finance') }}#edit-data">Reset</a>{% endif %}
+  </form>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Hasil Administrasi</h2><span class="muted">{{ total_matches }} data ditemukan</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Santri</th><th>Periode</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>
+  {% for bill in bills %}<tr>
+    <td><strong>{{ bill.santri.name }}</strong><small class="table-sub">{{ bill.santri.class_name }}</small></td>
+    <td>{{ bill.month }} {{ bill.year }}</td><td>{{ bill.nominal|rupiah }}</td><td><span class="badge">{{ bill.status }}</span></td>
+    <td>{% if bill.proof_path %}<a href="{{ url_for('view_bill_proof', bill_id=bill.id) }}" target="_blank">Lihat bukti</a>{% else %}<span class="muted">Belum ada</span>{% endif %}</td>
+    <td><div class="table-actions">
+      <a href="{{ url_for('edit_bill', bill_id=bill.id) }}"><i class="fa-solid fa-pen"></i> Edit</a>
+      <a href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>
+      <a href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
+      {% if bill.status != 'Lunas' %}<form method="post" action="{{ url_for('verify_bill', bill_id=bill.id) }}"><button type="submit">Verifikasi</button></form>{% endif %}
+    </div></td>
+  </tr>{% else %}<tr><td colspan="6" class="empty">Data administrasi tidak ditemukan.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

@@ -1,11 +1,62 @@
 {% extends "base.html" %}
 {% block title %}Dashboard Wali Santri{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
 {% block content %}
-<section class="quote-banner guardian-banner">
+
+{# ===== PUSAT KENDALI WALI SANTRI ===== #}
+<section class="pk-section">
+  <div class="pk-header">
+    <span class="eyebrow">Pusat Kendali</span>
+    <h2>Wali Santri — {{ student.name }}</h2>
+    <p>NIS {{ student.nis }} · Kelas {{ student.class_name }}. Pilih menu untuk memantau perkembangan ananda.</p>
+  </div>
+  <div class="pk-grid">
+    <a class="pk-card" href="{{ url_for('guardian_student_detail', student_id=student.id) }}">
+      <span class="pk-card-icon green"><i class="fa-solid fa-child-reaching"></i></span>
+      <div><h3>Profil &amp; Perkembangan</h3><p>Data dan riwayat belajar ananda</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('guardian_student_detail', student_id=student.id) }}">
+      <span class="pk-card-icon teal"><i class="fa-solid fa-clipboard-check"></i></span>
+      <div><h3>Kehadiran &amp; Mutabaah</h3><p>Catatan kehadiran dan ibadah harian</p></div>
+    </a>
+    <a class="pk-card {% if raport.status != 'Diterbitkan' %}pk-coming-soon{% endif %}" href="{% if raport.status == 'Diterbitkan' %}{{ url_for('guardian_report', student_id=student.id) }}{% else %}#{% endif %}">
+      <span class="pk-card-icon blue"><i class="fa-solid fa-file-pen"></i></span>
+      <div><h3>Nilai &amp; Raport</h3><p>
+        {% if raport.status == 'Diterbitkan' %}Lihat E-Raport yang telah diterbitkan{% else %}Raport belum diterbitkan{% endif %}
+      </p>
+      {% if raport.status != 'Diterbitkan' %}<span class="pk-coming-badge">Belum Tersedia</span>{% endif %}
+      </div>
+    </a>
+    <a class="pk-card" href="{{ url_for('guardian_student_detail', student_id=student.id) }}">
+      <span class="pk-card-icon purple"><i class="fa-solid fa-star-and-crescent"></i></span>
+      <div><h3>Hafalan Juz 30</h3><p>Progress hafalan surah ananda</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}">
+      <span class="pk-card-icon rose"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+      <div><h3>Pembayaran &amp; Tagihan</h3><p>Status iuran dan riwayat pembayaran</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('guardian_student_detail', student_id=student.id) }}">
+      <span class="pk-card-icon amber"><i class="fa-solid fa-clock-rotate-left"></i></span>
+      <div><h3>Riwayat Perkembangan</h3><p>Histori belajar dan pencapaian</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('library') }}">
+      <span class="pk-card-icon teal"><i class="fa-solid fa-book-open"></i></span>
+      <div><h3>Perpustakaan Digital</h3><p>Buku dan materi pembelajaran</p></div>
+    </a>
+    <a class="pk-card pk-coming-soon" href="#">
+      <span class="pk-card-icon slate"><i class="fa-solid fa-envelope-open-text"></i></span>
+      <div><h3>Perizinan</h3><p>Ajukan izin tidak hadir ananda</p><span class="pk-coming-badge">Segera Hadir</span></div>
+    </a>
+  </div>
+</section>
+
+<hr class="pk-divider">
+
+<section class="quote-banner guardian-banner" {% if portal_current_theme.enabled and portal_current_theme.banner_image_url %}data-custom-image="1" style="--pe-custom-image:url('{{ portal_current_theme.banner_image_url }}')"{% endif %}>
   <div class="quote-content">
     <span class="quote-pill"><i class="fa-solid fa-heart"></i> Selamat Datang, Ayah/Bunda</span>
-    <h2>Assalamu'alaikum, Wali {{ student.name }}</h2>
-    <p class="guardian-intro">Pantau mutabaah, hafalan, tagihan, dan buku digital ananda dengan mudah.</p>
+    <h2>{% if portal_guardian_theme.enabled %}{{ portal_guardian_theme.welcome_title }}{% else %}Assalamu'alaikum, Wali {{ student.name }}{% endif %}</h2>
+    <p class="guardian-intro">{% if portal_guardian_theme.enabled %}{{ portal_guardian_theme.welcome_text }}{% else %}Pantau mutabaah, hafalan, tagihan, dan buku digital ananda dengan mudah.{% endif %}</p>
   </div>
   <div class="quote-watermark">علم</div>
 </section>
@@ -16,12 +67,10 @@
     <h2>{{ student.name }}</h2>
     <p>NIS {{ student.nis }} · Kelas {{ student.class_name }}</p>
   </div>
-  <a class="btn btn-primary" href="{{ url_for('guardian_student_detail', student_id=student.id) }}">
-    <i class="fa-solid fa-child-reaching"></i> Lihat Perkembangan
-  </a>
+  <div class="button-row"><a class="btn btn-primary" href="{{ url_for('guardian_student_detail', student_id=student.id) }}"><i class="fa-solid fa-child-reaching"></i> Lihat Perkembangan</a>{% if raport.status == 'Diterbitkan' %}<a class="btn btn-gold" href="{{ url_for('guardian_report', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Lihat Raport</a>{% endif %}</div>
 </div>
 
-<section class="stat-grid">
+<section class="stat-grid guardian-section-stats">
   <article class="stat-card">
     <div><span>Catatan Mutabaah</span><strong>{{ mutabaah|length }}</strong><small>Riwayat belajar yang tercatat</small></div>
     <i class="stat-icon green fa-solid fa-book-open-reader"></i>
@@ -31,7 +80,7 @@
     <i class="stat-icon blue fa-solid fa-star"></i>
   </article>
   <article class="stat-card">
-    <div><span>Tagihan Aktif</span><strong>{{ unpaid_count }}</strong><small>Belum lunas atau menunggu verifikasi</small></div>
+    <div><span>Tagihan Aktif</span><strong>{{ guardian_finance_unpaid_count|default(unpaid_count) }}</strong><small>Belum lunas atau pembayaran sebagian</small></div>
     <i class="stat-icon rose fa-solid fa-wallet"></i>
   </article>
   <article class="stat-card">
@@ -41,7 +90,7 @@
 </section>
 
 <section class="two-column">
-  <article class="card">
+  <article class="card guardian-section-mutabaah">
     <div class="card-head">
       <div class="card-title-icon"><i class="fa-solid fa-clock-rotate-left"></i><h2>Mutabaah Terbaru</h2></div>
       <a href="{{ url_for('guardian_student_detail', student_id=student.id) }}">Lihat semua <i class="fa-solid fa-arrow-right"></i></a>
@@ -52,7 +101,7 @@
         <time>{{ entry.date }}</time>
         <div>
           <strong>{{ entry.tilawati or 'Progres mengaji' }}</strong>
-          {% if entry.fiqih %}<p>{{ entry.fiqih }}</p>{% endif %}
+          {% if entry.subject or entry.material %}<p>{{ entry.subject or '' }}{% if entry.material %} — {{ entry.material }}{% endif %}</p>{% endif %}
           {% if entry.notes %}<small>{{ entry.notes }}</small>{% endif %}
         </div>
       </article>
@@ -60,7 +109,7 @@
     </div>
   </article>
 
-  <article class="card">
+  <article class="card guardian-section-hafalan">
     {% set percent = ((hafalan_done / SURAH_JUZ30|length) * 100)|round|int %}
     <div class="card-head">
       <div class="card-title-icon"><i class="fa-solid fa-award"></i><h2>Progres Hafalan</h2></div>
@@ -76,35 +125,19 @@
   </article>
 </section>
 
-<section class="card">
+<section class="card finance-v15e-card guardian-section-finance">
   <div class="card-head">
-    <div class="card-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i><h2>Tagihan Terbaru</h2></div>
-    <span class="muted">Pembayaran dapat dikirim melalui unggah bukti transfer</span>
+    <div class="card-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i><h2>Administrasi Iuran</h2></div>
+    <a href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}">Lihat semua <i class="fa-solid fa-arrow-right"></i></a>
   </div>
-  <div class="bill-grid">
-    {% for bill in bills[:6] %}
-    <article class="bill-card">
-      <div>
-        <span class="badge">{{ bill.month }} {{ bill.year }}</span>
-        <h3>{{ bill.nominal|rupiah }}</h3>
-        <p class="status-text">{{ bill.status }}</p>
-      </div>
-      <div class="button-row compact">
-        {% if bill.status == 'Lunas' %}<a class="btn btn-small btn-outline" href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>{% endif %}
-        <a class="btn btn-small btn-whatsapp" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
-      </div>
-      {% if bill.status != 'Lunas' %}
-      <form method="post" action="{{ url_for('upload_bill_proof', bill_id=bill.id) }}" enctype="multipart/form-data" class="upload-inline">
-        <input type="file" name="proof" accept="image/*,.pdf" required>
-        <button class="btn btn-small btn-primary" type="submit">Kirim Bukti</button>
-      </form>
-      {% endif %}
-    </article>
-    {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
+  <div class="guardian-bill-list compact-list">
+    {% for row in guardian_finance_bills[:4] %}{% set bill=row.bill %}{% set charge=row.charge %}
+    <article><div class="guardian-bill-main"><span class="finance-v15e-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span><h3>{{ charge.name if charge else 'Tagihan' }} · {{ bill.period_label }} {{ bill.period_year }}</h3><small>{{ bill.bill_number }}</small></div><dl><div><dt>Nominal</dt><dd>{{ bill.amount|rupiah }}</dd></div><div><dt>Dibayar</dt><dd>{{ bill.paid_amount|rupiah }}</dd></div><div><dt>Sisa</dt><dd>{{ bill.remaining_amount|rupiah }}</dd></div></dl></article>
+    {% else %}<div class="finance-v15e-empty compact"><strong>Belum ada tagihan.</strong><span>Informasi akan tampil setelah dibuat oleh admin.</span></div>{% endfor %}
   </div>
 </section>
 
-<section class="card guardian-access-note">
+<section class="card guardian-access-note guardian-section-access">
   <div class="card-title-icon"><i class="fa-solid fa-shield-halved"></i><div><h2>Akses Wali Santri</h2><small>Halaman wali hanya menampilkan perkembangan belajar, hafalan, tagihan, dan perpustakaan digital.</small></div></div>
 </section>
 {% endblock %}

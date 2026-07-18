@@ -1,0 +1,15 @@
+{
+  "app.py": true,
+  "templates/base.html": true,
+  "templates/students.html": true,
+  "templates/student_detail.html": true,
+  "templates/daily_progress.html": true,
+  "templates/academics.html": true,
+  "templates/mutabaah_history.html": true,
+  "templates/mutabaah_detail.html": true,
+  "templates/mutabaah_edit.html": true,
+  "templates/hafalan_tracker.html": true,
+  "templates/_journal_tabs.html": true,
+  "templates/_progress_student_header.html": true,
+  "static/css/daily_progress_patch.css": true
+}

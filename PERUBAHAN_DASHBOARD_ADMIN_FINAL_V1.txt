@@ -1,0 +1,9 @@
+PATCH DASHBOARD ADMIN FINAL V1
+
+1. Logo sidebar, topbar mobile, dan drawer memakai logo resmi yang sama dengan Portal Wali.
+2. Kartu Hadis Harian dan Santri Terbaik Minggu Ini memakai latar hijau.
+3. Filter Silabus Bulanan pada Dashboard menampilkan kelas/bulan yang dipilih dan membawa filter ke halaman Silabus.
+4. Menambahkan menu Manajemen Pengguna khusus Admin Utama.
+5. Admin Utama dapat mengubah username/password sendiri, menambah Admin/Guru, mengedit, mereset password, serta menonaktifkan akun.
+6. Guru dapat diberi kelas yang diampu. Menu sensitif seperti Manajemen Pengguna, Sistem Keuangan, Data Master, Database Santri, Hadis Harian, dan Backup tidak ditampilkan untuk Guru.
+7. Database dan unggahan tidak disertakan dalam patch. Migrasi kolom akun dijalankan otomatis saat aplikasi dimuat.

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Login Admin — Portal TPQ HMarisa{% endblock %}
+{% block auth_content %}
+<section class="guardian-entry final-entry admin-login-unified">
+  <div class="guardian-hero">
+    <div class="guardian-brand-main">
+      <span class="guardian-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa"></span>
+      <div>
+        <span class="eyebrow light">Portal Pendidikan Al-Qur'an</span>
+        <h1>TPQ HMarisa</h1>
+        <p>Akses perkembangan dan dokumen ananda dengan aman.</p>
+      </div>
+    </div>
+    {% if daily_hadith %}
+    <article class="daily-hadith-card">
+      <span class="hadith-label">Hadis Harian</span>
+      <p class="hadith-arabic">{{ daily_hadith.arabic }}</p>
+      <p class="hadith-translation">“{{ daily_hadith.translation }}”</p>
+      <small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %}</small>
+    </article>
+    {% endif %}
+  </div>
+
+  <div class="guardian-form-side">
+    <div class="guardian-form-card">
+      <div class="login-heading">
+        <span class="eyebrow">Akses Terbatas</span>
+        <h2>Login Admin</h2>
+        <p>Masukkan username dan kata sandi administrator untuk membuka panel pengelolaan.</p>
+      </div>
+      <form method="post" action="{{ url_for('admin_login') }}" class="form-grid login-form">
+        <label>Username Admin
+          <div class="input-with-icon"><i class="fa-regular fa-user"></i><input type="text" name="username" value="{{ username or '' }}" placeholder="Masukkan username admin" autocomplete="username" required autofocus></div>
+        </label>
+        <label>Kata Sandi
+          <div class="input-with-icon password-wrap"><i class="fa-solid fa-lock"></i><input id="password" type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required><button type="button" class="icon-button" data-toggle-password="#password" aria-label="Lihat kata sandi"><i class="fa-regular fa-eye"></i></button></div>
+        </label>
+        <label class="check-line"><input type="checkbox" name="remember"> Ingat saya di perangkat ini</label>
+        <small class="form-help">Gunakan hanya pada perangkat pribadi.</small>
+        <button class="btn btn-primary btn-block login-submit" type="submit"><i class="fa-solid fa-key"></i> Masuk sebagai Admin</button>
+      </form>
+      <a class="back-to-guardian" href="{{ url_for('home') }}"><i class="fa-solid fa-arrow-left"></i> Kembali ke halaman wali santri</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

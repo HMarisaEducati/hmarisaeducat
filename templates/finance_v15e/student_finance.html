@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Keuangan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15e-page">
+  <div class="page-heading">
+    <div><span class="eyebrow">Database Santri · Administrasi Iuran</span><h1>{{ student.name }}</h1><p>NIS {{ student.nis }} · {{ student.class_name }} · Wali: {{ student.guardian_name or student.guardian.full_name }}</p></div>
+    <a class="btn btn-primary" href="{{ url_for('finance_administration', class_name=student.class_name) }}"><i class="fa-solid fa-table-list"></i> Buka Administrasi Iuran</a>
+  </div>
+  {% include "finance_v15e/_student_tabs.html" %}
+
+  <section class="finance-v15e-stat-grid">
+    <article><span>Total Tagihan</span><strong>{{ summary.total|rupiah }}</strong><small>{{ summary.bill_count }} tagihan aktif</small></article>
+    <article><span>Total Dibayar</span><strong>{{ summary.paid|rupiah }}</strong><small>Pembayaran aktif</small></article>
+    <article><span>Sisa</span><strong>{{ summary.remaining|rupiah }}</strong><small>{{ summary.unpaid_count }} tagihan belum selesai</small></article>
+    <article><span>Status</span><strong>{{ 'Lunas' if summary.remaining == 0 and summary.bill_count else ('Belum ada tagihan' if not summary.bill_count else 'Perlu ditindaklanjuti') }}</strong><small>Lunas {{ summary.status_counts.get('Lunas', 0) }} · Dibebaskan {{ summary.status_counts.get('Dibebaskan', 0) }}</small></article>
+  </section>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Daftar Tagihan</h2><p class="muted">Data diambil dari Sistem Keuangan V15 dan mengikuti perubahan profil santri terbaru.</p></div><a href="{{ url_for('finance_bill_new', class_name=student.class_name, student_id=student.id) }}">+ Buat Tagihan</a></div>
+    <div class="finance-v15e-table-wrap">
+      <table class="finance-v15e-table">
+        <thead><tr><th>Nomor</th><th>Jenis</th><th>Periode</th><th>Nominal</th><th>Dibayar</th><th>Sisa</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for bill in bills %}
+          {% set charge = charge_map.get(bill.charge_type_id) %}
+          <tr>
+            <td><strong>{{ bill.bill_number }}</strong></td>
+            <td>{{ charge.name if charge else 'Tagihan' }}</td>
+            <td>{{ bill.period_label }} {{ bill.period_year }}</td>
+            <td>{{ bill.amount|rupiah }}</td><td>{{ bill.paid_amount|rupiah }}</td><td>{{ bill.remaining_amount|rupiah }}</td>
+            <td><span class="finance-v15e-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></td>
+            <td><a class="btn btn-small btn-outline" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}">Detail</a></td>
+          </tr>
+        {% else %}<tr><td colspan="8"><div class="finance-v15e-empty"><i class="fa-solid fa-file-invoice"></i><strong>Belum ada tagihan.</strong><span>Buat tagihan pertama untuk santri ini.</span></div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Riwayat Pembayaran</h2><p class="muted">Setiap pembayaran bertahap tetap tercatat sebagai transaksi terpisah.</p></div></div>
+    <div class="finance-v15e-payment-list">
+      {% set ns = namespace(count=0) %}
+      {% for bill in bills %}{% for payment in payment_map.get(bill.id, []) %}{% set ns.count = ns.count + 1 %}
+      <article class="{{ 'cancelled' if payment.is_cancelled else '' }}">
+        <div><strong>{{ payment.transaction_number }}</strong><span>{{ payment.payment_date.strftime('%d/%m/%Y') }} · {{ payment.method }}</span></div>
+        <div><b>{{ payment.amount|rupiah }}</b><span>{{ 'Dibatalkan' if payment.is_cancelled else 'Aktif' }}</span></div>
+        <a class="btn btn-small btn-outline" href="{{ url_for('finance_payment_receipt', payment_id=payment.id) }}">Preview Bukti</a>
+      </article>
+      {% endfor %}{% endfor %}
+      {% if ns.count == 0 %}<div class="finance-v15e-empty"><i class="fa-solid fa-clock-rotate-left"></i><strong>Belum ada pembayaran.</strong><span>Transaksi yang dicatat akan tampil di sini.</span></div>{% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

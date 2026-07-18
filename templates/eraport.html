@@ -1,37 +1,42 @@
 {% extends "base.html" %}
 {% block title %}E-Raport{% endblock %}
 {% block content %}
-<div class="page-heading">
-  <div><span class="eyebrow">Admin · Akademik</span><h1>Database E-Raport</h1><p>Pilih satu kelas, lalu seluruh santri dari kelas tersebut akan ditampilkan.</p></div>
-</div>
-<section class="card class-selector-card">
-  <form method="get" class="single-class-selector">
-    <label>Pilih Kelas
-      <select name="class_name" required>
-        <option value="">-- Pilih Kelas --</option>
-        {% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
-      </select>
-    </label>
-    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-folder-open"></i> Buka Database Rapor</button>
+<div class="page-heading"><div><span class="eyebrow">Admin · E-Raport</span><h1>Database E-Raport</h1><p>Isi, lihat, periksa, dan terbitkan raport santri. Raport tidak langsung dicetak setelah disimpan.</p></div></div>
+<section class="card">
+  <form method="get" class="search-filter-form five-search-columns" id="eraport-filter-form">
+    <label>Kelas<select name="class_name" id="eraport-class" required><option value="">-- Pilih Kelas --</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Nama Santri<select name="student_id" id="eraport-student"><option value="">Semua Santri dalam Kelas</option></select></label>
+    <label>Tahun Ajaran<select name="academic_year">{% if academic_years %}{% for y in academic_years %}<option value="{{ y.name }}" {% if academic_year==y.name %}selected{% endif %}>{{ y.name }} — {{ y.semester }}</option>{% endfor %}{% else %}<option>2026/2027</option>{% endif %}</select></label>
+    <label>Semester<select name="semester"><option {% if semester=='Semester 1' %}selected{% endif %}>Semester 1</option><option {% if semester=='Semester 2' %}selected{% endif %}>Semester 2</option></select></label>
+    <label>Status Raport<select name="status">{% for s in ['Semua Status','Belum Dibuat','Draf','Menunggu Pemeriksaan','Diterbitkan','Direvisi'] %}<option {% if status_filter==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" id="eraport-submit" {% if not class_filter %}disabled{% endif %}><i class="fa-solid fa-folder-open"></i> Tampilkan E-Raport</button>
+    <a class="btn btn-outline" href="{{ url_for('eraport') }}">Reset</a>
   </form>
 </section>
 
 {% if class_filter %}
+<div class="stat-grid eraport-stats">
+  <article class="stat-card"><i class="fa-solid fa-users"></i><div><strong>{{ stats.total }}</strong><span>Jumlah Santri</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-file-circle-plus"></i><div><strong>{{ stats.get('Draf',0) }}</strong><span>Draf</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-magnifying-glass"></i><div><strong>{{ stats.get('Menunggu Pemeriksaan',0) }}</strong><span>Menunggu Pemeriksaan</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-circle-check"></i><div><strong>{{ stats.get('Diterbitkan',0) }}</strong><span>Diterbitkan</span></div></article>
+</div>
 <section class="card">
-  <div class="card-head"><div class="card-title-icon"><i class="fa-solid fa-graduation-cap"></i><h2>Santri Kelas {{ class_filter }}</h2></div><span class="badge">{{ students|length }} santri</span></div>
-  <div class="one-column-list">
-    {% for student in students %}
-      <article class="eraport-row">
-        <div><strong>{{ student.name }}</strong><small>NIS {{ student.nis }}</small></div>
-        <div class="button-row compact">
-          <a class="btn btn-small btn-primary" href="{{ url_for('academics', student_id=student.id) }}"><i class="fa-solid fa-pen"></i> Isi / Edit Rapor</a>
-          <a class="btn btn-small btn-outline" href="{{ url_for('report_pdf', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Cetak PDF</a>
-        </div>
-      </article>
-    {% else %}<p class="empty">Belum ada santri di kelas ini.</p>{% endfor %}
+  <div class="card-head"><div><h2>E-Raport Kelas {{ class_filter }}</h2><p class="muted">{{ academic_year }} · {{ semester }}</p></div><div class="button-row"><a class="btn btn-gold" href="{{ url_for('eraport_bulk', class_name=class_filter, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-table-cells"></i> Input Nilai Satu Kelas</a></div></div>
+  <div class="report-list">
+  {% for student, raport in report_rows %}
+    <article class="report-row-card">
+      <div><div class="student-title-row"><h3>{{ student.name }}</h3><span class="status-pill report-status-{{ raport.status|lower|replace(' ','-') }}">{{ raport.status }}</span></div><p>NIS {{ student.nis }} · {{ student.class_name }}</p><div class="report-completeness"><span>Kelengkapan {{ raport.completeness }}%</span><div class="progress"><i style="width:{{ raport.completeness }}%"></i></div></div><small>Terakhir diperbarui: {{ raport.updated_at.strftime('%d-%m-%Y %H:%M') if raport.updated_at else '-' }}</small></div>
+      <div class="student-action-grid report-actions"><a class="btn btn-primary" href="{{ url_for('report_edit', student_id=student.id) }}"><i class="fa-solid fa-pen"></i> Edit Nilai</a><a class="btn btn-outline" href="{{ url_for('report_preview', student_id=student.id) }}"><i class="fa-solid fa-eye"></i> Lihat Raport</a>{% if raport.status=='Diterbitkan' %}<a class="btn btn-gold" href="{{ url_for('report_preview', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Unduh PDF</a>{% else %}<span class="btn btn-disabled" title="Terbitkan raport terlebih dahulu"><i class="fa-solid fa-lock"></i> Unduh PDF</span>{% endif %}</div>
+    </article>
+  {% else %}<div class="empty-state compact"><i class="fa-solid fa-folder-open"></i><h3>Belum ada santri sesuai filter</h3><p>Pilih status lain atau periksa data santri kelas ini.</p></div>{% endfor %}
   </div>
 </section>
 {% else %}
-<section class="card empty-state"><i class="fa-solid fa-arrow-up empty-icon"></i><h2>Pilih kelas terlebih dahulu</h2><p>Daftar santri tidak ditampilkan sebelum kelas dipilih agar halaman tetap ringkas.</p></section>
+<section class="card empty-state"><i class="fa-solid fa-arrow-up empty-icon"></i><h2>Pilih kelas terlebih dahulu</h2><p>Setelah kelas dipilih, tombol Tampilkan E-Raport akan aktif dan daftar santri muncul.</p></section>
 {% endif %}
+<script type="application/json" id="eraport-student-data">{{ students_by_class|tojson }}</script>
 {% endblock %}
+{% block scripts %}<script>
+(() => {const data=JSON.parse(document.getElementById('eraport-student-data').textContent||'{}');const c=document.getElementById('eraport-class'),s=document.getElementById('eraport-student'),b=document.getElementById('eraport-submit');const selected={{ student_id|default(0)|tojson }};function fill(){const rows=data[c.value]||[];s.innerHTML='<option value="">Semua Santri dalam Kelas</option>'+rows.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');if(selected)s.value=String(selected);b.disabled=!c.value;}c.addEventListener('change',fill);fill();})();
+</script>{% endblock %}

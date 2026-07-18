@@ -1,0 +1,8 @@
+finance_administration_v15b2.py
+templates/finance_v15b2/administration.html
+templates/finance_v15b2/bill_detail.html
+templates/finance_v15b2/bill_edit.html
+templates/finance_v15b2/payment_form.html
+templates/finance_v15b2/receipt_preview.html
+static/css/finance_administration_v15b2.css
+static/js/finance_administration_v15b2.js

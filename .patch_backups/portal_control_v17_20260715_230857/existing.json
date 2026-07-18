@@ -1,0 +1,5 @@
+[
+  "app.py",
+  "templates/base.html",
+  "templates/dashboard_admin.html"
+]

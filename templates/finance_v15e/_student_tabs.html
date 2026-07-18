@@ -1,0 +1,6 @@
+<nav class="student-module-tabs" aria-label="Navigasi detail santri">
+  <a class="{{ 'active' if active_student_tab == 'profile' else '' }}" href="{{ url_for('student_detail', student_id=student.id) }}"><i class="fa-solid fa-id-card"></i> Profil</a>
+  <a class="{{ 'active' if active_student_tab == 'progress' else '' }}" href="{{ url_for('academics', student_id=student.id, source='student_detail') }}"><i class="fa-solid fa-book-open-reader"></i> Prestasi</a>
+  <a class="{{ 'active' if active_student_tab == 'report' else '' }}" href="{{ url_for('report_preview', student_id=student.id) }}"><i class="fa-solid fa-file-lines"></i> Raport</a>
+  <a class="{{ 'active' if active_student_tab == 'finance' else '' }}" href="{{ url_for('student_finance_v15e', student_id=student.id) }}"><i class="fa-solid fa-wallet"></i> Keuangan</a>
+</nav>

@@ -1,0 +1,76 @@
+/* Scoped Silabus Bulanan styles. Does not alter other portal modules. */
+.silabus-page{font-size:16px;color:#1f2937}
+.silabus-page .page-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px}
+.silabus-page .page-heading h1{font-size:clamp(1.65rem,2.4vw,2.25rem);line-height:1.15;margin:.25rem 0 .45rem}
+.silabus-page .page-heading p{max-width:760px;line-height:1.55}
+.silabus-page .button-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.silabus-page .card{border-radius:24px;padding:26px;margin-bottom:22px}
+.silabus-page .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid #edf1ef}
+.silabus-page .card-head h2{font-size:1.25rem;margin:0}
+.silabus-page .form-grid,.silabus-page .search-filter-form{display:grid;gap:18px}
+.silabus-page .form-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.silabus-page .form-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.silabus-page .curriculum-filter-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.silabus-page .semester-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.silabus-page label{display:flex;flex-direction:column;gap:8px;font-weight:700;color:#374151;min-width:0}
+.silabus-page input,.silabus-page select,.silabus-page textarea{width:100%;min-height:48px;border:1px solid #d8e1dc;border-radius:14px;padding:12px 14px;background:#fff;color:#1f2937;font:inherit;line-height:1.45;box-sizing:border-box}
+.silabus-page textarea{min-height:100px;resize:vertical}
+.silabus-page input:focus,.silabus-page select:focus,.silabus-page textarea:focus{outline:3px solid rgba(22,163,74,.12);border-color:#16a34a}
+.silabus-page .span-2{grid-column:span 2}
+.silabus-page .form-action,.silabus-page .filter-actions{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.silabus-page .curriculum-top-actions{max-width:610px;justify-content:flex-end}
+.silabus-page .table-wrap{overflow:auto;border:1px solid #e4ebe7;border-radius:16px}
+.silabus-page table{width:100%;border-collapse:collapse;min-width:860px}
+.silabus-page th,.silabus-page td{padding:13px 14px;vertical-align:top;text-align:left;border-bottom:1px solid #e7edea;line-height:1.45;overflow-wrap:anywhere}
+.silabus-page th{background:#075f46;color:#fff;font-size:.86rem;letter-spacing:.01em;position:sticky;top:0;z-index:1}
+.silabus-page tbody tr:nth-child(even){background:#f8fbf9}
+.silabus-page .table-sub{display:block;color:#7b8b83;margin-top:5px}
+.silabus-page .table-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.silabus-page .table-actions form{display:inline}
+.silabus-page .curriculum-mobile-list{display:none}
+.silabus-page .curriculum-meta-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.silabus-page .curriculum-meta-grid span,.silabus-page .curriculum-main-detail>div,.silabus-page .week-detail-grid article,.silabus-page .notes-detail{border:1px solid #e1e9e5;border-radius:16px;padding:16px;background:#fbfdfc}
+.silabus-page small{color:#76857e}
+.silabus-page .curriculum-meta-grid strong{display:block;margin-top:5px;font-size:1rem}
+.silabus-page .curriculum-main-detail{display:grid;grid-template-columns:1fr 1fr 2fr;gap:14px;margin-bottom:18px}
+.silabus-page .curriculum-main-detail h2,.silabus-page .curriculum-main-detail h3{margin:.45rem 0 0}
+.silabus-page .week-detail-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.silabus-page .week-detail-grid article span{display:inline-flex;background:#e8f6ee;color:#087443;padding:5px 9px;border-radius:999px;font-weight:800;font-size:.78rem}
+.silabus-page .week-detail-grid p{margin:.75rem 0 0;white-space:pre-wrap}
+.silabus-page .notes-detail p{white-space:pre-wrap}
+.silabus-page .import-counts{display:flex;gap:8px;flex-wrap:wrap}
+.silabus-page .valid-row{background:#f1fbf5}
+.silabus-page .invalid-row{background:#fff4f2}
+.silabus-page .semester-completeness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.silabus-page .semester-completeness-grid article{padding:16px;border-radius:16px;border:1px solid #e0e8e4;background:#fff}
+.silabus-page .semester-completeness-grid article.complete{border-color:#b9e5c8;background:#f2fbf5}
+.silabus-page .semester-completeness-grid article.incomplete{border-color:#f2d0ca;background:#fff7f5}
+.silabus-page .semester-completeness-grid article>div{display:flex;justify-content:space-between;gap:12px}
+.silabus-page .week-plan-list{margin:0;padding-left:18px}
+.silabus-page .danger-details summary{cursor:pointer;color:#b42318}
+.silabus-page .delete-confirm-form{margin-top:8px;min-width:220px}
+@media(max-width:1100px){
+ .silabus-page .curriculum-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .silabus-page .week-detail-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .silabus-page .curriculum-main-detail{grid-template-columns:1fr 1fr}
+ .silabus-page .curriculum-main-detail>div:last-child{grid-column:1/-1}
+}
+@media(max-width:767px){
+ .silabus-page{font-size:15px}
+ .silabus-page .page-heading{flex-direction:column;gap:16px}
+ .silabus-page .page-heading .button-row,.silabus-page .curriculum-top-actions{width:100%;justify-content:flex-start}
+ .silabus-page .page-heading .btn{flex:1 1 calc(50% - 8px);justify-content:center;text-align:center}
+ .silabus-page .card{padding:18px;border-radius:19px}
+ .silabus-page .card-head{flex-direction:column}
+ .silabus-page .form-grid-2,.silabus-page .form-grid-3,.silabus-page .curriculum-filter-grid,.silabus-page .semester-filter-grid{grid-template-columns:1fr}
+ .silabus-page .span-2{grid-column:auto}
+ .silabus-page .curriculum-meta-grid,.silabus-page .curriculum-main-detail,.silabus-page .week-detail-grid,.silabus-page .semester-completeness-grid{grid-template-columns:1fr}
+ .silabus-page .curriculum-main-detail>div:last-child{grid-column:auto}
+ .silabus-page .curriculum-desktop-table{display:none}
+ .silabus-page .curriculum-mobile-list{display:grid;gap:14px}
+ .silabus-page .curriculum-mobile-list article{border:1px solid #e1e9e5;border-radius:17px;padding:16px;background:#fff}
+ .silabus-page .curriculum-mobile-list article>div:first-child{display:flex;justify-content:space-between;gap:10px;align-items:center}
+ .silabus-page .curriculum-mobile-list h3{margin:.75rem 0 .35rem}
+ .silabus-page .curriculum-mobile-list p{white-space:pre-wrap}
+ .silabus-page .form-action .btn,.silabus-page .filter-actions .btn{width:100%;justify-content:center}
+}

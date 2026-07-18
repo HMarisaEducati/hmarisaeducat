@@ -1,0 +1,26 @@
+RINGKASAN IMPLEMENTASI FINAL PORTAL TPQ HMARISA
+================================================
+
+- Portal Wali: kelas terlebih dahulu, nama santri otomatis, Hadis Harian responsif,
+  Santri Terbaik Mingguan, Ingat Saya, dan pratinjau PDF.
+- Dashboard: Hadis Harian, Santri Terbaik, poster mingguan, log dan berbagi manual.
+- Data Master: kelas, guru/wali kelas, bidang pelajaran, dan tahun ajaran dinamis.
+- Database Santri: filter kelas, status aktif/nonaktif, arsip, hapus permanen,
+  ekspor CSV, Nama Tampilan Publik, dan akses Prestasi Harian.
+- Silabus Bulanan: bulan/tahun, rencana Pekan 1-5, Bank Silabus Ar Rahman dan Ar Rahim,
+  pengisian manual Al-Bayyan, penyesuaian Kaldik, revisi, dan PDF.
+- Prestasi Harian: halaman terpisah dari E-Raport, Jurnal Mutabaah terfilter dan
+  terhalaman, bidang/materi terhubung ke Silabus Bulanan.
+- Tracker Hafalan Juz 30: dropdown surat berkelompok, pencarian, status, setoran,
+  nilai kelancaran/tajwid/makhraj, riwayat, edit, reset, dan arsip.
+- Santri Terbaik: periode Senin-Kamis; penetapan Ahad 06.00 WIB. Jika nilai sama,
+  urutannya kehadiran/ketepatan waktu, perkembangan hafalan, kualitas hafalan,
+  adab/kedisiplinan, lalu pemenang bersama.
+- E-Raport: filter kelas/santri/tahun/semester/status, input per santri/satu kelas,
+  KKM 70, nilai 60-100, predikat D/C/B/A, Catatan Perkembangan, hafalan, sikap,
+  ketidakhadiran, Lihat Raport sebelum cetak, status Draf/Diterbitkan/Revisi,
+  snapshot dan PDF A4.
+- Kepala TPQ: Bunda Hj. Maryamah, S.Ag.
+- Guru: Ar Rahman—Yeni Susilawati; Ar Rahim—Faisal Kazim Muyassar, S.H;
+  Al-Bayyan—Hj. Maryamah, S.Ag.
+- Lokasi dokumen: Tangerang Selatan.

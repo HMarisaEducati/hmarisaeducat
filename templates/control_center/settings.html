@@ -1,0 +1,314 @@
+{% extends "control_center/base.html" %}
+{% block title %}Pengaturan Website{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><span>Pengaturan</span>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-sliders" style="color:var(--cc-accent)"></i> Pengaturan Website</div>
+    <div class="cc-page-subtitle">Kelola informasi, kontak, tampilan, dan konfigurasi portal TPQ HMarisa</div>
+  </div>
+</div>
+
+<!-- Tab navigation -->
+<div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--cc-border);padding-bottom:0">
+  {% for tab_id, tab_label, tab_icon in [
+    ('identitas','Identitas','fa-id-card'),
+    ('kontak','Kontak & Lokasi','fa-location-dot'),
+    ('tampilan','Tampilan','fa-palette'),
+    ('operasional','Operasional','fa-clock'),
+    ('sosial','Media Sosial','fa-share-nodes'),
+    ('sistem','Sistem','fa-gear')
+  ] %}
+  <button type="button" class="cc-tab-btn {% if loop.first %}active{% endif %}" onclick="switchTab('{{ tab_id }}')" id="tab-{{ tab_id }}"
+    style="padding:10px 16px;font-size:.8rem;font-weight:600;border:none;background:none;cursor:pointer;color:var(--cc-text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:6px">
+    <i class="fa-solid {{ tab_icon }}"></i> {{ tab_label }}
+  </button>
+  {% endfor %}
+</div>
+
+<form method="post">
+
+  <!-- IDENTITAS -->
+  <div class="cc-tab-panel" id="panel-identitas">
+    <div class="cc-settings-grid">
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Nama & Deskripsi</div>
+        <div class="cc-form-section-body">
+          {% for key, label, ph, hint in [
+            ('site_name','Nama Website','TPQ HMarisa','Ditampilkan di header dan title halaman'),
+            ('tpq_name','Nama TPQ','Taman Pendidikan Al-Qur\'an HMarisa','Nama resmi lembaga'),
+            ('short_description','Deskripsi Singkat','Portal Pendidikan Al-Qur\'an','Ditampilkan di sidebar dan footer'),
+            ('tagline','Tagline','Membentuk Generasi Qur\'ani','Kalimat singkat visi lembaga')
+          ] %}
+          <div class="cc-field">
+            <label>{{ label }}</label>
+            <input type="text" name="{{ key }}" value="{{ settings.get(key,'') }}" placeholder="{{ ph }}">
+            {% if hint %}<span class="cc-field-hint">{{ hint }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">SEO & Meta</div>
+        <div class="cc-form-section-body">
+          <div class="cc-field">
+            <label>Meta Title</label>
+            <input type="text" name="meta_title" value="{{ settings.get('meta_title','') }}" placeholder="Portal TPQ HMarisa">
+          </div>
+          <div class="cc-field">
+            <label>Meta Description</label>
+            <textarea name="meta_description" rows="3" placeholder="Deskripsi untuk mesin pencari...">{{ settings.get('meta_description','') }}</textarea>
+          </div>
+          <div class="cc-field">
+            <label>Meta Keywords</label>
+            <input type="text" name="meta_keywords" value="{{ settings.get('meta_keywords','') }}" placeholder="TPQ, Qur'an, pendidikan, ...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KONTAK -->
+  <div class="cc-tab-panel" id="panel-kontak" style="display:none">
+    <div class="cc-settings-grid">
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Kontak</div>
+        <div class="cc-form-section-body">
+          {% for key, label, icon, ph in [
+            ('phone','Telepon','fa-phone','+62...'),
+            ('email','Email','fa-envelope','admin@tpqhmarisa.sch.id'),
+            ('whatsapp','WhatsApp','fa-whatsapp','628...'),
+            ('website','Website','fa-globe','https://tpqhmarisa.sch.id')
+          ] %}
+          <div class="cc-field">
+            <label><i class="fa-solid {{ icon }}"></i> {{ label }}</label>
+            <input type="text" name="{{ key }}" value="{{ settings.get(key,'') }}" placeholder="{{ ph }}">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Lokasi</div>
+        <div class="cc-form-section-body">
+          <div class="cc-field">
+            <label>Alamat Lengkap</label>
+            <textarea name="address" rows="3" placeholder="Jl. ...">{{ settings.get('address','') }}</textarea>
+          </div>
+          <div class="cc-field">
+            <label>Kota/Kabupaten</label>
+            <input type="text" name="city" value="{{ settings.get('city','') }}" placeholder="cth. Kabupaten Bogor">
+          </div>
+          <div class="cc-field">
+            <label>Google Maps Embed URL</label>
+            <input type="text" name="maps_url" value="{{ settings.get('maps_url','') }}" placeholder="https://www.google.com/maps/embed?...">
+            <span class="cc-field-hint">URL dari "Bagikan → Sematkan peta" di Google Maps</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAMPILAN -->
+  <div class="cc-tab-panel" id="panel-tampilan" style="display:none">
+    <div class="cc-settings-grid">
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Warna</div>
+        <div class="cc-form-section-body">
+          {% for key, label, default in [
+            ('primary_color','Warna Utama','#075f46'),
+            ('secondary_color','Warna Sekunder','#10b981'),
+            ('accent_color','Warna Aksen','#d97706')
+          ] %}
+          <div class="cc-field" style="flex-direction:row;align-items:center;gap:12px">
+            <label style="flex:1">{{ label }}</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="color" name="{{ key }}" value="{{ settings.get(key,default) }}"
+                style="width:40px;height:36px;border:1px solid var(--cc-border);border-radius:6px;cursor:pointer;padding:2px">
+              <input type="text" name="{{ key }}_hex" value="{{ settings.get(key,default) }}" placeholder="{{ default }}"
+                style="width:90px;font-family:monospace;font-size:.78rem">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Teks Footer & Copyright</div>
+        <div class="cc-form-section-body">
+          <div class="cc-field">
+            <label>Teks Footer</label>
+            <input type="text" name="footer_text" value="{{ settings.get('footer_text','') }}" placeholder="Portal Pendidikan Al-Qur'an">
+          </div>
+          <div class="cc-field">
+            <label>Copyright</label>
+            <input type="text" name="copyright_text" value="{{ settings.get('copyright_text','') }}" placeholder="© 2026 TPQ HMarisa">
+          </div>
+          <div class="cc-field">
+            <label>Pengumuman Utama (banner)</label>
+            <textarea name="announcement_text" rows="3" placeholder="Kosongkan jika tidak ada pengumuman...">{{ settings.get('announcement_text','') }}</textarea>
+            <span class="cc-field-hint">Ditampilkan sebagai banner di semua halaman untuk wali santri</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPERASIONAL -->
+  <div class="cc-tab-panel" id="panel-operasional" style="display:none">
+    <div class="cc-settings-grid">
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Jam Operasional</div>
+        <div class="cc-form-section-body">
+          {% for key, label in [('jam_senin_jumat','Senin – Jumat'),('jam_sabtu','Sabtu'),('jam_ahad','Ahad')] %}
+          <div class="cc-field">
+            <label>{{ label }}</label>
+            <input type="text" name="{{ key }}" value="{{ settings.get(key,'') }}" placeholder="cth. 08.00 – 12.00 WIB">
+          </div>
+          {% endfor %}
+          <div class="cc-field">
+            <label>Catatan Operasional</label>
+            <textarea name="jam_note" rows="2" placeholder="cth. Libur pada hari besar nasional...">{{ settings.get('jam_note','') }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Mode Maintenance</div>
+        <div class="cc-form-section-body">
+          <div style="background:{% if settings.get('maintenance_mode')=='1' %}#fef3c7{% else %}#d1fae5{% endif %};border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.8rem">
+            <i class="fa-solid {% if settings.get('maintenance_mode')=='1' %}fa-triangle-exclamation" style="color:#d97706{% else %}fa-circle-check" style="color:#059669{% endif %}"></i>
+            Status: <strong>{{ 'MAINTENANCE AKTIF' if settings.get('maintenance_mode')=='1' else 'Website Normal' }}</strong>
+          </div>
+          <div class="cc-field">
+            <label>Mode Maintenance</label>
+            <select name="maintenance_mode">
+              <option value="0" {% if settings.get('maintenance_mode','0') != '1' %}selected{% endif %}>Nonaktif (Website Normal)</option>
+              <option value="1" {% if settings.get('maintenance_mode','0') == '1' %}selected{% endif %}>Aktif (Portal Wali Tidak Bisa Diakses)</option>
+            </select>
+            <span class="cc-field-hint">Hanya berlaku untuk halaman portal wali. Admin tetap bisa login.</span>
+          </div>
+          <div class="cc-field">
+            <label>Pesan Maintenance</label>
+            <textarea name="maintenance_message" rows="3" placeholder="Sistem sedang dalam pemeliharaan...">{{ settings.get('maintenance_message','Sistem sedang dalam pemeliharaan. Mohon coba beberapa saat lagi.') }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOSIAL -->
+  <div class="cc-tab-panel" id="panel-sosial" style="display:none">
+    <div class="cc-form-section" style="max-width:600px">
+      <div class="cc-form-section-title">Media Sosial</div>
+      <div class="cc-form-section-body">
+        {% for key, label, icon, ph in [
+          ('facebook','Facebook','fa-facebook','https://facebook.com/...'),
+          ('instagram','Instagram','fa-instagram','https://instagram.com/...'),
+          ('youtube','YouTube','fa-youtube','https://youtube.com/...'),
+          ('twitter','Twitter/X','fa-x-twitter','https://twitter.com/...'),
+          ('tiktok','TikTok','fa-tiktok','https://tiktok.com/@...'),
+          ('telegram','Telegram','fa-telegram','https://t.me/...')
+        ] %}
+        <div class="cc-field" style="flex-direction:row;align-items:center;gap:12px">
+          <div style="width:90px;display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;flex-shrink:0">
+            <i class="fa-brands {{ icon }}" style="font-size:1.1rem;width:20px;text-align:center"></i> {{ label }}
+          </div>
+          <input type="url" name="{{ key }}" value="{{ settings.get(key,'') }}" placeholder="{{ ph }}" style="flex:1">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- SISTEM -->
+  <div class="cc-tab-panel" id="panel-sistem" style="display:none">
+    <div class="cc-settings-grid">
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Konfigurasi Sistem</div>
+        <div class="cc-form-section-body">
+          <div class="cc-field">
+            <label>Timezone</label>
+            <select name="timezone">
+              {% for tz in ['Asia/Jakarta','Asia/Makassar','Asia/Jayapura'] %}
+              <option value="{{ tz }}" {% if settings.get('timezone','Asia/Jakarta') == tz %}selected{% endif %}>{{ tz }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="cc-field">
+            <label>Bahasa Default</label>
+            <select name="language">
+              <option value="id" {% if settings.get('language','id') == 'id' %}selected{% endif %}>Bahasa Indonesia</option>
+              <option value="en" {% if settings.get('language','id') == 'en' %}selected{% endif %}>English</option>
+            </select>
+          </div>
+          <div class="cc-field">
+            <label>Email Administrator</label>
+            <input type="email" name="admin_email" value="{{ settings.get('admin_email','') }}" placeholder="admin@tpqhmarisa.sch.id">
+            <span class="cc-field-hint">Untuk notifikasi sistem</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-form-section">
+        <div class="cc-form-section-title">Tahun Ajaran Aktif</div>
+        <div class="cc-form-section-body">
+          <div class="cc-field">
+            <label>Tahun Ajaran</label>
+            <input type="text" name="active_academic_year" value="{{ settings.get('active_academic_year','2025/2026') }}" placeholder="2025/2026">
+          </div>
+          <div class="cc-field">
+            <label>Semester</label>
+            <select name="active_semester">
+              <option value="Semester 1" {% if settings.get('active_semester','Semester 1') == 'Semester 1' %}selected{% endif %}>Semester 1</option>
+              <option value="Semester 2" {% if settings.get('active_semester') == 'Semester 2' %}selected{% endif %}>Semester 2</option>
+            </select>
+          </div>
+          <div class="cc-field">
+            <label>KKM Default E-Raport</label>
+            <input type="number" name="default_kkm" value="{{ settings.get('default_kkm','70') }}" min="0" max="100">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save button (always visible) -->
+  <div style="display:flex;justify-content:flex-end;margin-top:20px;gap:10px">
+    <a href="{{ url_for('control_center_dashboard') }}" class="cc-btn cc-btn-secondary">Batal</a>
+    <button type="submit" class="cc-btn cc-btn-primary">
+      <i class="fa-solid fa-floppy-disk"></i> Simpan Semua Pengaturan
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.cc-tab-panel').forEach(function(p) { p.style.display = 'none'; });
+  document.querySelectorAll('.cc-tab-btn').forEach(function(b) {
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--cc-text-muted)';
+  });
+  document.getElementById('panel-' + id).style.display = '';
+  var btn = document.getElementById('tab-' + id);
+  btn.style.borderBottomColor = 'var(--cc-accent)';
+  btn.style.color = 'var(--cc-accent)';
+}
+
+// init
+switchTab('identitas');
+
+// Sync color hex inputs
+document.querySelectorAll('input[type=color]').forEach(function(col) {
+  var hexInput = document.querySelector('input[name="' + col.name + '_hex"]');
+  if (hexInput) {
+    col.addEventListener('input', function() { hexInput.value = col.value; });
+    hexInput.addEventListener('input', function() { if (/^#[0-9a-f]{6}$/i.test(hexInput.value)) col.value = hexInput.value; });
+  }
+});
+</script>
+{% endblock %}

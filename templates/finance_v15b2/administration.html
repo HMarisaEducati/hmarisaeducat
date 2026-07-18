@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Administrasi Iuran{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_administration_v15b2.css') }}?v=20260715-1">
+{% endblock %}
+{% block content %}
+<div class="finance-v15b-page finance-admin-v15b2-page" data-finance-admin-page>
+  <div class="finance-page-heading">
+    <div>
+      <span class="eyebrow">Admin · Sistem Keuangan</span>
+      <h1>Administrasi Iuran</h1>
+      <p>Pilih kelas terlebih dahulu, lalu kelola tagihan dan pembayaran santri.</p>
+    </div>
+    <div class="button-row">
+      <a class="btn btn-outline" href="{{ url_for('finance_archive') }}"><i class="fa-solid fa-box-archive"></i> Arsip</a>
+      <a class="btn btn-primary" href="{{ url_for('finance_bill_new') }}"><i class="fa-solid fa-plus"></i> Buat Tagihan</a>
+    </div>
+  </div>
+  {% include "finance_v15b/_tabs.html" %}
+
+  <section class="finance-panel finance-admin-filter-panel">
+    <form method="get" class="finance-filter-grid finance-admin-filter-grid" data-admin-filter-form>
+      <label class="finance-class-trigger">Kelas
+        <select name="class_name" required data-admin-class-select>
+          <option value="">Pilih kelas terlebih dahulu</option>
+          {% for item in classes %}<option value="{{ item }}" {% if filters.class_name == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Tahun Ajaran
+        <select name="academic_year">
+          {% for item in academic_years %}<option value="{{ item }}" {% if filters.academic_year == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Semester
+        <select name="semester">
+          <option value="Semester 1" {% if filters.semester == 'Semester 1' %}selected{% endif %}>Semester 1</option>
+          <option value="Semester 2" {% if filters.semester == 'Semester 2' %}selected{% endif %}>Semester 2</option>
+        </select>
+      </label>
+      <label>Jenis Tagihan
+        <select name="charge_type_id"><option value="">Semua jenis</option>{% for item in charge_types %}<option value="{{ item.id }}" {% if filters.charge_type_id|string == item.id|string %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Periode/Bulan
+        <select name="period"><option value="">Semua periode</option>{% for item in months %}<option value="{{ item }}" {% if filters.period == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+      </label>
+      <label>Status Pembayaran
+        <select name="status"><option value="">Semua status</option>{% for item in statuses %}<option value="{{ item }}" {% if filters.status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+      </label>
+      <label>Urutan
+        <select name="sort">
+          <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>Nama A–Z</option>
+          <option value="name_desc" {% if filters.sort == 'name_desc' %}selected{% endif %}>Nama Z–A</option>
+          <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Terbaru</option>
+          <option value="period" {% if filters.sort == 'period' %}selected{% endif %}>Periode</option>
+          <option value="amount_desc" {% if filters.sort == 'amount_desc' %}selected{% endif %}>Nominal Tertinggi</option>
+          <option value="amount_asc" {% if filters.sort == 'amount_asc' %}selected{% endif %}>Nominal Terendah</option>
+          <option value="status" {% if filters.sort == 'status' %}selected{% endif %}>Status</option>
+        </select>
+      </label>
+      <label>Per Halaman
+        <select name="per_page"><option value="25" {% if per_page == 25 %}selected{% endif %}>25</option><option value="50" {% if per_page == 50 %}selected{% endif %}>50</option><option value="100" {% if per_page == 100 %}selected{% endif %}>100</option></select>
+      </label>
+      <div class="finance-filter-actions">
+        <button class="btn btn-primary" type="submit" data-loading-text="Sedang memuat data..."><i class="fa-solid fa-filter"></i> Terapkan Filter</button>
+        <a class="btn btn-outline" href="{{ url_for('finance_administration') }}">Reset Filter</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="finance-panel finance-admin-list-panel">
+    <div class="finance-panel-head">
+      <div><h2>Daftar Tagihan</h2>
+        {% if class_selected %}<p>{{ students_count }} santri aktif · {{ total }} baris ditampilkan.</p>{% else %}<p>Data akan tampil setelah kelas dipilih.</p>{% endif %}
+      </div>
+      {% if class_selected %}<span class="finance-count">Halaman {{ page }} dari {{ max_page }}</span>{% endif %}
+    </div>
+
+    {% if not class_selected %}
+      <div class="finance-empty finance-class-empty-state">
+        <i class="fa-solid fa-people-group"></i>
+        <strong>Pilih kelas terlebih dahulu</strong>
+        <span>Daftar tagihan tidak ditampilkan sebelum kelas dipilih.</span>
+      </div>
+    {% elif students_count == 0 %}
+      <div class="finance-empty"><i class="fa-solid fa-user-slash"></i><strong>Belum ada santri aktif pada kelas ini</strong><span>Periksa Database Santri atau pilih kelas lain.</span></div>
+    {% elif items %}
+      <div class="finance-table-wrap">
+        <table class="finance-table finance-admin-table">
+          <thead><tr><th>Nama Santri</th><th>Kelas</th><th>Jenis Tagihan</th><th>Periode</th><th>Nominal</th><th>Dibayar</th><th>Sisa</th><th>Status</th><th>Jatuh Tempo</th><th>Aksi</th></tr></thead>
+          <tbody>
+          {% for item in items %}{% set student = item.student %}{% set bill = item.bill %}
+          <tr class="{% if not bill %}finance-no-bill-row{% endif %}">
+            <td data-label="Nama Santri">
+              {% if bill %}<a class="finance-name-link" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><strong>{{ student.name }}</strong><small>{{ bill.bill_number }}</small></a>{% else %}<strong>{{ student.name }}</strong><small>NIS {{ student.nis }}</small>{% endif %}
+            </td>
+            <td data-label="Kelas">{{ student.class_name }}</td>
+            {% if bill %}
+              {% set charge = charge_map.get(bill.charge_type_id) %}
+              <td data-label="Jenis Tagihan">{{ charge.name if charge else 'Belum diisi' }}</td>
+              <td data-label="Periode">{{ bill.period_label }} {{ bill.period_year }}</td>
+              <td data-label="Nominal">{{ bill.amount|rupiah }}</td>
+              <td data-label="Dibayar">{{ bill.paid_amount|rupiah }}</td>
+              <td data-label="Sisa"><strong>{{ bill.remaining_amount|rupiah }}</strong></td>
+              <td data-label="Status"><span class="finance-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></td>
+              <td data-label="Jatuh Tempo">{{ bill.due_date.strftime('%d/%m/%Y') if bill.due_date else 'Belum diisi' }}</td>
+              <td data-label="Aksi">
+                <div class="finance-admin-row-actions">
+                  <a class="finance-action-link" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><i class="fa-solid fa-eye"></i><span>Detail</span></a>
+                  {% if bill.status not in ['Lunas','Dibebaskan'] %}<a class="finance-action-link action-payment" href="{{ url_for('finance_payment_new', bill_id=bill.id) }}"><i class="fa-solid fa-money-bill-wave"></i><span>Catat Pembayaran</span></a>{% endif %}
+                  <a class="finance-action-link" href="{{ url_for('finance_bill_edit', bill_id=bill.id) }}"><i class="fa-solid fa-pen"></i><span>Edit</span></a>
+                  <details class="finance-action-menu"><summary aria-label="Tindakan lainnya"><i class="fa-solid fa-ellipsis-vertical"></i></summary><div>
+                    <a href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='payments') }}"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran</a>
+                    {% if bill.status in ['Belum Lunas','Sebagian'] %}<a href="{{ url_for('finance_bill_whatsapp', bill_id=bill.id) }}"><i class="fa-brands fa-whatsapp"></i> Kirim WhatsApp</a>{% endif %}
+                    <a href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='history') }}"><i class="fa-solid fa-list-check"></i> Riwayat Perubahan</a>
+                  </div></details>
+                </div>
+              </td>
+            {% else %}
+              <td data-label="Jenis Tagihan" colspan="7"><span class="finance-status status-belum-ada-tagihan">Belum ada tagihan</span></td>
+              <td data-label="Aksi"><a class="btn btn-sm btn-primary" href="{{ url_for('finance_bill_new', class_name=student.class_name, student_id=student.id) }}"><i class="fa-solid fa-plus"></i> Buat Tagihan</a></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav class="finance-pagination" aria-label="Pagination">
+        {% if page > 1 %}<a href="{{ url_for('finance_administration', class_name=filters.class_name, charge_type_id=filters.charge_type_id, period=filters.period, status=filters.status, academic_year=filters.academic_year, semester=filters.semester, sort=filters.sort, per_page=per_page, page=page-1) }}"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</a>{% endif %}
+        <span>{{ page }} / {{ max_page }}</span>
+        {% if page < max_page %}<a href="{{ url_for('finance_administration', class_name=filters.class_name, charge_type_id=filters.charge_type_id, period=filters.period, status=filters.status, academic_year=filters.academic_year, semester=filters.semester, sort=filters.sort, per_page=per_page, page=page+1) }}">Berikutnya <i class="fa-solid fa-chevron-right"></i></a>{% endif %}
+      </nav>
+    {% else %}
+      <div class="finance-empty"><i class="fa-solid fa-filter-circle-xmark"></i><strong>Tidak ada data yang sesuai dengan filter</strong><span>Ubah filter atau buat tagihan untuk santri pada kelas ini.</span></div>
+    {% endif %}
+  </section>
+
+  <div class="finance-offline-message" data-finance-offline hidden><i class="fa-solid fa-wifi"></i><span>Tidak dapat memuat data. Periksa koneksi internet.</span><button type="button" onclick="location.reload()">Refresh</button></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script>
+<script src="{{ url_for('static', filename='js/finance_administration_v15b2.js') }}?v=20260715-1"></script>
+{% endblock %}

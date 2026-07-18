@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Import Jurnal Mutabaah{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-11">{% endblock %}
+{% block content %}
+<div class="page-heading progress-page-heading">
+  <div><span class="eyebrow">Prestasi Harian</span><h2>Import Jurnal Mutabaah</h2><p>Unggah file Excel, periksa hasil validasi, lalu simpan hanya data yang valid.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('daily_progress') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="journal-io-toolbar">
+  <a class="btn btn-outline" href="{{ url_for('mutabaah_import_template') }}"><i class="fa-solid fa-file-arrow-down"></i> Download Template</a>
+  <a class="btn btn-outline" href="{{ url_for('mutabaah_export') }}"><i class="fa-solid fa-file-export"></i> Export Jurnal</a>
+</div>
+
+<section class="card journal-main-card">
+  <div class="card-head"><div><h2>1. Pilih File Excel</h2><p class="muted">Gunakan template resmi agar kolom dan validasi sesuai dengan Tambah Jurnal.</p></div><span class="step-badge">Preview sebelum simpan</span></div>
+  <form method="post" enctype="multipart/form-data" class="journal-upload-form">
+    <label>File Excel (.xlsx)
+      <input type="file" name="file" accept=".xlsx" required>
+      <small class="field-help">Maksimal mengikuti batas unggahan portal. File tidak langsung disimpan ke database.</small>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Preview & Validasi</button>
+  </form>
+</section>
+
+{% if summary %}
+<section class="card journal-main-card">
+  <div class="card-head"><div><h2>2. Hasil Pemeriksaan</h2><p class="muted">{{ filename }}</p></div><span class="step-badge">{{ summary.total }} baris</span></div>
+  <div class="import-summary-grid">
+    <article><strong>{{ summary.valid }}</strong><small>Valid</small></article>
+    <article class="warning"><strong>{{ summary.warning }}</strong><small>Peringatan</small></article>
+    <article class="danger"><strong>{{ summary.error }}</strong><small>Error</small></article>
+    <article class="primary"><strong>{{ summary.savable }}</strong><small>Dapat disimpan</small></article>
+  </div>
+
+  <div class="table-wrap import-preview-table">
+    <table>
+      <thead><tr><th>Baris</th><th>Status</th><th>Santri</th><th>Tanggal</th><th>Bidang & Materi</th><th>Tahsin</th><th>Keterangan</th><th>Catatan Pemeriksaan</th></tr></thead>
+      <tbody>
+        {% for row in preview_rows %}
+        <tr>
+          <td>{{ row.row_number }}</td>
+          <td><span class="status-pill import-{{ row.status|lower }}">{{ row.status }}</span></td>
+          <td><strong>{{ row.data.student_name or row.data.nis or 'Belum diisi' }}</strong><small class="table-sub">{{ row.data.nis }} · {{ row.data.class_name }}</small></td>
+          <td>{{ row.data.date or 'Belum diisi' }}</td>
+          <td><strong>{{ row.data.subject or 'Belum diisi' }}</strong><small class="table-sub">{{ row.data.material or 'Belum diisi' }}</small></td>
+          <td>{{ row.data.tahsin_level or 'Belum diisi' }}<small class="table-sub">{{ row.data.tilawati or row.data.alquran or 'Belum diisi' }}</small></td>
+          <td>{{ row.data.keterangan or 'Belum diisi' }}<small class="table-sub">Aksi: {{ row.data.action }}</small></td>
+          <td>
+            {% for message in row.errors %}<div class="import-message error">{{ message }}</div>{% endfor %}
+            {% for message in row.warnings %}<div class="import-message warning">{{ message }}</div>{% endfor %}
+            {% if not row.errors and not row.warnings %}<span class="muted">Siap disimpan.</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}<tr><td colspan="8" class="empty">Tidak ada baris data yang dapat diperiksa.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="journal-submit-bar import-commit-bar">
+    <a class="btn btn-outline" href="{{ url_for('mutabaah_import') }}">Pilih File Lain</a>
+    {% if summary.savable > 0 %}
+    <form method="post" action="{{ url_for('mutabaah_import_commit') }}" onsubmit="return confirm('Simpan {{ summary.savable }} baris valid/peringatan ke Database Jurnal Mutabaah?')">
+      <input type="hidden" name="preview_token" value="{{ preview_token }}">
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-database"></i> Simpan Data Valid</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

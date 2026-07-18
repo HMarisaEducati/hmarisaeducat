@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Keuangan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15e-page guardian-finance-v15e">
+  <div class="page-heading">
+    <div><span class="eyebrow">Administrasi Iuran Ananda</span><h1>{{ student.name }}</h1><p>NIS {{ student.nis }} · Kelas {{ student.class_name }}</p></div>
+    <a class="btn btn-outline" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-left"></i> Kembali ke Dasbor</a>
+  </div>
+  <nav class="student-module-tabs guardian-tabs" aria-label="Navigasi wali santri">
+    <a href="{{ url_for('guardian_student_detail', student_id=student.id) }}"><i class="fa-solid fa-child-reaching"></i> Perkembangan</a>
+    <a class="active" href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}"><i class="fa-solid fa-wallet"></i> Keuangan</a>
+  </nav>
+
+  <section class="finance-v15e-stat-grid">
+    <article><span>Total Tagihan</span><strong>{{ summary.total|rupiah }}</strong><small>{{ summary.bill_count }} tagihan aktif</small></article>
+    <article><span>Sudah Dibayar</span><strong>{{ summary.paid|rupiah }}</strong><small>Pembayaran yang tercatat</small></article>
+    <article><span>Sisa</span><strong>{{ summary.remaining|rupiah }}</strong><small>{{ summary.unpaid_count }} tagihan belum selesai</small></article>
+    <article><span>Keterangan</span><strong>{{ 'Administrasi selesai' if summary.remaining == 0 and summary.bill_count else ('Belum ada tagihan' if not summary.bill_count else 'Silakan periksa tagihan') }}</strong><small>Data hanya dapat diubah oleh admin</small></article>
+  </section>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Tagihan Ananda</h2><p class="muted">Wali santri hanya dapat melihat status dan bukti pembayaran milik ananda.</p></div></div>
+    <div class="guardian-bill-list">
+    {% for bill in bills %}
+      {% set charge = charge_map.get(bill.charge_type_id) %}
+      <article>
+        <div class="guardian-bill-main"><span class="finance-v15e-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span><h3>{{ charge.name if charge else 'Tagihan' }} · {{ bill.period_label }} {{ bill.period_year }}</h3><small>{{ bill.bill_number }} · Jatuh tempo {{ bill.due_date.strftime('%d/%m/%Y') if bill.due_date else 'Belum diisi' }}</small></div>
+        <dl><div><dt>Nominal</dt><dd>{{ bill.amount|rupiah }}</dd></div><div><dt>Dibayar</dt><dd>{{ bill.paid_amount|rupiah }}</dd></div><div><dt>Sisa</dt><dd>{{ bill.remaining_amount|rupiah }}</dd></div></dl>
+        <div class="guardian-payment-history">
+          {% for payment in payment_map.get(bill.id, []) %}
+          <div class="{{ 'cancelled' if payment.is_cancelled else '' }}"><span><strong>{{ payment.transaction_number }}</strong><small>{{ payment.payment_date.strftime('%d/%m/%Y') }} · {{ payment.method }}{% if payment.is_cancelled %} · Dibatalkan{% endif %}</small></span><b>{{ payment.amount|rupiah }}</b>{% if not payment.is_cancelled %}<a class="btn btn-small btn-outline" href="{{ url_for('guardian_finance_receipt_v15e', student_id=student.id, payment_id=payment.id) }}">Bukti</a>{% endif %}</div>
+          {% else %}<p class="muted">Belum ada pembayaran pada tagihan ini.</p>{% endfor %}
+        </div>
+      </article>
+    {% else %}<div class="finance-v15e-empty"><i class="fa-solid fa-circle-check"></i><strong>Belum ada tagihan.</strong><span>Informasi tagihan akan tampil setelah dibuat oleh admin.</span></div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Informasi Pembayaran</h2><p class="muted">Konfirmasikan pembayaran kepada admin TPQ. Portal tidak mengirim WhatsApp otomatis.</p></div></div>
+    <div class="finance-channel-list">
+      {% for channel in channels %}
+      <article><i class="fa-solid {{ 'fa-qrcode' if channel.channel_type == 'qris' else 'fa-building-columns' }}"></i><div><strong>{{ channel.label }}</strong>{% if channel.channel_type == 'bank' %}<span>{{ channel.bank_name }} · {{ channel.account_number }}</span><small>a.n. {{ channel.account_holder }}</small>{% else %}<span>QRIS aktif</span>{% endif %}</div>{% if channel.is_primary %}<b>Utama</b>{% endif %}</article>
+      {% else %}<div class="finance-v15e-empty compact"><strong>Informasi pembayaran belum diatur.</strong><span>Silakan hubungi admin TPQ.</span></div>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

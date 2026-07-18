@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Manajemen Pengguna{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin Utama · Keamanan Akun</span><h1>Manajemen Pengguna</h1><p>Ubah akun utama serta tambah dan kelola akses Admin, Bendahara, atau Guru.</p></div></div>
+
+<div class="dashboard-two-col user-management-grid">
+  <section class="card">
+    <div class="card-head"><div><h2>Akun Saya</h2><p class="muted">Perbarui nama, username, atau kata sandi Admin Utama.</p></div><span class="badge">Admin Utama</span></div>
+    <form method="post" class="form-grid">
+      <input type="hidden" name="action" value="profile">
+      <label>Nama Lengkap<input type="text" name="full_name" value="{{ current_user.full_name }}" required></label>
+      <label>Username<input type="text" name="username" value="{{ current_user.username }}" required></label>
+      <div class="divider-label">Ganti kata sandi — boleh dikosongkan jika tidak diubah</div>
+      <label>Kata Sandi Lama<input type="password" name="old_password" autocomplete="current-password"></label>
+      <label>Kata Sandi Baru<input type="password" name="new_password" minlength="8" autocomplete="new-password"></label>
+      <label>Konfirmasi Kata Sandi Baru<input type="password" name="confirm_password" minlength="8" autocomplete="new-password"></label>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Akun</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Tambah Pengguna</h2><p class="muted">Hanya Admin Utama yang dapat menambah akun.</p></div></div>
+    <form method="post" class="form-grid" data-role-form>
+      <input type="hidden" name="action" value="create">
+      <label>Nama Lengkap<input type="text" name="full_name" required></label>
+      <label>Username<input type="text" name="username" required autocomplete="off"></label>
+      <label>Peran<select name="role" required data-role-select><option value="admin">Admin</option><option value="bendahara">Bendahara</option><option value="guru">Guru</option></select></label>
+      <label data-class-field>Kelas yang Diampu<select name="assigned_class"><option value="">Pilih kelas</option>{% for c in classes %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></label>
+      <label>Password Awal<input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+      <label>Konfirmasi Password<input type="password" name="confirm_password" minlength="8" required autocomplete="new-password"></label>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Tambah Pengguna</button>
+    </form>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><div><h2>Daftar Pengguna</h2><p class="muted">Akun wali santri tidak ditampilkan pada daftar ini.</p></div><span class="badge">{{ users|length }} akun staf</span></div>
+  <div class="user-account-list">
+    {% for user in users %}
+    <article class="user-account-card {% if not user.is_active %}account-disabled{% endif %}">
+      <div class="user-account-summary">
+        <span class="user-avatar">{{ user.full_name[:1]|upper }}</span>
+        <div><strong>{{ user.full_name }}</strong><small>@{{ user.username }} · {{ user.role_label }}{% if user.assigned_class %} · {{ user.assigned_class }}{% endif %}</small><span>Terakhir login: {{ user.last_login_at|tanggal_id if user.last_login_at else 'Belum pernah login' }}</span></div>
+        <span class="badge">{{ 'Aktif' if user.is_active else 'Nonaktif' }}</span>
+      </div>
+      {% if not user.is_superadmin %}
+      <details class="account-edit-details">
+        <summary><i class="fa-solid fa-pen-to-square"></i> Edit Akun</summary>
+        <form method="post" class="form-grid form-grid-3" data-role-form>
+          <input type="hidden" name="action" value="update"><input type="hidden" name="user_id" value="{{ user.id }}">
+          <label>Nama<input type="text" name="full_name" value="{{ user.full_name }}" required></label>
+          <label>Username<input type="text" name="username" value="{{ user.username }}" required></label>
+          <label>Peran<select name="role" data-role-select required><option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option><option value="bendahara" {% if user.role=='bendahara' %}selected{% endif %}>Bendahara</option><option value="guru" {% if user.role=='guru' %}selected{% endif %}>Guru</option></select></label>
+          <label data-class-field>Kelas<select name="assigned_class"><option value="">Pilih kelas</option>{% for c in classes %}<option value="{{ c }}" {% if user.assigned_class==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+          <label>Password Baru <small>(opsional)</small><input type="password" name="new_password" minlength="8"></label>
+          <div class="button-row"><button class="btn btn-primary" type="submit">Simpan</button></div>
+        </form>
+      </details>
+      <form method="post" class="inline-toggle-form"><input type="hidden" name="action" value="toggle"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn {{ 'btn-danger' if user.is_active else 'btn-outline' }}" type="submit">{{ 'Nonaktifkan Akun' if user.is_active else 'Aktifkan Kembali' }}</button></form>
+      {% else %}<p class="superadmin-note"><i class="fa-solid fa-shield-halved"></i> Akun ini dikelola melalui bagian “Akun Saya” dan tidak dapat dinonaktifkan.</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  document.querySelectorAll('[data-role-form]').forEach(form => {
+    const role = form.querySelector('[data-role-select]');
+    const field = form.querySelector('[data-class-field]');
+    const select = field?.querySelector('select');
+    const sync = () => {
+      const teacher = role?.value === 'guru';
+      if (field) field.style.display = teacher ? '' : 'none';
+      if (select) select.required = teacher;
+      if (select && !teacher) select.value = '';
+    };
+    role?.addEventListener('change', sync); sync();
+  });
+})();
+</script>
+{% endblock %}

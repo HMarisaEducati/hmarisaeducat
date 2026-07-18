@@ -1,0 +1,199 @@
+/*
+ * Portal TPQ HMarisa — Konsistensi Global V14
+ * Scope: shell, overflow safety, legacy/standard modules, document preview shell.
+ * Protected modules keep their module-specific CSS because this file loads before head_extra.
+ */
+
+.portal-app{
+  --gc-content-max:1260px;
+  --gc-control-height:42px;
+  --gc-control-radius:12px;
+  --gc-card-radius:20px;
+  --gc-section-gap:18px;
+}
+
+/* Shell hardening without redesigning finished modules. */
+.portal-app .app-layout,
+.portal-app .workspace,
+.portal-app .content-scroll,
+.portal-app .page-shell,
+.portal-app .page-shell > *,
+.portal-app .card{
+  min-width:0;
+}
+
+.portal-app .page-shell{
+  max-width:var(--gc-content-max);
+}
+
+.portal-app :is(img,svg,video,canvas){
+  max-width:100%;
+}
+
+.portal-app :is(input,select,textarea,button){
+  max-width:100%;
+}
+
+.portal-app :is(.button-row,.table-actions,.inline-row-actions,.preview-top-actions,.preview-bottom-actions){
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+}
+
+.portal-app :is(.table-wrap,.table-responsive,.table-scroll,.desktop-journal-table){
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+.portal-app table{
+  max-width:100%;
+}
+
+.portal-app :is(td,th,.list-row,.student-result-card,.report-row-card,.eraport-row){
+  overflow-wrap:anywhere;
+}
+
+/* Standardize pages that do not belong to frozen modules. */
+.portal-app.module-standard .page-heading{
+  align-items:flex-start;
+}
+
+.portal-app.module-standard .card{
+  border-radius:var(--gc-card-radius);
+  padding:20px;
+}
+
+.portal-app.module-standard :is(.form-grid,.search-filter-form,.finance-search-grid,.single-class-selector,.single-category-selector){
+  gap:14px;
+}
+
+.portal-app.module-standard label{
+  line-height:1.45;
+}
+
+.portal-app.module-standard input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.portal-app.module-standard select,
+.portal-app.module-standard textarea{
+  min-height:var(--gc-control-height);
+  border-radius:var(--gc-control-radius);
+}
+
+.portal-app.module-standard textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.portal-app.module-standard .btn{
+  min-height:40px;
+  line-height:1.25;
+}
+
+.portal-app.module-standard .card-head{
+  align-items:flex-start;
+}
+
+/* Preview/receipt pages must read like documents, without the admin shell. */
+.portal-app[data-layout="document"] .desktop-sidebar,
+.portal-app[data-layout="document"] .mobile-topbar,
+.portal-app[data-layout="document"] .mobile-drawer,
+.portal-app[data-layout="document"] .drawer-overlay,
+.portal-app[data-layout="document"] .workspace-header,
+.portal-app[data-layout="document"] .footer{
+  display:none!important;
+}
+
+.portal-app[data-layout="document"] .app-layout{
+  display:block;
+  min-height:100vh;
+}
+
+.portal-app[data-layout="document"] .workspace{
+  margin-left:0!important;
+  padding-top:0!important;
+  min-height:100vh;
+}
+
+.portal-app[data-layout="document"] .page-shell{
+  width:min(100% - 24px,1440px);
+  max-width:1440px;
+  padding:16px 0 32px;
+}
+
+@media (max-width:820px){
+  .portal-app .page-shell{
+    width:min(100% - 24px,var(--gc-content-max));
+    padding:18px 0 28px;
+    gap:16px;
+  }
+
+  .portal-app .workspace-header{
+    gap:12px;
+  }
+
+  .portal-app.module-standard .card{
+    padding:18px;
+  }
+}
+
+@media (max-width:620px){
+  .portal-app .workspace-header{
+    min-height:64px;
+    padding:12px 14px;
+  }
+
+  .portal-app .workspace-header .date-card{
+    display:none;
+  }
+
+  .portal-app .page-shell{
+    width:min(100% - 18px,var(--gc-content-max));
+    padding:14px 0 24px;
+    gap:14px;
+  }
+
+  .portal-app.module-standard .card{
+    padding:16px;
+    border-radius:17px;
+  }
+
+  .portal-app.module-standard :is(.button-row,.table-actions,.preview-top-actions,.preview-bottom-actions){
+    width:100%;
+    align-items:stretch;
+  }
+
+  .portal-app.module-standard :is(.button-row,.table-actions,.preview-top-actions,.preview-bottom-actions) .btn{
+    flex:1 1 150px;
+  }
+
+  .portal-app[data-layout="document"] .page-shell{
+    width:min(100% - 12px,1440px);
+    padding:8px 0 20px;
+  }
+}
+
+@media (max-width:410px){
+  .portal-app .page-shell{
+    width:calc(100% - 14px);
+  }
+
+  .portal-app.module-standard .card{
+    padding:14px;
+    border-radius:15px;
+  }
+}
+
+@media print{
+  .portal-app[data-layout="document"]{
+    background:#fff!important;
+  }
+
+  .portal-app[data-layout="document"] .page-shell{
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+}

@@ -1,0 +1,42 @@
+PATCH PORTAL TPQ HMARISA — SILABUS FINAL V4
+
+A. PERBAIKAN SILABUS FINAL
+1. Detail Silabus /curriculum/<id>/detail tidak lagi memanggil class_teacher() dari template Jinja.
+2. Nama wali kelas dihitung di app.py dan dikirim ke template sebagai teacher_name.
+3. PDF Silabus Bulanan menggunakan A4 landscape, kop surat final, tabel berjarak/padding rapi, wrapping teks, dan tanda tangan.
+4. Export Database Silabus mempertahankan kolom:
+   Bulan/Tahun, Kelas, Bidang Pelajaran, Materi Pokok, Target, Status, Versi.
+5. Export PDF dan Excel menggunakan format resmi landscape.
+6. Template Import cocok satu-ke-satu dengan form Tambah Rencana Bulanan.
+7. Import menggunakan tahap baca/pratinjau/validasi sebelum menyimpan.
+8. Rekap Silabus Semester tersedia untuk PDF dan Excel.
+9. Alat reset data silabus membuat backup SQLite sebelum menghapus record silabus.
+
+B. PREVIEW SEBELUM DOWNLOAD — BERLAKU GLOBAL
+1. Ditambahkan route standar /preview/<document_type>.
+2. Preview PDF memanggil endpoint PDF final yang sama dengan parameter download=0.
+3. Tombol unduh memanggil endpoint yang sama dengan parameter download=1.
+4. Preview tersedia untuk:
+   - Silabus per data
+   - Database Silabus sesuai filter
+   - Rekap Silabus Semester
+   - Template Import Silabus
+   - Database Santri sesuai filter
+   - Template Import Santri
+   - Poster Santri Terbaik
+   - Cadangan Database SQL
+5. E-Raport tetap memakai halaman Lihat Raport sebagai preview resmi.
+6. Perpustakaan tetap memakai preview halaman kitab yang sudah tersedia sebelum tombol unduh.
+7. Bukti pembayaran/kwitansi tetap memakai halaman kwitansi sebagai preview sebelum cetak/simpan PDF.
+8. Seluruh tombol utama pada halaman lama diarahkan ke preview terlebih dahulu.
+9. Template document_preview.html dan CSS global dapat dipakai oleh fitur download baru berikutnya.
+
+C. PERBAIKAN TAMBAHAN YANG DITEMUKAN SAAT PENGUJIAN
+1. Halaman Preview E-Raport sekarang menerima data scores, subjects, attitude, dan absence secara lengkap dari route.
+2. Tombol Cetak E-Raport membuka PDF inline; tombol Unduh PDF tetap mengunduh attachment.
+3. PDF Silabus/Database/Rekap dan Database Santri mendukung mode inline untuk preview tanpa membuat file berbeda.
+
+D. KOP SURAT FINAL
+File yang digunakan:
+static/img/kop_surat_tpq_hmarisa.png
+Ukuran sumber: 1179 x 272 piksel.

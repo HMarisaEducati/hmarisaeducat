@@ -1,0 +1,6 @@
+finance_history_reports_v15cd.py
+templates/finance_v15cd/payment_history.html
+templates/finance_v15cd/payment_detail.html
+templates/finance_v15cd/report.html
+static/css/finance_v15cd.css
+static/js/finance_v15cd.js

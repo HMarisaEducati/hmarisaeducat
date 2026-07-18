@@ -1,0 +1,8 @@
+<nav class="finance-tabs" aria-label="Navigasi Sistem Keuangan">
+  <a class="finance-tab {{ 'active' if active_tab == 'summary' else '' }}" href="{{ url_for('finance_summary') }}"><i class="fa-solid fa-chart-pie"></i> Ringkasan</a>
+  <a class="finance-tab {{ 'active' if active_tab == 'create' else '' }}" href="{{ url_for('finance_bill_new') }}"><i class="fa-solid fa-file-circle-plus"></i> Buat Tagihan</a>
+  <a class="finance-tab {{ 'active' if active_tab == 'administration' else '' }}" href="{{ url_for('finance_administration') }}"><i class="fa-solid fa-table-list"></i> Administrasi Iuran</a>
+  <a class="finance-tab {{ 'active' if active_tab == 'payments' else '' }}" href="{{ url_for('finance_payments') }}"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran</a>
+  <a class="finance-tab {{ 'active' if active_tab == 'reports' else '' }}" href="{{ url_for('finance_reports') }}"><i class="fa-solid fa-file-export"></i> Laporan</a>
+  <a class="finance-tab {{ 'active' if active_tab == 'settings' else '' }}" href="{{ url_for('finance_settings_general') }}"><i class="fa-solid fa-gear"></i> Pengaturan</a>
+</nav>

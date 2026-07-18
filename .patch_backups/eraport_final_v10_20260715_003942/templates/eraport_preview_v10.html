@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Raport Santri {{ student.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=12.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="er10-preview-body er12-preview-body">
+<header class="er10-preview-toolbar er12-preview-toolbar">
+  <div class="er12-preview-title">
+    <strong>Preview Raport Santri</strong>
+    <span>{{ student.name }} · {{ academic_year }} · {{ semester }}</span>
+  </div>
+  <div class="er10-preview-actions er12-preview-actions">
+    <button type="button" data-fit-page title="Muat satu halaman"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span> Muat Halaman</span></button>
+    <button type="button" data-zoom-out title="Perkecil"><i class="fa-solid fa-minus"></i></button>
+    <span class="er12-zoom-label" data-zoom-label>Fit</span>
+    <button type="button" data-zoom-in title="Perbesar"><i class="fa-solid fa-plus"></i></button>
+    {% if is_staff %}
+      <a href="{{ url_for('eraport_academic', student_id=student.id, academic_year=academic_year, semester=semester) }}">Edit/Koreksi Nilai</a>
+      <a href="{{ url_for('eraport_class_dashboard', class_name=student.class_name, academic_year=academic_year, semester=semester) }}">Kembali</a>
+    {% else %}
+      <a href="{{ url_for('guardian_student_detail', student_id=student.id) }}">Kembali</a>
+    {% endif %}
+    {% if raport.status == 'Diterbitkan' %}
+      <a class="primary" href="{{ url_for('report_pdf', student_id=student.id, academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-download"></i> Unduh PDF</a>
+      <a href="{{ url_for('report_pdf', student_id=student.id, academic_year=academic_year, semester=semester) }}" target="_blank"><i class="fa-solid fa-print"></i> Cetak</a>
+    {% endif %}
+  </div>
+</header>
+<main class="er10-preview-stage er12-preview-stage" data-preview-stage>
+  <div class="er12-page-shell" data-page-shell>
+    <div class="er10-page-frame er12-page-frame" data-report-page>
+      <img src="{{ url_for('report_image', student_id=student.id, academic_year=academic_year, semester=semester, v=raport.updated_at.timestamp() if raport.updated_at else 1) }}" alt="Preview Raport Santri {{ student.name }}">
+    </div>
+  </div>
+</main>
+<script>
+(() => {
+  const stage = document.querySelector('[data-preview-stage]');
+  const shell = document.querySelector('[data-page-shell]');
+  const page = document.querySelector('[data-report-page]');
+  const label = document.querySelector('[data-zoom-label]');
+  const naturalWidth = 1240;
+  let scale = 1;
+
+  function maxFitScale() {
+    const available = Math.max(280, stage.clientWidth - 28);
+    return Math.min(1, available / naturalWidth);
+  }
+  function apply(next, modeText) {
+    scale = Math.max(0.35, Math.min(1.6, next));
+    page.style.transform = `scale(${scale})`;
+    shell.style.width = `${naturalWidth * scale}px`;
+    shell.style.height = `${1754 * scale}px`;
+    label.textContent = modeText || `${Math.round(scale * 100)}%`;
+  }
+  function fit() { apply(maxFitScale(), 'Fit'); }
+  document.querySelector('[data-fit-page]').addEventListener('click', fit);
+  document.querySelector('[data-zoom-in]').addEventListener('click', () => apply(scale + 0.1));
+  document.querySelector('[data-zoom-out]').addEventListener('click', () => apply(scale - 0.1));
+  window.addEventListener('resize', () => { if (label.textContent === 'Fit') fit(); });
+  fit();
+})();
+</script>
+</body>
+</html>

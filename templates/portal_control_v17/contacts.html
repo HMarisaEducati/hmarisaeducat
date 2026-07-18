@@ -1,0 +1,57 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}Kontak & Rekening{% endblock %}
+{% block pc17_subtitle %}Satu pusat untuk nomor admin WhatsApp dan rekening yang dipakai Keuangan V15.{% endblock %}
+{% block pc17_content %}
+<div class="pc17-grid-2">
+  <section class="card pc17-card">
+    <h2>Kontak WhatsApp Admin</h2>
+    <form method="post" class="pc17-inline-form">
+      <input type="hidden" name="action" value="add_contact">
+      <input name="name" placeholder="Nama admin" required>
+      <input name="phone" placeholder="0812..." required>
+      <input name="position" placeholder="Jabatan" value="Admin">
+      <button class="btn btn-primary">Tambah</button>
+    </form>
+    <div class="pc17-record-list">
+      {% for row in contacts %}
+      <article>
+        <form method="post" class="pc17-record-edit">
+          <input type="hidden" name="action" value="update_contact"><input type="hidden" name="id" value="{{ row.id }}">
+          <input name="name" value="{{ row.name }}" required><input name="phone" value="{{ row.phone }}" required><input name="position" value="{{ row.position }}" required>
+          <button class="btn btn-outline" type="submit">Simpan Edit</button>
+        </form>
+        <div class="pc17-record-actions">
+          <span class="pc17-badge {{ 'published' if row.is_active else '' }}">{{ 'Aktif' if row.is_active else 'Nonaktif' }}</span>{% if row.is_primary %}<b>Utama</b>{% endif %}
+          <form method="post"><input type="hidden" name="action" value="toggle_contact"><input type="hidden" name="id" value="{{ row.id }}"><button type="submit">Aktif/Nonaktif</button></form>
+          <form method="post"><input type="hidden" name="action" value="primary_contact"><input type="hidden" name="id" value="{{ row.id }}"><button type="submit">Jadikan Utama</button></form>
+        </div>
+      </article>
+      {% else %}<p class="empty">Belum ada kontak.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="card pc17-card">
+    <h2>Rekening Pembayaran</h2>
+    <form method="post" class="pc17-inline-form">
+      <input type="hidden" name="action" value="add_channel">
+      <input name="bank_name" placeholder="Nama bank" required><input name="account_number" placeholder="Nomor rekening" required><input name="account_holder" placeholder="Atas nama" required><input name="label" placeholder="Label opsional"><button class="btn btn-primary">Tambah</button>
+    </form>
+    <div class="pc17-record-list">
+      {% for row in channels %}
+      <article>
+        <form method="post" class="pc17-record-edit">
+          <input type="hidden" name="action" value="update_channel"><input type="hidden" name="id" value="{{ row.id }}">
+          <input name="bank_name" value="{{ row.bank_name }}" required><input name="account_number" value="{{ row.account_number }}" required><input name="account_holder" value="{{ row.account_holder }}" required><input name="label" value="{{ row.label }}">
+          <button class="btn btn-outline" type="submit">Simpan Edit</button>
+        </form>
+        <div class="pc17-record-actions">
+          <span class="pc17-badge {{ 'published' if row.is_active else '' }}">{{ 'Aktif' if row.is_active else 'Nonaktif' }}</span>{% if row.is_primary %}<b>Utama</b>{% endif %}{% if row.show_on_receipt %}<b>Tampil di Bukti</b>{% endif %}
+          <form method="post"><input type="hidden" name="action" value="toggle_channel"><input type="hidden" name="id" value="{{ row.id }}"><button>Aktif/Nonaktif</button></form>
+          <form method="post"><input type="hidden" name="action" value="primary_channel"><input type="hidden" name="id" value="{{ row.id }}"><button>Jadikan Utama</button></form>
+          <form method="post"><input type="hidden" name="action" value="receipt_channel"><input type="hidden" name="id" value="{{ row.id }}"><button>Tampil di Bukti</button></form>
+        </div>
+      </article>
+      {% else %}<p class="empty">Belum ada rekening.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

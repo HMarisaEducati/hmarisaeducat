@@ -71,7 +71,7 @@
       </div>
 
       {% if unlocked %}
-        <a class="btn btn-primary btn-block" href="{{ url_for('download_book', book_id=book.id) }}"><i class="fa-solid fa-download"></i> {{ 'Unduh / Buka Kitab' if current_user.is_admin else 'Baca & Unduh Kitab' }}</a>
+        <a class="btn btn-primary btn-block" href="{{ url_for('download_book', book_id=book.id) }}"><i class="fa-solid fa-download"></i> {{ 'Unduh setelah Preview' if current_user.is_admin else 'Baca & Unduh setelah Preview' }}</a>
       {% elif access and access.status == 'Menunggu Verifikasi' %}
         <a class="btn btn-muted btn-block" href="{{ url_for('purchase_book', book_id=book.id) }}"><i class="fa-solid fa-clock"></i> Menunggu Verifikasi</a>
       {% else %}

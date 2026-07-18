@@ -1,0 +1,11 @@
+<div class="ps16x-actions">
+  <a class="ps16-btn ps16-btn-secondary" href="{{ url_for('portal_settings_integrated_preview_v16', section=experience_section) }}"><i class="fa-solid fa-eye"></i> Preview Draft</a>
+  <button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button>
+</div>
+<div class="ps16x-publish-row">
+  <p><strong>Draft V{{ experience_draft.version_no }}</strong> belum memengaruhi portal. Terbitkan hanya setelah preview sesuai.</p>
+  <div>
+    <form method="post" action="{{ url_for('portal_settings_integrated_discard_v16', section=experience_section) }}" data-confirm="Kembalikan draft bagian ini ke versi aktif?"><button class="ps16-btn ps16-btn-ghost" type="submit"><i class="fa-solid fa-rotate-left"></i> Batalkan Draft</button></form>
+    <form method="post" action="{{ url_for('portal_settings_integrated_publish_v16', section=experience_section) }}" data-confirm="Terbitkan bagian ini? Bagian pengaturan lain tidak akan berubah."><input type="hidden" name="reason" value="Terbitkan melalui halaman pengaturan"><button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan Bagian Ini</button></form>
+  </div>
+</div>

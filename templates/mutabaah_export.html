@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Export Jurnal Mutabaah{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-11">{% endblock %}
+{% block content %}
+<div class="page-heading progress-page-heading">
+  <div><span class="eyebrow">Prestasi Harian</span><h2>Export Jurnal Mutabaah</h2><p>Unduh Excel dengan format yang sama seperti Template Import agar dapat diedit dan diimpor kembali.</p></div>
+  <a class="btn btn-outline" href="{{ url_for('daily_progress') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="journal-io-toolbar">
+  <a class="btn btn-outline" href="{{ url_for('mutabaah_import') }}"><i class="fa-solid fa-file-import"></i> Import Jurnal</a>
+  <a class="btn btn-outline" href="{{ url_for('mutabaah_import_template') }}"><i class="fa-solid fa-file-arrow-down"></i> Download Template</a>
+</div>
+
+<section class="card journal-main-card">
+  <div class="card-head"><div><h2>Filter Export</h2><p class="muted">Filter boleh dikosongkan untuk mengunduh seluruh data yang dapat Anda akses.</p></div><span class="step-badge">Format Excel</span></div>
+  <form method="get" action="{{ url_for('mutabaah_export_xlsx') }}" class="export-filter-grid" id="mutabaah-export-form">
+    <label>Kelas
+      <select name="class_name" id="export-class">
+        <option value="">Semua Kelas</option>
+        {% for item in classes %}<option value="{{ item }}" {% if selected_class == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Santri
+      <select name="student_id" id="export-student">
+        <option value="">Semua Santri</option>
+      </select>
+    </label>
+    <label>Tanggal Mulai<input type="date" name="date_from"></label>
+    <label>Tanggal Selesai<input type="date" name="date_to"></label>
+    <label>Bidang Pelajaran
+      <select name="subject"><option value="">Semua Bidang</option>{% for item in subjects %}<option value="{{ item }}">{{ item }}</option>{% endfor %}</select>
+    </label>
+    <label>Kehadiran
+      <select name="attendance"><option value="">Semua Kehadiran</option>{% for item in ['Hadir','Sakit','Izin','Tanpa Keterangan'] %}<option value="{{ item }}">{{ item }}</option>{% endfor %}</select>
+    </label>
+    <label>Keterangan
+      <select name="keterangan"><option value="">Semua Keterangan</option>{% for item in ['Lanjut','Cukup','Ulangi'] %}<option value="{{ item }}">{{ item }}</option>{% endfor %}</select>
+    </label>
+    <div class="export-filter-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-file-excel"></i> Unduh Excel</button></div>
+  </form>
+  <div class="journal-info-banner export-info-banner"><i class="fa-solid fa-circle-info"></i><div><strong>File dapat diimpor kembali</strong><p>Kolom ID Jurnal disimpan secara tersembunyi. Jangan menghapusnya jika Anda ingin mengedit data yang sudah ada lalu mengimpornya kembali tanpa membuat duplikat.</p></div></div>
+</section>
+<script type="application/json" id="students-by-class-data">{{ students_by_class|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const map = JSON.parse(document.getElementById('students-by-class-data').textContent || '{}');
+  const classSelect = document.getElementById('export-class');
+  const studentSelect = document.getElementById('export-student');
+  const selectedStudent = {{ selected_student|tojson }};
+  function populateStudents() {
+    const rows = classSelect.value ? (map[classSelect.value] || []) : Object.values(map).flat();
+    studentSelect.innerHTML = '<option value="">Semua Santri</option>' + rows.map(row => `<option value="${row.id}">${row.name} (${row.nis})</option>`).join('');
+    if (selectedStudent && rows.some(row => Number(row.id) === Number(selectedStudent))) studentSelect.value = String(selectedStudent);
+  }
+  classSelect.addEventListener('change', populateStudents);
+  populateStudents();
+});
+</script>
+{% endblock %}

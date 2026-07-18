@@ -1,0 +1,8 @@
+PATCH DATABASE SANTRI + DASHBOARD POSTER V2
+
+1. Nama Tampilan Publik otomatis mengikuti Nama Lengkap pada form tambah dan edit.
+2. Jika kolom publik dikosongkan, backend otomatis menyimpan Nama Lengkap.
+3. Import Excel otomatis memakai Nama Lengkap ketika Nama Tampilan Publik kosong.
+4. Data lama yang Nama Tampilan Publiknya kosong otomatis diisi Nama Lengkap saat aplikasi dimuat.
+5. Pratinjau poster Santri Terbaik dikembalikan ke Dashboard tanpa menghilangkan Detail Silabus Bulanan V2.
+6. Database, upload poster, E-Raport, dan halaman lain tidak dihapus.

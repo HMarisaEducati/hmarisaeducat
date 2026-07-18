@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Penerbitan Raport {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+{% include '_eraport_student_header_v10.html' %}
+{% include '_eraport_tabs_v10.html' %}
+<section class="card er10-section-card">
+  <div class="card-head"><div><h2>Penerbitan</h2><p class="muted">Periksa kelengkapan sebelum menerbitkan raport.</p></div><span class="er10-status {{ 'published' if raport.status=='Diterbitkan' else 'draft' }}">{{ 'Diterbitkan' if raport.status=='Diterbitkan' else 'Draft' }}</span></div>
+  <div class="er10-checklist">{% for label, complete in completeness_sections.items() %}<div class="{{ 'done' if complete else 'missing' }}"><i class="fa-solid {{ 'fa-circle-check' if complete else 'fa-circle-exclamation' }}"></i><span>{{ label }}</span><strong>{{ 'Lengkap' if complete else 'Belum lengkap' }}</strong></div>{% endfor %}</div>
+  <div class="er10-publication-actions">
+    <form method="post"><button class="btn btn-outline" name="action" value="draft" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button></form>
+    <a class="btn btn-gold" href="{{ url_for('report_preview', student_id=student.id, **period_query) }}"><i class="fa-solid fa-eye"></i> Lihat Raport</a>
+    <form method="post"><button class="btn btn-primary" name="action" value="publish" type="submit" {% if raport.completeness < 100 %}disabled title="Lengkapi semua bagian terlebih dahulu"{% endif %}><i class="fa-solid fa-circle-check"></i> Terbitkan Raport</button></form>
+    <a class="btn btn-ghost" href="{{ url_for('eraport_class_dashboard', class_name=student.class_name, **period_query) }}">Kembali ke Dashboard E-Raport</a>
+  </div>
+  {% if raport.completeness < 100 %}<p class="er10-help er10-warning">Tombol Terbitkan Raport aktif setelah semua bagian berstatus Lengkap.</p>{% endif %}
+</section>
+{% endblock %}

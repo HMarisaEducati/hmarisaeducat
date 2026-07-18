@@ -1,0 +1,11 @@
+finance_v15b.py
+templates/finance_v15b/_tabs.html
+templates/finance_v15b/summary.html
+templates/finance_v15b/bill_form.html
+templates/finance_v15b/administration.html
+templates/finance_v15b/bill_detail.html
+templates/finance_v15b/bill_edit.html
+templates/finance_v15b/archive.html
+templates/finance_v15b/coming_soon.html
+static/css/finance_v15b.css
+static/js/finance_v15b.js

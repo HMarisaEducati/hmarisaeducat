@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Edit Tagihan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page">
+  <div class="finance-page-heading"><div><span class="eyebrow">{{ bill.bill_number }}</span><h1>Edit Tagihan</h1><p>{{ student.name if student else 'Santri tidak ditemukan' }} · {{ charge_type.name if charge_type else 'Tagihan' }}</p></div><a class="btn btn-outline" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a></div>
+  {% include "finance_v15b/_tabs.html" %}
+  <form method="post" class="finance-panel finance-form narrow" data-finance-draft="bill-edit-{{ bill.id }}">
+    <div class="finance-form-grid two"><label>Nominal Tagihan<input type="number" name="amount" value="{{ bill.amount }}" min="{{ bill.paid_amount }}" step="1000" required></label><label>Jatuh Tempo<input type="date" name="due_date" value="{{ bill.due_date.isoformat() if bill.due_date else '' }}"></label><label>Status<select name="status"><option value="Aktif" {% if bill.status != 'Dibebaskan' %}selected{% endif %}>Aktif — hitung otomatis</option><option value="Dibebaskan" {% if bill.status == 'Dibebaskan' %}selected{% endif %}>Dibebaskan</option></select></label><label>Alasan Pembebasan<input name="waiver_reason" value="{{ bill.waiver_reason }}" placeholder="Wajib jika dibebaskan"></label></div>
+    <label>Catatan<textarea name="notes" rows="4">{{ bill.notes }}</textarea></label>
+    <div class="finance-form-actions"><button class="btn btn-primary" type="submit" data-loading-text="Sedang menyimpan..."><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button><a class="btn btn-ghost" href="{{ url_for('finance_bill_detail', bill_id=bill.id) }}">Batal</a></div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script>{% endblock %}

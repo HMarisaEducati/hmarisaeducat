@@ -1,0 +1,320 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   Komponen Global — Portal TPQ HMarisa
+   Gunakan: {% from "components/_macros.html" import page_toolbar, ... %}
+   ═══════════════════════════════════════════════════════════════════════════ #}
+
+{# ── Page Toolbar ─────────────────────────────────────────────────────────── #}
+{% macro page_toolbar(title, subtitle='', actions=[], back_url='', back_label='Kembali') %}
+<div class="cmp-toolbar">
+  <div class="cmp-toolbar-left">
+    {% if back_url %}
+    <a href="{{ back_url }}" class="cmp-back-btn">
+      <i class="fa-solid fa-arrow-left"></i> {{ back_label }}
+    </a>
+    {% endif %}
+    <div class="cmp-toolbar-title-group">
+      <h1 class="cmp-toolbar-title">{{ title }}</h1>
+      {% if subtitle %}<p class="cmp-toolbar-subtitle">{{ subtitle }}</p>{% endif %}
+    </div>
+  </div>
+  {% if actions %}
+  <div class="cmp-toolbar-actions">
+    {% for action in actions %}
+      {% if action.get('type') == 'divider' %}
+        <span class="cmp-toolbar-sep"></span>
+      {% elif action.get('method') == 'POST' %}
+        <form method="post" action="{{ action.url }}" style="display:inline"
+              {% if action.get('confirm') %}onsubmit="return confirm('{{ action.confirm }}')"{% endif %}>
+          <button type="submit" class="btn {{ action.get('class', 'btn-outline') }}">
+            {% if action.get('icon') %}<i class="fa-solid {{ action.icon }}"></i>{% endif %}
+            {{ action.label }}
+          </button>
+        </form>
+      {% elif action.get('modal') %}
+        <button type="button" class="btn {{ action.get('class','btn-outline') }}"
+                onclick="cmpOpenModal('{{ action.modal }}')">
+          {% if action.get('icon') %}<i class="fa-solid {{ action.icon }}"></i>{% endif %}
+          {{ action.label }}
+        </button>
+      {% else %}
+        <a href="{{ action.url }}" class="btn {{ action.get('class','btn-outline') }}"
+           {% if action.get('target') %}target="{{ action.target }}"{% endif %}>
+          {% if action.get('icon') %}<i class="fa-solid {{ action.icon }}"></i>{% endif %}
+          {{ action.label }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# ── Page-Level Horizontal Tabs ───────────────────────────────────────────── #}
+{# Digunakan sebagai pengganti submenu dropdown. Tampil di atas konten halaman. #}
+{% macro page_tabs(tabs, active_url='') %}
+{% if tabs %}
+<nav class="cmp-page-tabs">
+  {% for tab in tabs %}
+  {%- set is_active = (active_url == tab.url) or (request.path == tab.url) or (tab.get('active_prefix') and request.path.startswith(tab.active_prefix)) -%}
+  <a href="{{ tab.url }}" class="cmp-page-tab {% if is_active %}active{% endif %}">
+    {% if tab.get('icon') %}<i class="fa-solid {{ tab.icon }}"></i>{% endif %}
+    {{ tab.label }}
+    {% if tab.get('badge') %}<span class="cmp-tab-badge">{{ tab.badge }}</span>{% endif %}
+  </a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{# ── Search & Filter Bar ──────────────────────────────────────────────────── #}
+{% macro search_bar(placeholder='Cari...', name='q', value='', filters=[], form_method='get') %}
+<form method="{{ form_method }}" class="cmp-search-bar" id="cmp-search-form">
+  <div class="cmp-search-input-wrap">
+    <i class="fa-solid fa-magnifying-glass cmp-search-icon"></i>
+    <input type="text" name="{{ name }}" value="{{ value }}"
+           placeholder="{{ placeholder }}" class="cmp-search-input" autocomplete="off">
+    {% if value %}
+    <a href="?" class="cmp-search-clear" title="Hapus"><i class="fa-solid fa-xmark"></i></a>
+    {% endif %}
+  </div>
+  {% for f in filters %}
+    {% if f.type == 'select' %}
+    <select name="{{ f.name }}" class="cmp-filter-select" onchange="this.form.submit()">
+      <option value="">{{ f.placeholder }}</option>
+      {% for opt in f.options %}
+      <option value="{{ opt.value }}" {% if opt.value|string == f.current|string %}selected{% endif %}>
+        {{ opt.label }}
+      </option>
+      {% endfor %}
+    </select>
+    {% endif %}
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">
+    <i class="fa-solid fa-search"></i> Cari
+  </button>
+  {% if value %}
+  <a href="{{ request.path }}" class="btn btn-outline">Reset</a>
+  {% endif %}
+</form>
+{% endmacro %}
+
+{# ── Pagination Bar ───────────────────────────────────────────────────────── #}
+{% macro pagination(page, total_pages, base_url='', q='', extra={}) %}
+{% if total_pages > 1 %}
+{% set _qs = '&q=' + q if q else '' %}
+{% set _ex = '' %}{% for k,v in extra.items() %}{% set _ex = _ex + '&' + k + '=' + v|string %}{% endfor %}
+<div class="cmp-pagination">
+  <a href="{{ base_url }}?page={{ [1, page-1]|max }}{{ _qs }}{{ _ex }}"
+     class="cmp-page-btn {% if page <= 1 %}disabled{% endif %}"
+     {% if page <= 1 %}tabindex="-1"{% endif %}>
+    <i class="fa-solid fa-chevron-left"></i>
+  </a>
+  {% for p in range(1, total_pages+1) %}
+    {% if p == 1 or p == total_pages or (p >= page-2 and p <= page+2) %}
+      <a href="{{ base_url }}?page={{ p }}{{ _qs }}{{ _ex }}"
+         class="cmp-page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% elif p == page-3 or p == page+3 %}
+      <span class="cmp-page-ellipsis">…</span>
+    {% endif %}
+  {% endfor %}
+  <a href="{{ base_url }}?page={{ [total_pages, page+1]|min }}{{ _qs }}{{ _ex }}"
+     class="cmp-page-btn {% if page >= total_pages %}disabled{% endif %}"
+     {% if page >= total_pages %}tabindex="-1"{% endif %}>
+    <i class="fa-solid fa-chevron-right"></i>
+  </a>
+  <span class="cmp-page-info">{{ page }} / {{ total_pages }}</span>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# ── Confirm Delete Modal ─────────────────────────────────────────────────── #}
+{% macro confirm_modal(id, title='Hapus Data?', message='Data yang dihapus tidak dapat dikembalikan.', confirm_label='Ya, Hapus', form_action='#', warning='', has_soft_delete=false) %}
+<div class="cmp-modal-overlay" id="{{ id }}" style="display:none" onclick="if(event.target===this)cmpCloseModal('{{ id }}')">
+  <div class="cmp-modal">
+    <div class="cmp-modal-header cmp-modal-header-danger">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <h3>{{ title }}</h3>
+      <button type="button" class="cmp-modal-close" onclick="cmpCloseModal('{{ id }}')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="cmp-modal-body">
+      <p>{{ message }}</p>
+      {% if warning %}
+      <div class="cmp-alert cmp-alert-warning">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ warning }}
+      </div>
+      {% endif %}
+    </div>
+    <div class="cmp-modal-footer">
+      <button type="button" class="btn btn-outline" onclick="cmpCloseModal('{{ id }}')">Batal</button>
+      {% if has_soft_delete %}
+      <form method="post" action="{{ form_action }}" style="display:inline" id="form-soft-{{ id }}">
+        <input type="hidden" name="delete_type" value="soft">
+        <button type="submit" class="btn btn-outline">
+          <i class="fa-solid fa-eye-slash"></i> Nonaktifkan saja
+        </button>
+      </form>
+      {% endif %}
+      <form method="post" action="{{ form_action }}" style="display:inline" id="form-{{ id }}">
+        <input type="hidden" name="delete_type" value="permanent">
+        <button type="submit" class="btn btn-danger">
+          <i class="fa-solid fa-trash"></i> {{ confirm_label }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# ── Upload Modal ─────────────────────────────────────────────────────────── #}
+{% macro upload_modal(id, title='Upload File', accept='.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.csv', max_mb=10, form_action='#', field_name='file') %}
+<div class="cmp-modal-overlay" id="{{ id }}" style="display:none" onclick="if(event.target===this)cmpCloseModal('{{ id }}')">
+  <div class="cmp-modal">
+    <div class="cmp-modal-header">
+      <i class="fa-solid fa-upload"></i>
+      <h3>{{ title }}</h3>
+      <button type="button" class="cmp-modal-close" onclick="cmpCloseModal('{{ id }}')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form method="post" action="{{ form_action }}" enctype="multipart/form-data">
+      <div class="cmp-modal-body">
+        <div class="cmp-dropzone" id="dz-{{ id }}">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p>Seret &amp; lepas file di sini, atau</p>
+          <label class="btn btn-outline">
+            Pilih File
+            <input type="file" name="{{ field_name }}" accept="{{ accept }}"
+                   style="display:none" onchange="cmpShowFile(this,'{{ id }}')">
+          </label>
+          <small class="cmp-dropzone-hint">Maks. {{ max_mb }} MB &middot; {{ accept }}</small>
+          <div class="cmp-chosen-file" id="chosen-{{ id }}" style="display:none">
+            <i class="fa-solid fa-file-check"></i> <span></span>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-modal-footer">
+        <button type="button" class="btn btn-outline" onclick="cmpCloseModal('{{ id }}')">Batal</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-upload"></i> Upload
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+
+{# ── Import Modal ─────────────────────────────────────────────────────────── #}
+{% macro import_modal(id, title='Import Data', template_url='', form_action='#', accept='.xlsx,.csv', columns=[]) %}
+<div class="cmp-modal-overlay" id="{{ id }}" style="display:none" onclick="if(event.target===this)cmpCloseModal('{{ id }}')">
+  <div class="cmp-modal cmp-modal-wide">
+    <div class="cmp-modal-header">
+      <i class="fa-solid fa-file-import"></i>
+      <h3>{{ title }}</h3>
+      <button type="button" class="cmp-modal-close" onclick="cmpCloseModal('{{ id }}')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="cmp-modal-body">
+      {% if template_url %}
+      <div class="cmp-import-tip">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Belum punya file?
+          <a href="{{ template_url }}"><i class="fa-solid fa-download"></i> Unduh template</a>
+          lalu isi sesuai format.
+        </span>
+      </div>
+      {% endif %}
+      {% if columns %}
+      <div class="cmp-import-cols">
+        <span class="cmp-import-cols-label">Kolom:</span>
+        {% for col in columns %}<code>{{ col }}</code>{% endfor %}
+      </div>
+      {% endif %}
+      <form method="post" action="{{ form_action }}" enctype="multipart/form-data"
+            id="form-import-{{ id }}">
+        <div class="cmp-dropzone">
+          <i class="fa-solid fa-file-arrow-up"></i>
+          <p>Pilih file untuk diimpor</p>
+          <label class="btn btn-outline">
+            Pilih File
+            <input type="file" name="import_file" accept="{{ accept }}"
+                   style="display:none" onchange="cmpShowFile(this,'{{ id }}')">
+          </label>
+          <small class="cmp-dropzone-hint">Format: {{ accept }}</small>
+          <div class="cmp-chosen-file" id="chosen-{{ id }}" style="display:none">
+            <i class="fa-solid fa-file-check"></i> <span></span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="cmp-modal-footer">
+      <button type="button" class="btn btn-outline" onclick="cmpCloseModal('{{ id }}')">Batal</button>
+      <button type="button" class="btn btn-primary"
+              onclick="document.getElementById('form-import-{{ id }}').submit()">
+        <i class="fa-solid fa-file-import"></i> Import Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# ── Empty State ──────────────────────────────────────────────────────────── #}
+{% macro empty_state(icon='fa-inbox', title='Belum ada data', message='', action_url='', action_label='Tambah Data', action_icon='fa-plus') %}
+<div class="cmp-empty-state">
+  <div class="cmp-empty-icon"><i class="fa-solid {{ icon }}"></i></div>
+  <h3 class="cmp-empty-title">{{ title }}</h3>
+  {% if message %}<p class="cmp-empty-msg">{{ message }}</p>{% endif %}
+  {% if action_url %}
+  <a href="{{ action_url }}" class="btn btn-primary">
+    <i class="fa-solid {{ action_icon }}"></i> {{ action_label }}
+  </a>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# ── Inline Action Buttons ────────────────────────────────────────────────── #}
+{% macro row_actions(edit_url='', delete_url='', view_url='', extra=[], delete_confirm='Hapus data ini?') %}
+<div class="cmp-row-actions">
+  {% if view_url %}
+  <a href="{{ view_url }}" class="cmp-row-btn" title="Lihat">
+    <i class="fa-solid fa-eye"></i>
+  </a>
+  {% endif %}
+  {% if edit_url %}
+  <a href="{{ edit_url }}" class="cmp-row-btn" title="Edit">
+    <i class="fa-solid fa-pen"></i>
+  </a>
+  {% endif %}
+  {% for a in extra %}
+  <a href="{{ a.url }}" class="cmp-row-btn" title="{{ a.title }}"
+     {% if a.get('target') %}target="{{ a.target }}"{% endif %}>
+    <i class="fa-solid {{ a.icon }}"></i>
+  </a>
+  {% endfor %}
+  {% if delete_url %}
+  <form method="post" action="{{ delete_url }}" style="display:inline"
+        onsubmit="return confirm('{{ delete_confirm }}')">
+    <input type="hidden" name="delete_type" value="permanent">
+    <button type="submit" class="cmp-row-btn cmp-row-btn-danger" title="Hapus">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  </form>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# ── Status Badge ─────────────────────────────────────────────────────────── #}
+{% macro badge(label, color='gray') %}
+<span class="cmp-badge cmp-badge-{{ color }}">{{ label }}</span>
+{% endmacro %}
+
+{# ── Info Alert ───────────────────────────────────────────────────────────── #}
+{% macro alert(message, type='info', icon='') %}
+{% set _icon = icon or ({'info':'fa-circle-info','success':'fa-circle-check','warning':'fa-circle-exclamation','danger':'fa-triangle-exclamation'}.get(type,'fa-circle-info')) %}
+<div class="cmp-alert cmp-alert-{{ type }}">
+  <i class="fa-solid {{ _icon }}"></i>
+  <span>{{ message }}</span>
+</div>
+{% endmacro %}

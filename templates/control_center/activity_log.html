@@ -1,0 +1,129 @@
+{% extends "control_center/base.html" %}
+{% block title %}Log Aktivitas{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><span>Log Aktivitas</span>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-scroll" style="color:var(--cc-accent)"></i> Log Aktivitas</div>
+    <div class="cc-page-subtitle">Rekam jejak seluruh aktivitas sistem — login, perubahan data, backup, dan lainnya</div>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('control_center_activity_log') }}?export=csv" class="cc-btn cc-btn-secondary">
+      <i class="fa-solid fa-download"></i> Export CSV
+    </a>
+    <form method="post" action="{{ url_for('control_center_activity_log_clear') }}"
+      onsubmit="return confirm('Hapus SEMUA log aktivitas? Tindakan ini tidak dapat dibatalkan!')">
+      <button type="submit" class="cc-btn cc-btn-danger">
+        <i class="fa-solid fa-trash"></i> Bersihkan Log
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Filter bar -->
+<form method="get" class="cc-card" style="margin-bottom:20px">
+  <div class="cc-toolbar" style="flex-wrap:wrap">
+    <div class="cc-toolbar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="q" value="{{ filters.q }}" placeholder="Cari aksi, detail, username...">
+    </div>
+    <select name="action_type">
+      <option value="">Semua Tipe</option>
+      {% for t, label in [('login','Login'),('logout','Logout'),('create','Tambah Data'),('update','Edit Data'),('delete','Hapus Data'),('upload','Upload'),('backup','Backup'),('other','Lainnya')] %}
+      <option value="{{ t }}" {% if filters.action_type == t %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="user_id">
+      <option value="">Semua Pengguna</option>
+      {% for u in all_users %}
+      <option value="{{ u.id }}" {% if filters.user_id|string == u.id|string %}selected{% endif %}>{{ u.full_name }} ({{ u.username }})</option>
+      {% endfor %}
+    </select>
+    <input type="date" name="date_from" value="{{ filters.date_from }}" style="padding:6px 10px;border:1px solid var(--cc-border);border-radius:6px;font-size:.8rem;background:var(--cc-card-bg);color:var(--cc-text)">
+    <input type="date" name="date_to" value="{{ filters.date_to }}" style="padding:6px 10px;border:1px solid var(--cc-border);border-radius:6px;font-size:.8rem;background:var(--cc-card-bg);color:var(--cc-text)">
+    <button type="submit" class="cc-btn cc-btn-primary cc-btn-sm"><i class="fa-solid fa-filter"></i> Filter</button>
+    <a href="{{ url_for('control_center_activity_log') }}" class="cc-btn cc-btn-ghost cc-btn-sm">Reset</a>
+    <span class="cc-toolbar-count">{{ total }} entri</span>
+  </div>
+</form>
+
+<div class="cc-card">
+  <div class="cc-table-wrapper">
+    <table class="cc-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Waktu</th>
+          <th>Pengguna</th>
+          <th>Tipe</th>
+          <th>Aksi</th>
+          <th>Detail</th>
+          <th>IP Address</th>
+          <th>Browser</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="color:var(--cc-text-muted);font-size:.72rem">{{ loop.index + ((page-1)*per_page) }}</td>
+          <td style="font-size:.75rem;white-space:nowrap;color:var(--cc-text-muted)">
+            {{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') if log.created_at else '—' }}
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="cc-avatar" style="width:26px;height:26px;font-size:.68rem">{{ (log.username or 'S')[:1]|upper }}</div>
+              <span style="font-size:.78rem;font-weight:500">{{ log.username or 'sistem' }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="cc-badge {% if log.action_type == 'login' %}cc-badge-green{% elif log.action_type == 'logout' %}cc-badge-gray{% elif log.action_type == 'delete' %}cc-badge-red{% elif log.action_type == 'create' %}cc-badge-blue{% elif log.action_type == 'update' %}cc-badge-yellow{% elif log.action_type == 'upload' %}cc-badge-purple{% elif log.action_type == 'backup' %}cc-badge-orange{% else %}cc-badge-gray{% endif %}">
+              <i class="fa-solid {{ log.icon }}"></i>
+              {{ log.action_type_label }}
+            </span>
+          </td>
+          <td style="font-size:.78rem;font-weight:500">{{ log.action }}</td>
+          <td style="font-size:.75rem;color:var(--cc-text-muted);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ log.detail }}">
+            {{ log.detail or '—' }}
+          </td>
+          <td style="font-size:.72rem;font-family:monospace;color:var(--cc-text-muted)">{{ log.ip_address or '—' }}</td>
+          <td style="font-size:.72rem;color:var(--cc-text-muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ log.user_agent }}">
+            {{ log.user_agent[:40] + '…' if log.user_agent and log.user_agent|length > 40 else (log.user_agent or '—') }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="cc-empty">
+              <i class="fa-solid fa-scroll"></i>
+              <p>Tidak ada log yang cocok dengan filter.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="cc-pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('control_center_activity_log', page=page-1, **filters) }}" class="cc-page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+    {% endif %}
+    {% for p in range(1, total_pages+1) %}
+      {% if p == page %}
+      <span class="cc-page-btn active">{{ p }}</span>
+      {% elif p == 1 or p == total_pages or (p >= page-2 and p <= page+2) %}
+      <a href="{{ url_for('control_center_activity_log', page=p, **filters) }}" class="cc-page-btn">{{ p }}</a>
+      {% elif p == page-3 or p == page+3 %}
+      <span class="cc-page-btn disabled">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if page < total_pages %}
+    <a href="{{ url_for('control_center_activity_log', page=page+1, **filters) }}" class="cc-page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

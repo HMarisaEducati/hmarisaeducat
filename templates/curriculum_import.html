@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Import Silabus Bulanan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/silabus_final.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="silabus-page">
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Silabus Bulanan · Import</span>
+    <h1>Import Silabus dari Excel</h1>
+    <p>Template sudah mengikuti seluruh kolom pada formulir Tambah Rencana Bulanan. Data diperiksa sebelum disimpan.</p>
+  </div>
+  <div class="button-row">
+    <a class="btn btn-primary" href="{{ url_for('curriculum_preview', document_type='template') }}"><i class="fa-solid fa-file-arrow-down"></i> Preview Template Terbaru</a>
+    <a class="btn btn-outline" href="{{ url_for('curriculum') }}">Kembali</a>
+  </div>
+</div>
+<section class="card">
+  <div class="card-head"><h2>Pilih File Excel</h2><span class="muted">Maksimal 25 MB · format .xlsx</span></div>
+  <form method="post" enctype="multipart/form-data" class="form-grid">
+    <label>File Silabus<input type="file" name="file" accept=".xlsx" required></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Baca dan Pratinjau</button></div>
+  </form>
+</section>
+{% if preview %}
+<section class="card">
+  <div class="card-head">
+    <div><h2>Pratinjau Import</h2><p class="muted">Perbaiki baris yang gagal pada Excel, lalu unggah ulang.</p></div>
+    <div class="import-counts"><span class="badge">{{ valid_count }} valid</span><span class="badge {% if invalid_count %}badge-danger{% endif %}">{{ invalid_count }} perlu diperbaiki</span></div>
+  </div>
+  <div class="table-wrap import-preview-wrap">
+    <table class="import-preview-table">
+      <thead><tr><th>Baris</th><th>Kelas</th><th>Bulan</th><th>Tahun Ajaran</th><th>Semester</th><th>Bidang Pelajaran</th><th>Materi Pokok</th><th>Status Data</th><th>Versi</th><th>Hasil Validasi</th></tr></thead>
+      <tbody>
+      {% for item in preview %}
+        <tr class="{% if item.validation_status == 'Valid' %}valid-row{% else %}invalid-row{% endif %}">
+          <td>{{ item.excel_row }}</td>
+          <td>{{ item.class_name }}</td>
+          <td>{{ item.month }}</td>
+          <td>{{ item.academic_year }}</td>
+          <td>{{ item.semester }}</td>
+          <td>{{ item.subject }}</td>
+          <td>{{ item.topic }}</td>
+          <td>{{ item.record_status }}</td>
+          <td>V{{ item.version }}</td>
+          <td><span>{{ item.validation_status }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <form method="post" class="import-confirm-actions">
+    <input type="hidden" name="token" value="{{ token }}">
+    <input type="hidden" name="action" value="confirm">
+    <button class="btn btn-primary" type="submit" {% if valid_count == 0 %}disabled{% endif %}><i class="fa-solid fa-database"></i> Konfirmasi dan Import {{ valid_count }} Data Valid</button>
+    <a class="btn btn-outline" href="{{ url_for('curriculum_import') }}">Batalkan Pratinjau</a>
+  </form>
+</section>
+{% endif %}
+</div>
+{% endblock %}

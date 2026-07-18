@@ -1,0 +1,94 @@
+{% extends "control_center/base.html" %}
+{% block title %}Tabel: {{ table_name }}{% endblock %}
+{% block breadcrumb %}
+  <i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i>
+  <a href="{{ url_for('control_center_database') }}">Database</a>
+  <i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i>
+  <span>{{ table_name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-table" style="color:var(--cc-accent)"></i> {{ table_name }}</div>
+    <div class="cc-page-subtitle">{{ row_count }} record · {{ columns|length }} kolom</div>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('control_center_db_export_table', table_name=table_name) }}" class="cc-btn cc-btn-secondary">
+      <i class="fa-solid fa-download"></i> Export CSV
+    </a>
+    <a href="{{ url_for('control_center_database') }}" class="cc-btn cc-btn-ghost">
+      <i class="fa-solid fa-arrow-left"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<!-- Column info -->
+<div class="cc-card" style="margin-bottom:20px">
+  <div class="cc-card-header">
+    <div class="cc-card-title"><i class="fa-solid fa-columns"></i> Struktur Tabel</div>
+  </div>
+  <div class="cc-card-body" style="padding:0">
+    <div class="cc-table-wrapper">
+      <table class="cc-table">
+        <thead><tr><th>#</th><th>Kolom</th><th>Tipe</th><th>Nullable</th><th>Primary Key</th></tr></thead>
+        <tbody>
+          {% for col in columns %}
+          <tr>
+            <td style="color:var(--cc-text-muted)">{{ loop.index }}</td>
+            <td><code style="font-size:.78rem">{{ col.name }}</code></td>
+            <td><span class="cc-badge cc-badge-blue">{{ col.type }}</span></td>
+            <td>{{ '✓' if col.nullable else '✗' }}</td>
+            <td>{{ '<span class="cc-badge cc-badge-purple">PK</span>' | safe if col.primary_key else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Data preview -->
+<div class="cc-card">
+  <div class="cc-card-header">
+    <div class="cc-card-title"><i class="fa-solid fa-eye"></i> Pratinjau Data ({{ rows|length }} baris terbaru)</div>
+    <span class="cc-badge cc-badge-gray">Read-only · Hanya 100 baris</span>
+  </div>
+  <div class="cc-card-body" style="padding:0">
+    {% if rows %}
+    <div class="cc-table-wrapper" style="max-height:500px;overflow-y:auto">
+      <table class="cc-table">
+        <thead>
+          <tr>
+            {% for col in columns[:12] %}
+            <th>{{ col.name }}</th>
+            {% endfor %}
+            {% if columns|length > 12 %}<th>…+{{ columns|length - 12 }} lagi</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            {% for val in row[:12] %}
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem"
+              title="{{ val }}">
+              {% if val is none %}
+              <span style="color:var(--cc-text-muted);font-style:italic">NULL</span>
+              {% elif val|string|length > 60 %}
+              {{ val|string|truncate(60) }}
+              {% else %}
+              {{ val }}
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="cc-empty"><i class="fa-solid fa-inbox"></i><p>Tabel ini kosong.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

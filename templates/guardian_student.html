@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Perkembangan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
 {% block content %}
 <div class="page-heading">
   <div>
@@ -7,8 +8,12 @@
     <h1>{{ student.name }}</h1>
     <p>NIS {{ student.nis }} · Kelas {{ student.class_name }}</p>
   </div>
-  <a class="btn btn-outline" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+  <div class="button-row"><a class="btn btn-outline" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>{% if raport.status == 'Diterbitkan' %}<a class="btn btn-primary" href="{{ url_for('guardian_report', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Lihat Raport</a>{% endif %}</div>
 </div>
+<nav class="student-module-tabs guardian-tabs" aria-label="Navigasi wali santri">
+  <a class="active" href="{{ url_for('guardian_student_detail', student_id=student.id) }}"><i class="fa-solid fa-child-reaching"></i> Perkembangan</a>
+  <a href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}"><i class="fa-solid fa-wallet"></i> Keuangan</a>
+</nav>
 
 <section class="card">
   {% set done = hafalan.values()|select|list|length %}
@@ -34,7 +39,7 @@
       <time>{{ entry.date }}</time>
       <div>
         <strong>{{ entry.tilawati or 'Progres mengaji' }}</strong>
-        {% if entry.fiqih %}<p>{{ entry.fiqih }}</p>{% endif %}
+        {% if entry.subject or entry.material %}<p>{{ entry.subject or '' }}{% if entry.material %} — {{ entry.material }}{% endif %}</p>{% endif %}
         {% if entry.notes %}<small>{{ entry.notes }}</small>{% endif %}
       </div>
     </article>
@@ -42,24 +47,9 @@
   </div>
 </section>
 
-<section class="card">
-  <div class="card-head"><h2>Tagihan Iuran</h2><span class="muted">Kelola pembayaran ananda</span></div>
-  <div class="bill-grid">
-    {% for bill in bills %}
-    <article class="bill-card">
-      <div><span class="badge">{{ bill.month }} {{ bill.year }}</span><h3>{{ bill.nominal|rupiah }}</h3><p class="status-text">{{ bill.status }}</p></div>
-      <div class="button-row compact">
-        {% if bill.status == 'Lunas' %}<a class="btn btn-small btn-outline" href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>{% endif %}
-        <a class="btn btn-small btn-whatsapp" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
-      </div>
-      {% if bill.status != 'Lunas' %}
-      <form method="post" action="{{ url_for('upload_bill_proof', bill_id=bill.id) }}" enctype="multipart/form-data" class="upload-inline">
-        <input type="file" name="proof" accept="image/*,.pdf" required>
-        <button class="btn btn-small btn-primary" type="submit">Kirim Bukti</button>
-      </form>
-      {% endif %}
-    </article>
-    {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
-  </div>
+<section class="card finance-v15e-card">
+  <div class="card-head"><div><h2>Administrasi Iuran</h2><p class="muted">Lihat tagihan, riwayat pembayaran, dan bukti pembayaran ananda.</p></div><a href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}">Buka Keuangan</a></div>
+  {% if guardian_finance_summary %}<div class="finance-v15e-stat-grid"><article><span>Total Tagihan</span><strong>{{ guardian_finance_summary.total|rupiah }}</strong><small>{{ guardian_finance_summary.bill_count }} tagihan aktif</small></article><article><span>Dibayar</span><strong>{{ guardian_finance_summary.paid|rupiah }}</strong><small>Pembayaran tercatat</small></article><article><span>Sisa</span><strong>{{ guardian_finance_summary.remaining|rupiah }}</strong><small>{{ guardian_finance_summary.unpaid_count }} belum selesai</small></article><article><span>Status</span><strong>{{ 'Selesai' if guardian_finance_summary.remaining == 0 and guardian_finance_summary.bill_count else ('Belum ada tagihan' if not guardian_finance_summary.bill_count else 'Perlu diperiksa') }}</strong><small>Data hanya dapat diubah admin</small></article></div>{% else %}<p class="empty">Belum ada informasi administrasi.</p>{% endif %}
 </section>
+
 {% endblock %}

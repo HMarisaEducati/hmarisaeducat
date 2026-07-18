@@ -1,0 +1,150 @@
+{% extends "control_center/base.html" %}
+{% block title %}Backup & Restore{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><span>Backup</span>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-box-archive" style="color:var(--cc-accent)"></i> Backup & Restore</div>
+    <div class="cc-page-subtitle">Lindungi data TPQ HMarisa dengan backup rutin database dan file penting</div>
+  </div>
+  <div class="cc-page-actions">
+    <form method="post" action="{{ url_for('control_center_backup_create') }}">
+      <button type="submit" class="cc-btn cc-btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Buat Backup Sekarang
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="cc-dashboard-grid">
+  <!-- Backup options -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="cc-card">
+      <div class="cc-card-header">
+        <div class="cc-card-title"><i class="fa-solid fa-database"></i> Backup Database</div>
+        <span class="cc-badge cc-badge-green">Direkomendasikan</span>
+      </div>
+      <div class="cc-card-body">
+        <p style="font-size:.82rem;color:var(--cc-text-muted);margin-bottom:16px">
+          Buat salinan database SQLite aktif (<code>tpq_hmarisa.db</code>). Berisi seluruh data santri, keuangan, e-raport, silabus, dan pengguna.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <form method="post" action="{{ url_for('control_center_backup_create') }}">
+            <input type="hidden" name="type" value="database">
+            <button type="submit" class="cc-btn cc-btn-primary"><i class="fa-solid fa-database"></i> Backup Database</button>
+          </form>
+          <a href="{{ url_for('control_center_backup_download') }}" class="cc-btn cc-btn-secondary">
+            <i class="fa-solid fa-download"></i> Unduh Backup Terakhir
+          </a>
+        </div>
+        <div style="margin-top:14px;padding:10px 12px;background:var(--cc-bg);border-radius:6px;font-size:.78rem">
+          <i class="fa-solid fa-clock" style="color:var(--cc-accent)"></i>
+          Backup terakhir: <strong>{{ last_backup_info.created_at if last_backup_info else 'Belum ada backup' }}</strong>
+          {% if last_backup_info %}
+          · {{ last_backup_info.size }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-header">
+        <div class="cc-card-title"><i class="fa-solid fa-upload"></i> Restore Database</div>
+        <span class="cc-badge cc-badge-red">Hati-hati</span>
+      </div>
+      <div class="cc-card-body">
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;font-size:.8rem;color:#92400e;margin-bottom:14px">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <strong>Peringatan:</strong> Restore akan menggantikan seluruh data yang ada dengan data dari file backup. Pastikan Anda sudah membuat backup terlebih dahulu!
+        </div>
+        <form method="post" action="{{ url_for('control_center_backup_restore') }}" enctype="multipart/form-data"
+          onsubmit="return confirm('Apakah Anda yakin ingin merestore database? Seluruh data saat ini akan digantikan!')">
+          <div class="cc-field" style="margin-bottom:12px">
+            <label>Pilih File Backup (.db)</label>
+            <input type="file" name="backup_file" accept=".db,.sqlite,.sqlite3" required
+              style="padding:6px;border:1px solid var(--cc-border);border-radius:6px;font-size:.8rem;background:var(--cc-card-bg);color:var(--cc-text)">
+          </div>
+          <button type="submit" class="cc-btn cc-btn-danger">
+            <i class="fa-solid fa-rotate-left"></i> Restore Database
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup history -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Backup</div>
+    </div>
+    <div class="cc-card-body" style="padding:0">
+      {% if backup_history %}
+      <div class="cc-table-wrapper">
+        <table class="cc-table">
+          <thead><tr><th>Waktu</th><th>Ukuran</th><th>Oleh</th><th>Aksi</th></tr></thead>
+          <tbody>
+            {% for b in backup_history %}
+            <tr>
+              <td style="font-size:.78rem">
+                <i class="fa-solid fa-box-archive" style="color:var(--cc-accent)"></i>
+                {{ b.created_at }}
+              </td>
+              <td style="font-size:.78rem">{{ b.size }}</td>
+              <td style="font-size:.78rem;color:var(--cc-text-muted)">{{ b.created_by }}</td>
+              <td>
+                <a href="{{ url_for('control_center_backup_download_file', filename=b.filename) }}" class="cc-btn cc-btn-ghost cc-btn-sm">
+                  <i class="fa-solid fa-download"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="cc-empty">
+        <i class="fa-solid fa-box-archive"></i>
+        <p>Belum ada backup yang dibuat.</p>
+        <p style="font-size:.75rem">Klik "Buat Backup Sekarang" untuk memulai.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Info boxes -->
+<div class="cc-dashboard-grid-3" style="margin-top:20px">
+  <div class="cc-card">
+    <div class="cc-card-header"><div class="cc-card-title"><i class="fa-solid fa-shield-halved"></i> Tips Backup</div></div>
+    <div class="cc-card-body">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:.78rem;color:var(--cc-text-muted)">
+        <li><i class="fa-solid fa-circle-check" style="color:var(--cc-accent)"></i> Backup sebelum melakukan perubahan besar</li>
+        <li><i class="fa-solid fa-circle-check" style="color:var(--cc-accent)"></i> Simpan salinan backup di luar server</li>
+        <li><i class="fa-solid fa-circle-check" style="color:var(--cc-accent)"></i> Backup minimal sekali seminggu</li>
+        <li><i class="fa-solid fa-circle-check" style="color:var(--cc-accent)"></i> Uji restore backup secara berkala</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cc-card">
+    <div class="cc-card-header"><div class="cc-card-title"><i class="fa-solid fa-file-lines"></i> Isi Backup</div></div>
+    <div class="cc-card-body">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:.78rem;color:var(--cc-text-muted)">
+        <li><i class="fa-solid fa-database" style="color:var(--cc-accent)"></i> Semua data santri & wali</li>
+        <li><i class="fa-solid fa-wallet" style="color:var(--cc-accent)"></i> Data keuangan & pembayaran</li>
+        <li><i class="fa-solid fa-file-pen" style="color:var(--cc-accent)"></i> E-Raport semua santri</li>
+        <li><i class="fa-solid fa-users" style="color:var(--cc-accent)"></i> Data pengguna sistem</li>
+        <li><i class="fa-solid fa-table-list" style="color:var(--cc-accent)"></i> Silabus & kurikulum</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cc-card">
+    <div class="cc-card-header"><div class="cc-card-title"><i class="fa-solid fa-folder-open"></i> Folder Backup</div></div>
+    <div class="cc-card-body">
+      <p style="font-size:.78rem;color:var(--cc-text-muted);margin-bottom:8px">File backup disimpan di:</p>
+      <code style="font-size:.75rem;background:var(--cc-bg);padding:8px 10px;border-radius:6px;display:block;word-break:break-all">backups/</code>
+      <p style="font-size:.75rem;color:var(--cc-text-muted);margin-top:8px">Format nama: <code>tpq_backup_YYYYMMDD_HHMMSS.db</code></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

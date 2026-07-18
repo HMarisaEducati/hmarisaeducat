@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Edit Santri{% endblock %}
+{% block scripts %}<script>
+(() => {
+  const name = document.getElementById('student-name');
+  const publicName = document.getElementById('student-public-name');
+  const toggle = document.getElementById('custom-public-name-toggle');
+  if (!name || !publicName || !toggle) return;
+
+  function syncPublicName() {
+    if (!toggle.checked) publicName.value = name.value;
+  }
+
+  function applyLockState() {
+    publicName.readOnly = !toggle.checked;
+    publicName.setAttribute('aria-readonly', String(!toggle.checked));
+    if (!toggle.checked) {
+      publicName.value = name.value;
+    }
+  }
+
+  name.addEventListener('input', syncPublicName);
+  toggle.addEventListener('change', () => {
+    applyLockState();
+    if (toggle.checked) { publicName.focus(); publicName.select(); }
+  });
+  applyLockState();
+})();
+</script>{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/students_patch.css') }}">
+<div class="page-heading"><div><span class="eyebrow">Database Santri · Edit</span><h1>Edit Data Santri</h1><p>Perbarui identitas santri tanpa menghapus prestasi, hafalan, mutabaah, dan raport.</p></div><a class="btn btn-outline" href="{{ url_for('students', tab='database', class_name=student.class_name, student_id=student.id, status='Semua Status') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a></div>
+<section class="card student-edit-card">
+  <div class="student-edit-identity"><div class="student-edit-avatar">{{ student.name[:1]|upper }}</div><div><h2>{{ student.name }}</h2><p>NIS {{ student.nis }} • {{ student.class_name }}</p></div></div>
+  <form method="post" class="form-grid form-grid-3">
+    <label>Nama Lengkap<input id="student-name" name="name" value="{{ student.name }}" required></label>
+    {% set has_custom_public_name = student.public_name and student.public_name != student.name %}
+    <div class="public-name-safe-field">
+      <label>Nama Tampilan Publik
+        <input id="student-public-name" name="public_name" value="{{ student.public_name or student.name }}" {% if not has_custom_public_name %}readonly aria-readonly="true"{% else %}aria-readonly="false"{% endif %}>
+      </label>
+      <label class="check-line public-name-toggle"><input id="custom-public-name-toggle" type="checkbox" {% if has_custom_public_name %}checked{% endif %}> Gunakan nama tampilan berbeda</label>
+      <small class="form-help"><i class="fa-solid fa-lock"></i> Saat tidak dicentang, nama publik terkunci dan mengikuti Nama Lengkap.</small>
+    </div>
+    <label>NIS<input name="nis" value="{{ student.nis }}" required></label>
+    <label>Kelas<select name="class_name" required>{% for c in classes %}<option value="{{ c }}" {% if c==student.class_name %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Nama Wali<input name="guardian_name" value="{{ student.guardian_name or student.guardian.full_name }}"></label>
+    <label>Nomor Kontak Wali<input name="guardian_phone" value="{{ student.guardian_phone or '' }}" inputmode="tel"></label>
+    <label>Status<select name="is_active"><option value="1" {% if student.is_active %}selected{% endif %}>Aktif</option><option value="0" {% if not student.is_active %}selected{% endif %}>Nonaktif</option></select></label>
+    <div class="form-action edit-save-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button><a class="btn btn-outline" href="{{ url_for('students', tab='database') }}">Batal</a></div>
+  </form>
+</section>
+{% endblock %}

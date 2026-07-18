@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="id" data-cc-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Control Center{% endblock %} · TPQ HMarisa</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo_portal_cropped.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/control_center.css') }}?v=20260718-1">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+<div class="cc-shell">
+  <!-- Sidebar -->
+  <aside class="cc-sidebar" id="ccSidebar">
+    <div class="cc-sidebar-header">
+      <a href="{{ url_for('control_center_dashboard') }}" class="cc-brand">
+        <img src="{{ url_for('static', filename='img/logo_portal_cropped.png') }}" alt="Logo" class="cc-brand-img">
+        <div class="cc-brand-text">
+          <span class="cc-brand-name">Control Center</span>
+          <span class="cc-brand-sub">TPQ HMarisa</span>
+        </div>
+      </a>
+      <button class="cc-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars-staggered"></i>
+      </button>
+    </div>
+
+    {# ── Kembali ke Portal Admin ── #}
+    <a href="{{ url_for('dashboard') }}" class="cc-back-to-portal">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Kembali ke Portal Admin</span>
+    </a>
+
+    <div class="cc-sidebar-user">
+      <div class="cc-user-avatar">{{ current_user.full_name[:1]|upper }}</div>
+      <div class="cc-user-info">
+        <span class="cc-user-name">{{ current_user.full_name }}</span>
+        <span class="cc-user-role">Super Admin</span>
+      </div>
+    </div>
+
+    <nav class="cc-nav">
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">Utama</span>
+        <a href="{{ url_for('control_center_dashboard') }}" class="cc-nav-item {% if request.endpoint == 'control_center_dashboard' %}active{% endif %}">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('control_center_modules') }}" class="cc-nav-item {% if request.endpoint == 'control_center_modules' %}active{% endif %}">
+          <i class="fa-solid fa-grip"></i><span>Semua Modul</span>
+        </a>
+      </div>
+
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">Manajemen</span>
+        <a href="{{ url_for('control_center_users') }}" class="cc-nav-item {% if 'control_center_user' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-users-gear"></i><span>Manajemen Pengguna</span>
+        </a>
+        <a href="{{ url_for('control_center_santri') }}" class="cc-nav-item {% if 'control_center_santri' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-child-reaching"></i><span>Data Santri</span>
+        </a>
+        <a href="{{ url_for('control_center_content') }}" class="cc-nav-item {% if 'control_center_content' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-newspaper"></i><span>Konten &amp; Pengumuman</span>
+        </a>
+        <a href="{{ url_for('control_center_activity_log') }}" class="cc-nav-item {% if request.endpoint == 'control_center_activity_log' %}active{% endif %}">
+          <i class="fa-solid fa-scroll"></i><span>Log Aktivitas</span>
+        </a>
+      </div>
+
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">CMS &amp; Menu</span>
+        <a href="{{ url_for('cms_builder_index') }}" class="cc-nav-item {% if 'cms_builder' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-cube"></i><span>CMS Builder</span>
+          <span style="font-size:.65rem;background:#10b981;color:#fff;padding:.1rem .35rem;border-radius:99px;margin-left:auto">Baru</span>
+        </a>
+        <a href="{{ url_for('sidebar_menu_admin') }}" class="cc-nav-item {% if 'sidebar_menu' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-list-check"></i><span>Kelola Menu Sidebar</span>
+        </a>
+      </div>
+
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">Sistem</span>
+        <a href="{{ url_for('control_center_settings') }}" class="cc-nav-item {% if request.endpoint == 'control_center_settings' %}active{% endif %}">
+          <i class="fa-solid fa-sliders"></i><span>Pengaturan Website</span>
+        </a>
+        <a href="{{ url_for('control_center_database') }}" class="cc-nav-item {% if 'control_center_db' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-database"></i><span>Database Manager</span>
+        </a>
+        <a href="{{ url_for('control_center_backup') }}" class="cc-nav-item {% if request.endpoint == 'control_center_backup' %}active{% endif %}">
+          <i class="fa-solid fa-box-archive"></i><span>Backup &amp; Restore</span>
+        </a>
+      </div>
+
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">Buka Langsung</span>
+        <a href="{{ url_for('dashboard') }}" class="cc-nav-item cc-nav-external">
+          <i class="fa-solid fa-chart-pie"></i><span>Dasbor Admin</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('students') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-users"></i><span>Database Santri</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('eraport') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-file-pen"></i><span>E-Raport</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('finance') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-wallet"></i><span>Keuangan</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('curriculum') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-table-list"></i><span>Silabus</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('hadith_manager') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-quote-right"></i><span>Hadis Harian</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('library') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-book-open"></i><span>Perpustakaan</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('daily_progress') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-book-open-reader"></i><span>Prestasi Harian</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+        <a href="{{ url_for('portal_control_dashboard_v17') }}" class="cc-nav-item cc-nav-external" target="_blank">
+          <i class="fa-solid fa-gears"></i><span>Pusat Kendali Portal</span><i class="fa-solid fa-arrow-up-right-from-square cc-ext-icon"></i>
+        </a>
+      </div>
+    </nav>
+
+    <div class="cc-sidebar-footer">
+      <button class="cc-theme-toggle" id="themeToggle" title="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+      <a href="{{ url_for('logout') }}" class="cc-logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i><span>Keluar</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="cc-main">
+    <!-- Topbar -->
+    <header class="cc-topbar">
+      <div class="cc-topbar-left">
+        <button class="cc-mobile-toggle" id="mobileToggle" aria-label="Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <nav class="cc-breadcrumb">
+          <a href="{{ url_for('control_center_dashboard') }}">Control Center</a>
+          {% block breadcrumb %}{% endblock %}
+        </nav>
+      </div>
+      <div class="cc-topbar-right">
+        <div class="cc-topbar-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="ccGlobalSearch" placeholder="Cari pengguna, santri, pengaturan..." autocomplete="off">
+          <div class="cc-search-results" id="ccSearchResults"></div>
+        </div>
+        <div class="cc-topbar-notif" id="notifBell" title="Notifikasi">
+          <i class="fa-solid fa-bell"></i>
+          {% if notifications %}
+          <span class="cc-notif-badge">{{ notifications|length }}</span>
+          {% endif %}
+          <div class="cc-notif-dropdown" id="notifDropdown">
+            <div class="cc-notif-header">
+              <span>Notifikasi</span>
+              {% if notifications %}<span class="cc-notif-count">{{ notifications|length }}</span>{% endif %}
+            </div>
+            {% if notifications %}
+              {% for n in notifications %}
+              <a href="{{ n.url }}" class="cc-notif-item cc-notif-{{ n.level }}">
+                <i class="fa-solid {{ n.icon }}"></i>
+                <div class="cc-notif-body">
+                  <div class="cc-notif-title">{{ n.title }}</div>
+                  <div class="cc-notif-desc">{{ n.desc }}</div>
+                </div>
+              </a>
+              {% endfor %}
+            {% else %}
+              <div class="cc-notif-empty"><i class="fa-solid fa-check-circle"></i> Tidak ada notifikasi baru</div>
+            {% endif %}
+            <div class="cc-notif-footer">
+              <a href="{{ url_for('control_center_activity_log') }}">Lihat semua log aktivitas</a>
+            </div>
+          </div>
+        </div>
+        <div class="cc-topbar-profile">
+          <div class="cc-avatar-sm">{{ current_user.full_name[:1]|upper }}</div>
+          <span>{{ current_user.full_name }}</span>
+          <i class="fa-solid fa-chevron-down"></i>
+          <div class="cc-profile-dropdown">
+            <a href="{{ url_for('control_center_settings') }}"><i class="fa-solid fa-gear"></i> Pengaturan</a>
+            <a href="{{ url_for('control_center_activity_log') }}"><i class="fa-solid fa-scroll"></i> Log Aktivitas</a>
+            <hr>
+            <a href="{{ url_for('logout') }}" class="cc-logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="cc-flash-stack">
+      {% for category, message in messages %}
+      <div class="cc-flash cc-flash-{{ category }}">
+        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'danger' or category == 'error' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+        <span>{{ message }}</span>
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Content -->
+    <div class="cc-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Overlay -->
+<div class="cc-overlay" id="ccOverlay"></div>
+
+<script src="{{ url_for('static', filename='js/control_center.js') }}?v=20260718-3"></script>
+{% block scripts %}{% endblock %}
+
+<!-- Floating Action Button -->
+<div class="cc-fab-group" id="ccFab">
+  <button class="cc-fab-main" id="ccFabMain" title="Aksi Cepat">
+    <i class="fa-solid fa-plus" id="ccFabIcon"></i>
+  </button>
+  <div class="cc-fab-menu" id="ccFabMenu">
+    <a href="{{ url_for('control_center_user_add') }}" class="cc-fab-item" data-tooltip="Tambah Pengguna">
+      <i class="fa-solid fa-user-plus"></i>
+    </a>
+    <a href="{{ url_for('students') }}?tab=add" class="cc-fab-item" data-tooltip="Tambah Santri" target="_blank">
+      <i class="fa-solid fa-child-reaching"></i>
+    </a>
+    <a href="{{ url_for('control_center_backup_create') }}" class="cc-fab-item cc-fab-confirm" data-tooltip="Backup Sekarang"
+       onclick="return confirm('Buat backup database sekarang?')" data-method="POST">
+      <i class="fa-solid fa-box-archive"></i>
+    </a>
+    <a href="{{ url_for('control_center_content') }}" class="cc-fab-item" data-tooltip="Tambah Pengumuman">
+      <i class="fa-solid fa-newspaper"></i>
+    </a>
+    <a href="{{ url_for('portal_control_dashboard_v17') }}" class="cc-fab-item" data-tooltip="Pusat Kendali Portal" target="_blank">
+      <i class="fa-solid fa-gears"></i>
+    </a>
+  </div>
+</div>
+
+<form id="ccFabBackupForm" method="POST" action="{{ url_for('control_center_backup_create') }}" style="display:none"></form>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dasbor Admin{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin · Ringkasan Portal</span><h1>Dasbor TPQ HMarisa</h1><p>Ringkasan data, hadis harian, silabus, dan santri terbaik mingguan.</p></div><a class="btn btn-outline" href="{{ url_for('dashboard', refresh_weekly=1) }}"><i class="fa-solid fa-rotate"></i> Jalankan Proses Mingguan</a></div>
+<div class="stat-grid">
+  <article class="stat-card"><i class="fa-solid fa-users"></i><div><strong>{{ stats.students }}</strong><span>Santri Aktif</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-wallet"></i><div><strong>{{ stats.unpaid }}</strong><span>Tagihan Belum Lunas</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-hourglass-half"></i><div><strong>{{ stats.pending_bills }}</strong><span>Menunggu Verifikasi</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-book"></i><div><strong>{{ stats.pending_books }}</strong><span>Akses Buku Menunggu</span></div></article>
+</div>
+
+<div class="dashboard-two-col dashboard-green-pair">
+  <section class="card dashboard-green-card hadith-dashboard-card">
+    <div class="card-head"><h2><i class="fa-solid fa-quote-right"></i> Hadis Harian</h2>{% if not current_user.is_teacher %}<a href="{{ url_for('hadith_manager') }}">Kelola Hadis</a>{% endif %}</div>
+    {% if daily_hadith %}<p class="hadith-arabic dashboard-arabic">{{ daily_hadith.arabic }}</p><p class="hadith-translation">“{{ daily_hadith.translation }}”</p><small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %} · {{ daily_hadith.theme }}</small>{% else %}<p class="empty green-empty">Bank hadis belum tersedia.</p>{% endif %}
+  </section>
+  <section class="card dashboard-green-card winners-dashboard-card">
+    <div class="card-head"><h2><i class="fa-solid fa-award"></i> Santri Terbaik Minggu Ini</h2><span class="green-soft-label">Senin–Kamis</span></div>
+    <div class="winner-dashboard-list">
+      {% for winner in weekly_winners %}
+      <article><span class="winner-icon"><i class="fa-solid fa-medal"></i></span><div><small>{{ winner.class_name }}</small><strong>{{ winner.student.public_name or winner.student.nickname or winner.student.name }}</strong><p>{{ winner.reason }}</p></div><span class="score-badge">{{ '%.1f'|format(winner.score) }}</span></article>
+      {% else %}<p class="empty green-empty">Belum ada hasil penilaian minggu ini.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+
+<section class="card poster-dashboard">
+  <div class="card-head"><div><h2>Poster Santri Terbaik</h2><p class="muted">Poster dibuat otomatis dan dibagikan manual melalui WhatsApp.</p></div>{% if latest_poster %}<span class="badge">{{ latest_poster.status }}</span>{% endif %}</div>
+  {% if latest_poster %}
+  <div class="poster-download-panel"><div><strong>File poster siap diunduh</strong><p>Periode {{ latest_poster.period_start|tanggal_id }} – {{ latest_poster.period_end|tanggal_id }}</p><small>{{ latest_poster.filename }}</small></div><div class="button-row"><a class="btn btn-primary" href="{{ url_for('poster_file', filename=latest_poster.filename, download=1) }}"><i class="fa-solid fa-download"></i> Unduh Poster</a><a class="btn btn-outline" target="_blank" href="https://wa.me/?text={{ ('Assalamu’alaikum. Berikut Poster Santri Terbaik TPQ HMarisa periode ' ~ (latest_poster.period_start|tanggal_id) ~ '–' ~ (latest_poster.period_end|tanggal_id) ~ '. Silakan diperiksa sebelum dipublikasikan.')|urlencode }}"><i class="fa-brands fa-whatsapp"></i> Buka WhatsApp</a><a class="btn btn-gold" href="{{ url_for('dashboard', refresh_weekly=1) }}"><i class="fa-solid fa-wand-magic-sparkles"></i> Buat Ulang</a></div></div>
+  {% else %}<div class="empty-state compact"><i class="fa-solid fa-image"></i><p>Poster belum dibuat. Tekan “Jalankan Proses Mingguan”.</p></div>{% endif %}
+</section>
+
+<section class="card" id="dashboard-syllabus">
+  <div class="card-head"><div><h2>Silabus Bulanan</h2>{% if primary_year %}<p class="muted">Tahun Ajaran {{ primary_year.name }} · {{ primary_year.semester }}</p>{% endif %}</div><a href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month, year=(primary_year.start_date.year if primary_year and primary_year.start_date else current_year)) }}">Buka Silabus</a></div>
+  <form method="get" action="{{ url_for('dashboard') }}#dashboard-syllabus" class="search-filter-form dashboard-syllabus-form">
+    <label>Kelas<select name="syllabus_class" required><option value="">Pilih kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if curriculum_class==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Bulan<select name="syllabus_month" required>{% for m in MONTHS %}<option value="{{ m }}" {% if curriculum_month==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Tampilkan</button>
+  </form>
+  {% if curriculum_rows %}<div class="table-wrap spaced-top"><table><thead><tr><th>Bidang Pelajaran</th><th>Materi Pokok</th><th>Target Pembelajaran</th><th>Versi</th></tr></thead><tbody>{% for row in curriculum_rows %}<tr><td>{{ row.subject }}</td><td>{{ row.topic }}</td><td>{{ row.learning_target or '-' }}</td><td>V{{ row.version }}</td></tr>{% endfor %}</tbody></table></div>
+  {% elif syllabus_filtered %}<div class="empty-state compact"><i class="fa-solid fa-table-list"></i><p>Belum ada Silabus Bulanan untuk kelas <strong>{{ curriculum_class }}</strong> pada bulan <strong>{{ curriculum_month }}</strong>.</p><a class="btn btn-outline" href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month) }}">Buka Halaman Silabus</a></div>
+  {% else %}<p class="empty">Pilih kelas dan bulan, kemudian tekan Tampilkan.</p>{% endif %}
+</section>
+{% endblock %}

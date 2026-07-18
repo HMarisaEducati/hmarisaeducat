@@ -1,0 +1,32 @@
+PATCH DATA MASTER FINAL V1 — TPQ HMarisa
+
+Perubahan:
+1. Manajemen Kelas
+   - Kode dan urutan disembunyikan; dibuat otomatis secara internal.
+   - Tahun ajaran mulai berupa dropdown 2026/2027 sampai 2049/2050.
+   - Tambah Edit, Nonaktifkan/Aktifkan, dan Hapus aman.
+   - Perubahan nama kelas memigrasikan hubungan data terkait.
+
+2. Guru/Wali Kelas
+   - Jabatan berupa dropdown: Guru, Wali Kelas, Guru dan Wali Kelas,
+     Kepala TPQ, Guru dan Kepala TPQ.
+   - Tambah Edit, Nonaktifkan/Aktifkan, dan Hapus aman.
+   - Perubahan wali kelas memperbarui Data Master Kelas.
+
+3. Bidang Pelajaran
+   - Kode dan urutan disembunyikan; dibuat otomatis secara internal.
+   - Tambah Edit, Nonaktifkan/Aktifkan, dan Hapus aman.
+   - Nama bidang yang sama dilarang pada kelas yang sama.
+
+4. Tahun Ajaran
+   - Dropdown 2026/2027 sampai 2049/2050.
+   - Semester dropdown.
+   - Periode otomatis: Juli–Desember / Januari–Juni.
+   - Tambah Edit, Jadikan Utama, dan Hapus aman.
+
+5. Manajemen Pengguna
+   - Dipindahkan ke tab terakhir dalam Data Master.
+   - Menu terpisah di sidebar dihapus.
+   - Hanya Admin Utama yang dapat melihat dan mengakses tab ini.
+
+Patch tidak menyertakan database atau uploads.

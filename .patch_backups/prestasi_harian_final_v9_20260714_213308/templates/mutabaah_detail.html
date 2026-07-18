@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Detail Jurnal {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+{% set active_tab = 'history' %}
+{% include '_progress_student_header.html' %}
+{% include '_journal_tabs.html' %}
+
+<section class="card journal-detail-card">
+  <div class="card-head"><div><span class="eyebrow">Detail Jurnal Mutabaah</span><h2>{{ entry.date|tanggal_id }}</h2></div><span class="status-pill status-{{ (entry.keterangan or 'kosong')|lower }}">{{ entry.keterangan or 'Belum diisi' }}</span></div>
+  <div class="journal-detail-grid">
+    <div><small>Tanggal</small><strong>{{ entry.date|tanggal_id }}</strong></div>
+    <div><small>Bidang Pelajaran</small><strong>{{ entry.subject or 'Belum diisi' }}</strong></div>
+    <div><small>Materi Pelajaran</small><strong>{{ entry.material or 'Belum diisi' }}</strong></div>
+    <div><small>Jenjang Tahsin</small><strong>{{ entry.tahsin_level or 'Belum diisi' }}</strong></div>
+    <div><small>Tilawati/Iqro</small><strong>{{ entry.tilawati or 'Belum diisi' }}</strong></div>
+    <div><small>Al-Qur'an</small><strong>{{ entry.alquran or 'Belum diisi' }}</strong></div>
+    <div><small>Kehadiran</small><strong>{{ entry.attendance or 'Hadir' }}</strong></div>
+    <div><small>Ketepatan Waktu</small><strong>{{ 'Tepat waktu' if entry.on_time else 'Tidak tepat waktu' }}</strong></div>
+    <div><small>Nilai Adab/Kedisiplinan</small><strong>{{ entry.adab_score or 80 }}</strong></div>
+    <div><small>Keterangan</small><strong>{{ entry.keterangan or 'Belum diisi' }}</strong></div>
+    <div class="detail-wide"><small>Catatan Guru</small><p>{{ entry.notes or 'Belum diisi' }}</p></div>
+    <div class="detail-wide audit-detail"><small>Riwayat Pencatatan</small><p>Dibuat oleh {{ entry.created_by or 'Belum diisi' }}{% if entry.created_at %} · {{ entry.created_at[:19]|replace('T',' ') }}{% endif %}{% if entry.updated_by %}<br>Diperbarui oleh {{ entry.updated_by }}{% endif %}</p></div>
+  </div>
+  <div class="journal-detail-actions"><a class="btn btn-outline" href="{{ url_for('mutabaah_history', student_id=student.id) }}"><i class="fa-solid fa-arrow-left"></i> Kembali ke Riwayat</a><a class="btn btn-primary" href="{{ url_for('edit_mutabaah', student_id=student.id, entry_index=entry_index) }}"><i class="fa-solid fa-pen"></i> Edit Jurnal</a></div>
+</section>
+{% endblock %}

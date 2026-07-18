@@ -1,0 +1,8 @@
+PATCH DATA MASTER FINAL V2
+- Database Bidang Pelajaran memakai dropdown filter kelas dinamis dari Manajemen Kelas.
+- Daftar hanya menampilkan bidang pelajaran kelas yang dipilih.
+- Filter tetap dipertahankan setelah tambah, edit, aktif/nonaktif, dan hapus.
+- Database Tahun Ajaran memakai dropdown filter tahun ajaran.
+- Setelah tahun dipilih, hanya Semester 1 dan Semester 2 untuk tahun tersebut yang ditampilkan.
+- Tahun ajaran utama menjadi pilihan awal bila tersedia.
+- Filter tetap dipertahankan setelah edit, jadikan utama, dan hapus.

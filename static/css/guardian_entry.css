@@ -1,0 +1,122 @@
+/* Patch khusus Halaman Utama / Portal Wali Santri TPQ HMarisa */
+
+/* Desktop dan tablet: logo asli lebih dominan, frame putih tetap ringkas. */
+.final-entry .guardian-hero {
+  justify-content: flex-start;
+}
+
+.final-entry .guardian-brand-main {
+  align-items: center;
+  gap: clamp(22px, 2.2vw, 34px);
+}
+
+.final-entry .guardian-logo {
+  flex: 0 0 auto;
+  width: clamp(132px, 10.5vw, 158px);
+  height: clamp(158px, 12.5vw, 188px);
+  padding: 7px;
+  border-radius: 25px;
+}
+
+.final-entry .guardian-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: none;
+}
+
+.final-entry .guardian-brand-main > div {
+  min-width: 0;
+}
+
+.final-entry .guardian-brand-main h1 {
+  line-height: 1.05;
+}
+
+/* Hadis berada di bawah teks pembuka, dengan ruang lega tetapi tidak terdorong ke dasar panel. */
+.final-entry .daily-hadith-card {
+  width: min(100%, 680px);
+  margin-top: clamp(78px, 10vh, 132px);
+  align-self: center;
+}
+
+/* Tablet landscape tetap memakai tata letak dua panel. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .final-entry .guardian-hero {
+    padding: clamp(30px, 4vw, 48px);
+  }
+
+  .final-entry .guardian-logo {
+    width: clamp(120px, 13vw, 145px);
+    height: clamp(146px, 15.5vw, 176px);
+  }
+
+  .final-entry .guardian-brand-main h1 {
+    font-size: clamp(38px, 5vw, 54px);
+  }
+
+  .final-entry .daily-hadith-card {
+    margin-top: clamp(62px, 8vh, 100px);
+  }
+}
+
+/* Ponsel: susunan yang sudah baik dipertahankan, hanya isi logo diperbesar. */
+@media (max-width: 760px) {
+  .final-entry .guardian-hero {
+    justify-content: flex-start;
+    gap: 24px;
+  }
+
+  .final-entry .guardian-brand-main {
+    gap: 16px;
+    align-items: center;
+  }
+
+  .final-entry .guardian-logo {
+    width: clamp(96px, 25vw, 112px);
+    height: clamp(120px, 31vw, 140px);
+    padding: 6px;
+    border-radius: 22px;
+  }
+
+  .final-entry .guardian-brand-main h1 {
+    font-size: clamp(31px, 9vw, 39px);
+    white-space: nowrap;
+  }
+
+  .final-entry .guardian-brand-main p {
+    font-size: clamp(15px, 4.3vw, 18px);
+    line-height: 1.45;
+  }
+
+  .final-entry .daily-hadith-card {
+    width: 100%;
+    margin-top: 24px;
+    align-self: stretch;
+  }
+}
+
+/* Layar ponsel sangat sempit: cegah judul dan logo bertumpuk. */
+@media (max-width: 410px) {
+  .final-entry .guardian-hero {
+    padding-left: 19px;
+    padding-right: 19px;
+  }
+
+  .final-entry .guardian-brand-main {
+    gap: 13px;
+  }
+
+  .final-entry .guardian-logo {
+    width: 88px;
+    height: 110px;
+  }
+
+  .final-entry .guardian-brand-main h1 {
+    font-size: 29px;
+  }
+
+  .final-entry .guardian-brand-main p {
+    font-size: 15px;
+  }
+}

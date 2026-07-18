@@ -1,0 +1,14 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card ps16x-form" method="post" enctype="multipart/form-data" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Desain Prestasi Bulanan</h3><p>Gunakan desain lama sebagai fallback atau unggah template portrait baru. Data pemenang tetap diambil otomatis dari perhitungan Prestasi.</p></div><label class="ps16x-switch"><input type="checkbox" name="enabled" {% if draft_payload.enabled %}checked{% endif %}><span></span> Aktifkan desain dinamis</label></div>
+  <input type="hidden" name="preset" value="{{ draft_payload.preset }}">
+  <div class="ps16-form-grid">
+    <label><span>Awalan Periode</span><input type="text" name="period_prefix" value="{{ draft_payload.period_prefix }}"></label>
+    <label><span>Awalan Kelas</span><input type="text" name="class_prefix" value="{{ draft_payload.class_prefix }}"></label>
+    {% for key,label in [('title_color','Warna Judul Periode'),('title_shadow','Bayangan Judul'),('name_color','Warna Nama Santri'),('card_fill','Warna Kotak Nama')] %}<label><span>{{ label }}</span><div class="ps16x-color"><input type="color" name="{{ key }}" value="{{ draft_payload[key] }}"><code>{{ draft_payload[key] }}</code></div></label>{% endfor %}
+  </div>
+  <div class="ps16x-upload-grid one"><article><h4>Template Poster Portrait</h4><p>Disarankan rasio sekitar 4:5 atau 1122×1402. Ornamen dan logo dapat disiapkan langsung pada gambar template.</p><div class="ps16x-image-preview tall">{% if draft_template_url %}<img src="{{ draft_template_url }}" data-image-preview="template_image">{% else %}<span data-empty-preview>Memakai template resmi saat ini</span><img hidden data-image-preview="template_image">{% endif %}</div><input type="file" name="template_image" accept="image/png,image/jpeg,image/webp" data-image-input="template_image"><label class="ps16-check"><input type="checkbox" name="reset_template_image"> Kembali ke template resmi</label></article></div>
+  {% include "portal_settings_v16/_section_actions.html" %}
+</form>
+{% endblock %}

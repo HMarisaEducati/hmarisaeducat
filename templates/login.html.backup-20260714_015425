@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Login Admin — Portal TPQ HMarisa{% endblock %}
+{% block auth_content %}
+<section class="login-layout admin-login-layout">
+  <div class="login-showcase">
+    <div class="showcase-brand">
+      <span class="showcase-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa"></span>
+      <span><strong>Portal TPQ HMarisa</strong><small>Panel Administrasi Sekolah</small></span>
+    </div>
+    <div class="showcase-content">
+      <span class="showcase-pill"><i class="fa-solid fa-shield-halved"></i> Area Khusus Admin</span>
+      <h1>Kelola sekolah<br>dalam satu portal.</h1>
+      <p>Kelola data santri, E-Raport, iuran, bukti pembayaran, perpustakaan digital, dan pencadangan data.</p>
+      <div class="arabic-quote">إِنَّ مَعَ الْعُسْرِ يُسْرًا</div>
+      <small>“Sesungguhnya bersama kesulitan ada kemudahan.”</small>
+    </div>
+    <div class="showcase-pattern">إدارة</div>
+  </div>
+
+  <div class="login-panel">
+    <div class="login-card">
+      <div class="login-mobile-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+        <span><strong>Portal TPQ HMarisa</strong><small>Login Administrator</small></span>
+      </div>
+      <div class="login-heading">
+        <span class="eyebrow">Akses Terbatas</span>
+        <h2>Login Admin</h2>
+        <p>Masukkan username dan kata sandi administrator untuk membuka panel pengelolaan.</p>
+      </div>
+      <form method="post" action="{{ url_for('admin_login') }}" class="form-grid login-form">
+        <label>Username Admin
+          <div class="input-with-icon"><i class="fa-regular fa-user"></i><input type="text" name="username" value="{{ username or '' }}" placeholder="Masukkan username admin" autocomplete="username" required autofocus></div>
+        </label>
+        <label>Kata Sandi
+          <div class="input-with-icon password-wrap"><i class="fa-solid fa-lock"></i><input id="password" type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required><button type="button" class="icon-button" data-toggle-password="#password" aria-label="Lihat kata sandi"><i class="fa-regular fa-eye"></i></button></div>
+        </label>
+        <label class="check-line"><input type="checkbox" name="remember"> Ingat saya di perangkat ini</label><small class="form-help">Gunakan hanya pada perangkat pribadi.</small>
+        <button class="btn btn-primary btn-block login-submit" type="submit"><i class="fa-solid fa-key"></i> Masuk sebagai Admin</button>
+      </form>
+      <a class="back-to-guardian" href="{{ url_for('home') }}"><i class="fa-solid fa-arrow-left"></i> Kembali ke halaman wali santri</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

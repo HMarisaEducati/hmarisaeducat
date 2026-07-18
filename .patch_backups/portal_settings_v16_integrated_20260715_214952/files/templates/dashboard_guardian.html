@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Wali Santri{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<section class="quote-banner guardian-banner">
+  <div class="quote-content">
+    <span class="quote-pill"><i class="fa-solid fa-heart"></i> Selamat Datang, Ayah/Bunda</span>
+    <h2>Assalamu'alaikum, Wali {{ student.name }}</h2>
+    <p class="guardian-intro">Pantau mutabaah, hafalan, tagihan, dan buku digital ananda dengan mudah.</p>
+  </div>
+  <div class="quote-watermark">علم</div>
+</section>
+
+<div class="section-heading dashboard-heading">
+  <div>
+    <span class="eyebrow">Informasi Ananda</span>
+    <h2>{{ student.name }}</h2>
+    <p>NIS {{ student.nis }} · Kelas {{ student.class_name }}</p>
+  </div>
+  <div class="button-row"><a class="btn btn-primary" href="{{ url_for('guardian_student_detail', student_id=student.id) }}"><i class="fa-solid fa-child-reaching"></i> Lihat Perkembangan</a>{% if raport.status == 'Diterbitkan' %}<a class="btn btn-gold" href="{{ url_for('guardian_report', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Lihat Raport</a>{% endif %}</div>
+</div>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <div><span>Catatan Mutabaah</span><strong>{{ mutabaah|length }}</strong><small>Riwayat belajar yang tercatat</small></div>
+    <i class="stat-icon green fa-solid fa-book-open-reader"></i>
+  </article>
+  <article class="stat-card">
+    <div><span>Hafalan Juz 30</span><strong>{{ hafalan_done }}</strong><small>Dari {{ SURAH_JUZ30|length }} surah</small></div>
+    <i class="stat-icon blue fa-solid fa-star"></i>
+  </article>
+  <article class="stat-card">
+    <div><span>Tagihan Aktif</span><strong>{{ guardian_finance_unpaid_count|default(unpaid_count) }}</strong><small>Belum lunas atau pembayaran sebagian</small></div>
+    <i class="stat-icon rose fa-solid fa-wallet"></i>
+  </article>
+  <article class="stat-card">
+    <div><span>Buku Tersedia</span><strong>{{ available_books }}</strong><small>Gratis atau sudah dibuka</small></div>
+    <i class="stat-icon amber fa-solid fa-book"></i>
+  </article>
+</section>
+
+<section class="two-column">
+  <article class="card">
+    <div class="card-head">
+      <div class="card-title-icon"><i class="fa-solid fa-clock-rotate-left"></i><h2>Mutabaah Terbaru</h2></div>
+      <a href="{{ url_for('guardian_student_detail', student_id=student.id) }}">Lihat semua <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="timeline compact-timeline">
+      {% for entry in mutabaah[:4] %}
+      <article>
+        <time>{{ entry.date }}</time>
+        <div>
+          <strong>{{ entry.tilawati or 'Progres mengaji' }}</strong>
+          {% if entry.subject or entry.material %}<p>{{ entry.subject or '' }}{% if entry.material %} — {{ entry.material }}{% endif %}</p>{% endif %}
+          {% if entry.notes %}<small>{{ entry.notes }}</small>{% endif %}
+        </div>
+      </article>
+      {% else %}<p class="empty">Belum ada catatan mutabaah.</p>{% endfor %}
+    </div>
+  </article>
+
+  <article class="card">
+    {% set percent = ((hafalan_done / SURAH_JUZ30|length) * 100)|round|int %}
+    <div class="card-head">
+      <div class="card-title-icon"><i class="fa-solid fa-award"></i><h2>Progres Hafalan</h2></div>
+      <strong>{{ percent }}%</strong>
+    </div>
+    <div class="progress"><i style="width: {{ percent }}%"></i></div>
+    <p class="muted">{{ hafalan_done }} dari {{ SURAH_JUZ30|length }} surah telah ditandai selesai oleh admin.</p>
+    <div class="surah-summary">
+      {% for surah in SURAH_JUZ30 if hafalan.get(surah) %}
+        {% if loop.index <= 8 %}<span class="badge badge-success">{{ surah }}</span>{% endif %}
+      {% else %}<span class="muted">Belum ada hafalan yang ditandai selesai.</span>{% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="card finance-v15e-card">
+  <div class="card-head">
+    <div class="card-title-icon"><i class="fa-solid fa-file-invoice-dollar"></i><h2>Administrasi Iuran</h2></div>
+    <a href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}">Lihat semua <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+  <div class="guardian-bill-list compact-list">
+    {% for row in guardian_finance_bills[:4] %}{% set bill=row.bill %}{% set charge=row.charge %}
+    <article><div class="guardian-bill-main"><span class="finance-v15e-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span><h3>{{ charge.name if charge else 'Tagihan' }} · {{ bill.period_label }} {{ bill.period_year }}</h3><small>{{ bill.bill_number }}</small></div><dl><div><dt>Nominal</dt><dd>{{ bill.amount|rupiah }}</dd></div><div><dt>Dibayar</dt><dd>{{ bill.paid_amount|rupiah }}</dd></div><div><dt>Sisa</dt><dd>{{ bill.remaining_amount|rupiah }}</dd></div></dl></article>
+    {% else %}<div class="finance-v15e-empty compact"><strong>Belum ada tagihan.</strong><span>Informasi akan tampil setelah dibuat oleh admin.</span></div>{% endfor %}
+  </div>
+</section>
+
+<section class="card guardian-access-note">
+  <div class="card-title-icon"><i class="fa-solid fa-shield-halved"></i><div><h2>Akses Wali Santri</h2><small>Halaman wali hanya menampilkan perkembangan belajar, hafalan, tagihan, dan perpustakaan digital.</small></div></div>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }}</title>
+<style>
+:root{font-family:Inter,Arial,sans-serif;color:#1f2937;background:#eef2f0}
+*{box-sizing:border-box}body{margin:0}.toolbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px clamp(14px,3vw,34px);background:#fff;border-bottom:1px solid #dfe7e3;box-shadow:0 4px 18px rgba(15,72,52,.08)}
+.toolbar h1{font-size:clamp(1.05rem,2vw,1.35rem);margin:0}.toolbar p{margin:4px 0 0;color:#6b7a73;font-size:.88rem}.actions{display:flex;flex-wrap:wrap;gap:9px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 15px;border-radius:12px;text-decoration:none;font-weight:750;border:1px solid #cfe0d8;color:#075f46;background:#fff}.btn.primary{background:#0b8f4d;color:#fff;border-color:#0b8f4d}.btn.gold{background:#efb83f;color:#392b08;border-color:#efb83f}
+.preview-shell{padding:28px 14px 50px}.notice{max-width:1180px;margin:0 auto 18px;padding:13px 16px;border-radius:14px;background:#fff;border:1px solid #dfe7e3;color:#53645c}.pages{display:grid;gap:24px;justify-items:center}.page{margin:0;width:min(1180px,100%)}.page figcaption{text-align:center;color:#687870;font-size:.83rem;margin-bottom:8px}.page img{display:block;width:100%;height:auto;background:#fff;box-shadow:0 12px 34px rgba(20,58,45,.14);border-radius:4px}.table-card{max-width:1180px;margin:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 12px 34px rgba(20,58,45,.12);overflow:auto}.table-card table{width:100%;border-collapse:collapse;min-width:820px}.table-card th,.table-card td{padding:11px 13px;border:1px solid #dfe7e3;text-align:left;vertical-align:top;white-space:pre-wrap}.table-card th{background:#075f46;color:#fff}.empty{padding:70px 20px;text-align:center;background:#fff;border-radius:18px;max-width:900px;margin:auto}
+@media(max-width:760px){.toolbar{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1 1 calc(50% - 8px)}.preview-shell{padding:18px 8px 36px}.page{width:100%}.page img{border-radius:2px}.notice{margin-left:6px;margin-right:6px}}
+</style>
+</head>
+<body>
+<header class="toolbar">
+  <div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>
+  <div class="actions">
+    <a class="btn" href="{{ back_url }}">Kembali</a>
+    {% if edit_url %}<a class="btn" href="{{ edit_url }}">Edit/Koreksi</a>{% endif %}
+    {% if print_url %}<a class="btn gold" href="{{ print_url }}" target="_blank" rel="noopener">Buka/Cetak PDF</a>{% endif %}
+    {% for item in download_buttons %}<a class="btn primary" href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+  </div>
+</header>
+<main class="preview-shell">
+  <div class="notice">Preview berasal dari dokumen final yang sama dengan file unduhan. Periksa nama, periode, tabel, kop, dan tanda tangan.</div>
+  {% if preview_pages %}
+  <section class="pages">
+    {% for page_url in preview_pages %}<figure class="page"><figcaption>Halaman {{ loop.index }} dari {{ preview_pages|length }}</figcaption><img src="{{ page_url }}" loading="{{ 'eager' if loop.first else 'lazy' }}" alt="{{ title }} halaman {{ loop.index }}"></figure>{% endfor %}
+  </section>
+  {% elif preview_headers %}
+  <section class="table-card"><table><thead><tr>{% for header in preview_headers %}<th>{{ header }}</th>{% endfor %}</tr></thead><tbody>{% for row in preview_rows %}<tr>{% for value in row %}<td>{{ value or 'Belum diisi' }}</td>{% endfor %}</tr>{% else %}<tr><td colspan="{{ preview_headers|length }}">Belum ada data.</td></tr>{% endfor %}</tbody></table></section>
+  {% else %}<div class="empty">Belum ada data untuk dipratinjau.</div>{% endif %}
+</main>
+</body>
+</html>

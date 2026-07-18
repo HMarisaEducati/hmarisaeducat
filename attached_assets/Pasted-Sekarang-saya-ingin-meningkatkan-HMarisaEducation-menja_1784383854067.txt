@@ -1,0 +1,189 @@
+Sekarang saya ingin meningkatkan HMarisaEducation menjadi CMS yang benar-benar dinamis dan mudah dikembangkan.
+
+
+
+Buat sistem komponen umum (global) yang dapat digunakan di seluruh modul, bukan dibuat berulang pada setiap halaman.
+
+
+
+Ketentuan:
+
+
+
+A. Sistem Sidebar/Menu
+
+1. Admin dapat:
+
+   - Menambah menu utama.
+
+   - Menambah submenu.
+
+   - Mengubah nama menu.
+
+   - Mengubah ikon.
+
+   - Mengatur urutan menu.
+
+   - Memindahkan submenu ke menu lain.
+
+   - Menghapus menu atau submenu.
+
+   - Menonaktifkan atau mengaktifkan menu.
+
+   - Mengatur hak akses berdasarkan role.
+
+2. Sidebar harus otomatis berubah sesuai konfigurasi menu tanpa mengubah kode.
+
+
+
+B. Komponen Standar Setiap Halaman Data
+
+Setiap halaman data (misalnya Data Santri, Guru, Wali, Inventaris, dll.) harus dapat menggunakan komponen yang sama, yaitu:
+
+
+
+- Tambah Data
+
+- Edit Data
+
+- Hapus Data
+
+- Upload File
+
+- Download File
+
+- Import Data
+
+- Export Data
+
+- Download Template
+
+- Pencarian
+
+- Filter
+
+- Refresh
+
+- Cetak
+
+- Pagination
+
+
+
+Komponen tersebut cukup dibuat satu kali dan dapat digunakan oleh semua halaman.
+
+
+
+C. Upload File
+
+Sediakan komponen upload yang mendukung:
+
+- PDF
+
+- JPG
+
+- JPEG
+
+- PNG
+
+- DOC
+
+- DOCX
+
+- XLS
+
+- XLSX
+
+- CSV
+
+
+
+Setiap halaman dapat memilih jenis file yang diizinkan.
+
+
+
+D. Import Data
+
+Sediakan fitur Import Data dengan:
+
+- Validasi format.
+
+- Preview data sebelum disimpan.
+
+- Menampilkan jumlah data berhasil dan gagal.
+
+- Menampilkan pesan kesalahan jika format salah.
+
+
+
+E. Export Data
+
+Sediakan Export ke:
+
+- Excel
+
+- CSV
+
+- PDF
+
+
+
+Export harus mengikuti filter yang sedang aktif.
+
+
+
+F. Download Template
+
+Setiap halaman harus dapat memiliki template sesuai format datanya.
+
+
+
+Contoh:
+
+Data Santri → Template Data Santri
+
+Data Guru → Template Data Guru
+
+Inventaris → Template Inventaris
+
+
+
+Template dapat diunduh langsung dari halaman tersebut.
+
+
+
+G. Sistem Hapus
+
+Sediakan sistem penghapusan untuk:
+
+- Data
+
+- Menu
+
+- Submenu
+
+- Halaman
+
+- Komponen
+
+- Tampilan
+
+
+
+Sebelum menghapus tampilkan konfirmasi.
+
+Jika data masih digunakan modul lain, tampilkan peringatan.
+
+Sediakan opsi Soft Delete dan Permanent Delete jika memungkinkan.
+
+
+
+H. Komponen Bersifat Global
+
+Semua fitur di atas harus dibuat sebagai komponen reusable sehingga ketika saya membuat modul baru, saya cukup memilih komponen yang diperlukan tanpa menulis ulang kode.
+
+
+
+I. Analisis Dahulu
+
+Sebelum melakukan perubahan, analisis struktur proyek dan gunakan komponen yang sudah ada jika memungkinkan. Jangan membuat duplikasi kode. Jelaskan file apa saja yang diubah setelah selesai.

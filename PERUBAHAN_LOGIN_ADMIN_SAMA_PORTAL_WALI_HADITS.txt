@@ -1,0 +1,6 @@
+PATCH LOGIN ADMIN V1
+- Tampilan kiri halaman login admin disamakan dengan Portal Wali Santri.
+- Logo menggunakan komponen/logo yang sama seperti portal wali.
+- Hadis Harian menggunakan data dinamis dari bank hadis yang sama (daily_hadith).
+- Perubahan hadis otomatis mengikuti rotasi harian / tanggal khusus dari menu Hadis Harian admin.
+- Tidak mengubah proses login, hanya tampilan dan sumber tampilan hadis.

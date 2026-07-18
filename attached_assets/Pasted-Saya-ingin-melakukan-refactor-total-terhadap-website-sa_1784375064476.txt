@@ -1,0 +1,624 @@
+Saya ingin melakukan refactor total terhadap website saya, tetapi TANPA menghilangkan fitur yang sudah ada.
+
+Tujuan utama adalah menjadikan website ini memiliki "Pusat Kendali" (Control Center) yang benar-benar profesional seperti CMS modern (WordPress, Laravel Nova, Filament, atau DirectAdmin), sehingga Super Admin dapat mengelola seluruh website tanpa harus mengedit source code.
+
+======================================================================
+ATURAN PALING PENTING
+======================================================================
+
+1. Jangan menghapus fitur lama.
+
+2. Jangan mengubah logika bisnis yang sudah berjalan.
+
+3. Semua halaman lama harus tetap bisa digunakan.
+
+4. Semua database harus tetap kompatibel.
+
+5. Semua route lama tetap aktif.
+
+6. Semua template lama tetap dapat digunakan.
+
+7. Semua perubahan harus bersifat penambahan dan peningkatan sistem.
+
+======================================================================
+TUJUAN
+======================================================================
+
+Saya ingin memiliki satu halaman:
+
+/control-center
+
+yang menjadi pusat pengendalian seluruh website.
+
+Halaman ini hanya boleh diakses oleh Super Admin.
+
+======================================================================
+DASHBOARD
+======================================================================
+
+Dashboard harus menampilkan:
+
+- Statistik pengguna
+- Statistik santri
+- Statistik guru
+- Statistik wali
+- Statistik keuangan
+- Statistik pembayaran
+- Statistik login
+- Statistik aktivitas
+- Grafik
+- Shortcut menu
+- Notifikasi
+- Informasi sistem
+
+======================================================================
+MANAJEMEN PENGGUNA
+======================================================================
+
+Harus ada menu:
+
+User Management
+
+yang dapat:
+
+Tambah User
+
+Edit User
+
+Hapus User
+
+Reset Password
+
+Nonaktifkan User
+
+Aktifkan User
+
+Impersonate User
+
+Mengatur Role
+
+Mengatur Permission
+
+======================================================================
+ROLE PERMISSION
+======================================================================
+
+Buat sistem Role Based Access Control (RBAC).
+
+Contoh Role:
+
+Super Admin
+
+Administrator
+
+Admin Keuangan
+
+Admin Akademik
+
+Admin TPQ
+
+Admin Perpustakaan
+
+Guru
+
+Wali
+
+Santri
+
+Setiap Role memiliki permission sendiri.
+
+Permission harus dapat ditambah melalui halaman admin.
+
+======================================================================
+CMS HALAMAN
+======================================================================
+
+Saya ingin website menjadi seperti CMS.
+
+Admin dapat:
+
+Tambah halaman baru
+
+Edit halaman
+
+Publish
+
+Draft
+
+Delete
+
+Preview
+
+Versioning
+
+SEO
+
+Slug
+
+Meta Description
+
+Thumbnail
+
+Kategori
+
+Template halaman
+
+Tanpa harus menyentuh source code.
+
+======================================================================
+MENU BUILDER
+======================================================================
+
+Admin dapat:
+
+Tambah menu
+
+Edit menu
+
+Drag and Drop urutan menu
+
+Nested Menu
+
+Aktif / Nonaktif
+
+Icon
+
+URL Internal
+
+URL External
+
+Permission Menu
+
+======================================================================
+FILE MANAGER
+======================================================================
+
+Saya ingin File Manager seperti cPanel.
+
+Admin dapat:
+
+Upload
+
+Rename
+
+Delete
+
+Move
+
+Copy
+
+Download
+
+Preview
+
+Folder
+
+Search
+
+======================================================================
+MEDIA MANAGER
+======================================================================
+
+Media Library:
+
+Foto
+
+Video
+
+PDF
+
+Word
+
+Excel
+
+Audio
+
+Poster
+
+Logo
+
+Banner
+
+Preview
+
+Search
+
+Kategori
+
+======================================================================
+TEMA WEBSITE
+======================================================================
+
+Admin dapat mengubah:
+
+Logo
+
+Favicon
+
+Banner
+
+Background
+
+Primary Color
+
+Secondary Color
+
+Dark Mode
+
+Light Mode
+
+Font
+
+Footer
+
+Copyright
+
+Homepage
+
+Tanpa coding.
+
+======================================================================
+PENGATURAN WEBSITE
+======================================================================
+
+Website Setting:
+
+Nama Website
+
+Alamat
+
+Telepon
+
+Email
+
+WhatsApp
+
+Maps
+
+Jam Operasional
+
+Media Sosial
+
+SEO
+
+Analytics
+
+SMTP
+
+Backup
+
+Maintenance Mode
+
+Timezone
+
+Bahasa
+
+======================================================================
+MODUL
+======================================================================
+
+Semua modul lama harus dipindahkan ke Control Center.
+
+Contohnya:
+
+Keuangan
+
+TPQ
+
+Perpustakaan
+
+Prestasi
+
+Mutabaah
+
+Poster
+
+Laporan
+
+E-Raport
+
+Dashboard
+
+Portal
+
+Silabus
+
+Semuanya dapat diakses dari Control Center.
+
+======================================================================
+DATABASE
+======================================================================
+
+Tambahkan Database Manager.
+
+Admin dapat:
+
+Melihat tabel
+
+Export
+
+Import
+
+Backup
+
+Restore
+
+Optimize
+
+Tanpa phpMyAdmin.
+
+======================================================================
+BACKUP
+======================================================================
+
+Backup:
+
+Database
+
+Upload
+
+Media
+
+Website
+
+Source Code
+
+Download Backup
+
+Restore Backup
+
+======================================================================
+ACTIVITY LOG
+======================================================================
+
+Semua aktivitas harus dicatat.
+
+Contoh:
+
+Login
+
+Logout
+
+Tambah Data
+
+Edit
+
+Delete
+
+Upload
+
+Download
+
+Backup
+
+Restore
+
+Gagal Login
+
+IP Address
+
+Browser
+
+Tanggal
+
+======================================================================
+NOTIFIKASI
+======================================================================
+
+Notification Center.
+
+Semua aktivitas penting muncul sebagai notifikasi.
+
+======================================================================
+SEARCH GLOBAL
+======================================================================
+
+Saya ingin satu kotak pencarian.
+
+Dapat mencari:
+
+User
+
+Santri
+
+Guru
+
+Halaman
+
+Menu
+
+Dokumen
+
+Poster
+
+Pembayaran
+
+Semua modul.
+
+======================================================================
+UI
+======================================================================
+
+Gunakan desain modern.
+
+Responsive.
+
+Sidebar modern.
+
+Topbar modern.
+
+Dark Mode.
+
+Breadcrumb.
+
+Cards.
+
+Widget.
+
+Charts.
+
+Search.
+
+Notification Bell.
+
+Profile Menu.
+
+Quick Actions.
+
+Floating Action Button.
+
+======================================================================
+ARSITEKTUR
+======================================================================
+
+Refactor menjadi struktur modular.
+
+Pisahkan:
+
+Models
+
+Routes
+
+Controllers
+
+Services
+
+Templates
+
+Static
+
+Helpers
+
+Permissions
+
+Settings
+
+Blueprint
+
+Utils
+
+Config
+
+======================================================================
+Portal Wali Santri
+======================================================================
+
+1. SISTEM LOGIN ADMIN
+- Buat autentikasi admin yang aman.
+- Role administrator memiliki hak akses tertinggi.
+- Admin dapat masuk ke dashboard pusat kendali.
+
+2. KONTROL SELURUH PORTAL WALI SANTRI
+Hubungkan Pusat Kendali Admin dengan seluruh modul portal yang sudah ada:
+- Dashboard wali santri
+- Data santri
+- Data wali
+- Prestasi santri
+- Silabus
+- Laporan
+- E-raport
+- Keuangan
+- Administrasi iuran
+- Tagihan
+- Riwayat pembayaran
+- Pengaturan portal
+- Upload dokumen dan gambar
+- Semua halaman HTML/template yang tersedia
+
+Admin dapat:
+- Melihat semua data
+- Mengedit data
+- Menambah data baru
+- Menghapus data
+- Mengaktifkan/nonaktifkan fitur
+
+3. PAGE BUILDER / MANAGEMENT HALAMAN
+Buat fitur pengelolaan halaman:
+- Admin dapat membuat halaman baru
+- Mengubah judul halaman
+- Mengubah isi halaman
+- Mengatur urutan menu
+- Menambah menu navigasi baru
+- Menghapus menu
+- Mengatur halaman tampil atau tersembunyi
+
+4. CONTENT MANAGEMENT SYSTEM
+Admin tidak perlu mengubah kode untuk:
+- Mengubah teks
+- Mengubah gambar
+- Mengubah banner
+- Mengubah informasi portal
+- Mengupdate pengumuman
+
+5. MANAGEMENT DATABASE
+Buat panel database:
+- Semua tabel dapat dikelola melalui dashboard
+- Tambah/edit/hapus data melalui interface
+- Tetap gunakan struktur database yang sudah ada
+- Jangan merusak data lama
+
+6. ROLE DAN PERMISSION
+Buat sistem hak akses:
+- Super Admin
+- Admin
+- Operator
+- Wali Santri
+
+Super Admin memiliki akses penuh.
+
+7. DESAIN DASHBOARD
+Buat tampilan seperti:
+- Admin panel modern
+- Sidebar menu lengkap
+- Statistik data
+- Grafik laporan
+- Tombol cepat pengelolaan
+
+8. INTEGRASI DENGAN WEBSITE EXISTING
+PENTING:
+Jangan membuat aplikasi terpisah.
+
+Gunakan kode website yang sudah ada.
+
+Analisa seluruh:
+- app.py
+- routes
+- templates
+- database
+- models
+- file Python lainnya
+
+Kemudian integrasikan Pusat Kendali Admin ke sistem yang sudah berjalan.
+
+Sebelum melakukan perubahan:
+1. Backup file penting.
+2. Periksa struktur project.
+3. Jangan menghapus fitur lama.
+4. Pertahankan semua fungsi Portal Wali Santri yang sudah ada.
+
+Hasil akhir:
+Pusat Kendali Admin menjadi pusat kontrol utama seluruh Portal Wali Santri.
+
+======================================================================
+KOMPATIBILITAS
+======================================================================
+
+Pastikan seluruh fitur lama tetap berjalan.
+
+Jangan menghapus route lama.
+
+Jangan menghapus template lama.
+
+Jangan menghapus database lama.
+
+Jika perlu, buat adapter agar sistem lama tetap kompatibel.
+
+======================================================================
+OUTPUT
+======================================================================
+
+Saya ingin hasil akhirnya menjadi sebuah Control Center profesional yang dapat mengelola seluruh website dari browser, sehingga hampir semua perubahan dapat dilakukan melalui halaman admin tanpa harus mengedit source code lagi.
+
+Jika ada fitur lama yang perlu diintegrasikan, lakukan integrasi secara bertahap tanpa merusak sistem yang sudah berjalan.
+
+Sebelum membuat kode baru, analisis terlebih dahulu seluruh struktur project agar solusi yang dibuat mengikuti arsitektur yang sudah ada dan tidak menghasilkan duplikasi file atau logika.

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075f46">
+  <title>{% block title %}Portal TPQ HMarisa{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/curriculum_patch.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_admin_patch.css') }}?v=20260714-1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global_consistency_v14.css') }}?v=20260715-1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">
+  {% block head_extra %}{% endblock %}
+</head>
+{% set endpoint = request.endpoint or '' %}
+{% set frozen_module_endpoints = [
+  'dashboard',
+  'students', 'bulk_students', 'student_detail', 'edit_student', 'toggle_student', 'delete_student',
+  'export_students_excel', 'export_students_pdf', 'student_import_template',
+  'curriculum', 'curriculum_database', 'curriculum_detail', 'curriculum_import', 'edit_curriculum', 'curriculum_pdf',
+  'daily_progress', 'academics', 'mutabaah_history', 'mutabaah_detail', 'edit_mutabaah',
+  'hafalan_tracker', 'edit_hafalan', 'mutabaah_import', 'mutabaah_export',
+  'mutabaah_import_template', 'mutabaah_export_xlsx',
+  'eraport', 'eraport_class_dashboard', 'eraport_academic', 'eraport_hafalan',
+  'eraport_hafalan_detail', 'eraport_attitude', 'eraport_development', 'eraport_publication',
+  'eraport_bulk', 'report_edit', 'report_preview', 'report_pdf'
+] %}
+{% set document_endpoints = ['document_preview', 'report_preview', 'bill_receipt', 'finance_payment_receipt', 'guardian_finance_receipt_v15e'] %}
+{% set finance_v15a_endpoints = [
+  'finance_settings', 'finance_settings_general', 'finance_settings_billing',
+  'finance_settings_payment', 'finance_settings_whatsapp', 'finance_settings_receipt',
+  'finance_settings_asset'
+] %}
+{% set finance_v15b_endpoints = [
+  'finance', 'finance_summary', 'finance_bill_new', 'finance_administration',
+  'finance_bill_detail', 'finance_bill_edit', 'finance_bill_archive',
+  'finance_archive', 'finance_bill_restore', 'finance_payments', 'finance_reports'
+] %}
+{% set finance_v15b2_endpoints = [
+  'finance_payment_new', 'finance_payment_cancel', 'finance_bill_waive',
+  'finance_bill_unwaive', 'finance_bill_whatsapp', 'finance_payment_receipt',
+  'finance_payment_receipt_pdf', 'finance_payment_proof'
+] %}
+{% set finance_v15cd_endpoints = [
+  'finance_payment_detail_v15cd', 'finance_report_xlsx_v15cd',
+  'finance_report_pdf_v15cd', 'finance_payment_bulk_receipts_v15cd'
+] %}
+{% set finance_v15e_endpoints = [
+  'guardian_finance_v15e', 'guardian_finance_receipt_v15e',
+  'guardian_finance_receipt_pdf_v15e', 'finance_access_v15e',
+  'finance_teacher_status_v15e', 'finance_teacher_export_v15e', 'finance_audit_v15e'
+] %}
+{% set finance_endpoints = ['finance_legacy','edit_bill','bill_receipt','view_bill_proof'] + finance_v15a_endpoints + finance_v15b_endpoints + finance_v15b2_endpoints + finance_v15cd_endpoints + finance_v15e_endpoints %}
+<body class="{{ 'portal-app' if current_user.is_authenticated else 'portal-public' }} {{ 'module-frozen' if endpoint in frozen_module_endpoints else 'module-standard' }}" data-endpoint="{{ endpoint }}" data-layout="{{ 'document' if endpoint in document_endpoints else 'application' }}">
+{% if current_user.is_authenticated %}
+<div class="app-layout">
+  <aside class="sidebar desktop-sidebar" aria-label="Navigasi utama">
+    <div class="sidebar-brand">
+      <a href="{{ url_for('dashboard') }}" class="brand-lockup">
+        <span class="brand-logo brand-logo-final"><img src="{{ url_for('static', filename='img/logo_portal_cropped.png') }}" alt="Logo TPQ HMarisa"></span>
+        <span><strong>TPQ HMarisa</strong><small>Portal Pendidikan Al-Qur'an</small></span>
+      </a>
+      <div class="sidebar-user"><span class="user-avatar">{{ current_user.full_name[:1]|upper }}</span><span><strong>{{ current_user.full_name }}</strong><small>{{ current_user.role_label if current_user.is_admin else 'Wali Santri' }}</small></span></div>
+    </div>
+    <nav class="sidebar-nav">
+      {% if current_user.role != 'bendahara' %}<a class="nav-item {% if endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-chart-pie"></i><span>Dasbor</span></a>{% endif %}
+      {% if current_user.is_admin %}
+        {% if current_user.role != 'bendahara' %}
+          {% if not current_user.is_teacher %}
+          <a class="nav-item {% if endpoint in ['students','bulk_students','student_detail','student_finance_v15e','edit_student','toggle_student','delete_student','export_students_excel','export_students_pdf','student_import_template'] %}active{% endif %}" href="{{ url_for('students') }}"><i class="fa-solid fa-users"></i><span>Database Santri</span></a>
+          <a class="nav-item {% if endpoint == 'data_master' %}active{% endif %}" href="{{ url_for('data_master') }}"><i class="fa-solid fa-sliders"></i><span>Data Master</span></a>
+          {% endif %}
+          <a class="nav-item {% if endpoint in ['curriculum','curriculum_database','curriculum_detail','curriculum_import','edit_curriculum','curriculum_pdf'] %}active{% endif %}" href="{{ url_for('curriculum') }}"><i class="fa-solid fa-table-list"></i><span>Silabus Bulanan</span></a>
+          <a class="nav-item {% if endpoint in ['daily_progress','academics','mutabaah_history','mutabaah_detail','edit_mutabaah','hafalan_tracker','edit_hafalan','mutabaah_import','mutabaah_export','mutabaah_import_template','mutabaah_export_xlsx'] %}active{% endif %}" href="{{ url_for('daily_progress') }}"><i class="fa-solid fa-book-open-reader"></i><span>Prestasi Harian</span></a>
+          <a class="nav-item {% if endpoint in ['eraport','eraport_class_dashboard','eraport_academic','eraport_hafalan','eraport_hafalan_detail','eraport_attitude','eraport_development','eraport_publication','eraport_bulk','report_edit','report_preview','report_pdf'] %}active{% endif %}" href="{{ url_for('eraport') }}"><i class="fa-solid fa-file-pen"></i><span>E-Raport</span></a>
+        {% endif %}
+        {% if not current_user.is_teacher %}
+        <a class="nav-item {% if endpoint in finance_endpoints %}active{% endif %}" href="{{ url_for('finance') }}"><i class="fa-solid fa-wallet"></i><span>Sistem Keuangan{% if finance_unpaid_count|default(0) %} <b class="nav-count">{{ finance_unpaid_count }}</b>{% endif %}</span></a>
+        {% elif finance_teacher_allowed %}
+        <a class="nav-item {% if endpoint == 'finance_teacher_status_v15e' %}active{% endif %}" href="{{ url_for('finance_teacher_status_v15e') }}"><i class="fa-solid fa-wallet"></i><span>Status Iuran Kelas</span></a>
+        {% endif %}
+      {% else %}
+      <a class="nav-item {% if endpoint in ['guardian_student_detail','guardian_report'] %}active{% endif %}" href="{{ url_for('guardian_student_detail', student_id=session.get('guardian_student_id')) }}"><i class="fa-solid fa-child-reaching"></i><span>Perkembangan Ananda</span></a>
+      <a class="nav-item {% if endpoint in ['guardian_finance_v15e','guardian_finance_receipt_v15e'] %}active{% endif %}" href="{{ url_for('guardian_finance_v15e', student_id=session.get('guardian_student_id')) }}"><i class="fa-solid fa-wallet"></i><span>Keuangan Ananda{% if guardian_finance_unpaid_count|default(0) %} <b class="nav-count">{{ guardian_finance_unpaid_count }}</b>{% endif %}</span></a>
+      {% endif %}
+      {% if current_user.role != 'bendahara' %}<a class="nav-item {% if endpoint in ['library','upload_book','edit_book','purchase_book','book_preview','download_book'] %}active{% endif %}" href="{{ url_for('library') }}"><i class="fa-solid fa-book-open"></i><span>Perpustakaan Digital</span></a>{% endif %}
+      {% if current_user.is_admin and not current_user.is_teacher and current_user.role != 'bendahara' %}
+      <a class="nav-item {% if endpoint == 'hadith_manager' %}active{% endif %}" href="{{ url_for('hadith_manager') }}"><i class="fa-solid fa-quote-right"></i><span>Hadis Harian</span></a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      {% if current_user.is_superadmin %}<a href="{{ url_for('backup_database') }}" class="sidebar-action sidebar-action-primary"><i class="fa-solid fa-database"></i> Cadangkan Database</a>{% endif %}
+      <a href="{{ url_for('logout') }}" class="sidebar-action sidebar-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> {{ 'Keluar Admin' if current_user.is_admin else 'Tutup Akses' }}</a>
+    </div>
+  </aside>
+
+  <header class="mobile-topbar">
+    <a href="{{ url_for('dashboard') }}" class="mobile-brand"><img src="{{ url_for('static', filename='img/logo_portal_cropped.png') }}" alt="Logo"><span><strong>TPQ HMarisa</strong><small>{{ 'Panel Admin' if current_user.is_admin else 'Portal Wali' }}</small></span></a>
+    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Buka menu"><i class="fa-solid fa-bars"></i></button>
+  </header>
+  <div class="drawer-overlay" data-drawer-overlay></div>
+  <aside class="mobile-drawer" data-mobile-drawer>
+    <div class="drawer-head"><div class="brand-lockup compact"><span class="brand-logo"><img src="{{ url_for('static', filename='img/logo_portal_cropped.png') }}" alt="Logo"></span><span><strong>TPQ HMarisa</strong><small>Navigasi</small></span></div><button type="button" data-drawer-close aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+    <nav class="sidebar-nav drawer-nav">
+      {% if current_user.role != 'bendahara' %}<a class="nav-item" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-chart-pie"></i><span>Dasbor</span></a>{% endif %}
+      {% if current_user.is_admin %}
+        {% if current_user.role != 'bendahara' %}
+          {% if not current_user.is_teacher %}
+          <a class="nav-item" href="{{ url_for('students') }}"><i class="fa-solid fa-users"></i><span>Database Santri</span></a>
+          <a class="nav-item" href="{{ url_for('data_master') }}"><i class="fa-solid fa-sliders"></i><span>Data Master</span></a>
+          {% endif %}
+          <a class="nav-item" href="{{ url_for('curriculum') }}"><i class="fa-solid fa-table-list"></i><span>Silabus Bulanan</span></a>
+          <a class="nav-item" href="{{ url_for('daily_progress') }}"><i class="fa-solid fa-book-open-reader"></i><span>Prestasi Harian</span></a>
+          <a class="nav-item" href="{{ url_for('eraport') }}"><i class="fa-solid fa-file-pen"></i><span>E-Raport</span></a>
+        {% endif %}
+        {% if not current_user.is_teacher %}<a class="nav-item" href="{{ url_for('finance') }}"><i class="fa-solid fa-wallet"></i><span>Sistem Keuangan{% if finance_unpaid_count|default(0) %} <b class="nav-count">{{ finance_unpaid_count }}</b>{% endif %}</span></a>{% elif finance_teacher_allowed %}<a class="nav-item" href="{{ url_for('finance_teacher_status_v15e') }}"><i class="fa-solid fa-wallet"></i><span>Status Iuran Kelas</span></a>{% endif %}
+      {% else %}
+      <a class="nav-item" href="{{ url_for('guardian_student_detail', student_id=session.get('guardian_student_id')) }}"><i class="fa-solid fa-child-reaching"></i><span>Perkembangan Ananda</span></a>
+      <a class="nav-item" href="{{ url_for('guardian_finance_v15e', student_id=session.get('guardian_student_id')) }}"><i class="fa-solid fa-wallet"></i><span>Keuangan Ananda{% if guardian_finance_unpaid_count|default(0) %} <b class="nav-count">{{ guardian_finance_unpaid_count }}</b>{% endif %}</span></a>
+      {% endif %}
+      {% if current_user.role != 'bendahara' %}<a class="nav-item" href="{{ url_for('library') }}"><i class="fa-solid fa-book-open"></i><span>Perpustakaan Digital</span></a>{% endif %}
+      {% if current_user.is_admin and not current_user.is_teacher and current_user.role != 'bendahara' %}<a class="nav-item" href="{{ url_for('hadith_manager') }}"><i class="fa-solid fa-quote-right"></i><span>Hadis Harian</span></a>{% endif %}
+      <a class="nav-item logout-item" href="{{ url_for('logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Keluar</span></a>
+    </nav>
+  </aside>
+
+  <section class="workspace">
+    <header class="workspace-header">
+      <div>
+        {% if endpoint == 'dashboard' %}<h1>{{ 'Dasbor Administrasi TPQ' if current_user.is_admin else 'Dasbor Wali Santri' }}</h1><p>{{ 'Pantau operasional TPQ HMarisa dalam satu tempat.' if current_user.is_admin else 'Pantau perkembangan dan administrasi ananda.' }}</p>
+        {% elif endpoint in ['students','bulk_students','student_detail','student_finance_v15e'] %}<h1>Database Santri</h1><p>Kelola data santri aktif, arsip, kelas, dan riwayat.</p>
+        {% elif endpoint in ['data_master','user_management'] %}<h1>Data Master</h1><p>Kelola kelas, guru, bidang pelajaran, tahun ajaran, dan akses pengguna.</p>
+        {% elif endpoint in ['curriculum','curriculum_database','curriculum_detail','curriculum_import','edit_curriculum','curriculum_pdf'] %}<h1>Silabus Bulanan</h1><p>Susun materi per bulan berdasarkan bank silabus dan Kaldik.</p>
+        {% elif endpoint in ['daily_progress','academics','mutabaah_history','mutabaah_detail','edit_mutabaah','hafalan_tracker','mutabaah_import','mutabaah_export','mutabaah_import_template','mutabaah_export_xlsx'] %}<h1>Prestasi Harian & Mutabaah</h1><p>Kelola jurnal belajar dan hafalan santri.</p>
+        {% elif endpoint in ['eraport','eraport_class_dashboard','eraport_academic','eraport_hafalan','eraport_hafalan_detail','eraport_attitude','eraport_development','eraport_publication','eraport_bulk','report_edit','report_preview','report_pdf'] %}<h1>E-Raport</h1><p>Isi, lihat, periksa, dan terbitkan raport.</p>
+        {% elif endpoint == 'hadith_manager' %}<h1>Hadis Harian</h1><p>Kelola bank hadis internal TPQ HMarisa.</p>
+        {% elif endpoint in finance_endpoints %}<h1>Sistem Keuangan</h1><p>Administrasi tagihan dan pembayaran santri.</p>
+        {% elif endpoint in ['library','upload_book','edit_book','purchase_book','book_preview','download_book'] %}<h1>Perpustakaan Digital</h1><p>Katalog buku dan materi pembelajaran.</p>
+        {% else %}<h1>Portal TPQ HMarisa</h1><p>Sistem informasi pendidikan Al-Qur'an.</p>{% endif %}
+      </div>
+      <div class="date-card"><span class="date-icon"><i class="fa-regular fa-calendar-check"></i></span><span><strong id="current-gregorian-date">Memuat tanggal...</strong><small id="current-hijri-date">Kalender Hijriah</small></span></div>
+    </header>
+    <main class="content-scroll"><div class="page-shell">
+      {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash flash-{{ category }}"><span><i class="fa-solid fa-circle-info"></i> {{ message }}</span><button type="button">×</button></div>{% endfor %}</div>{% endif %}{% endwith %}
+      {% block content %}{% endblock %}
+    </div><footer class="footer">© {{ current_year }} TPQ HMarisa — Portal Pendidikan Al-Qur'an</footer></main>
+  </section>
+</div>
+{% else %}
+<main class="auth-shell">
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack auth-flash">{% for category,message in messages %}<div class="flash flash-{{ category }}"><span>{{ message }}</span><button type="button">×</button></div>{% endfor %}</div>{% endif %}{% endwith %}
+  {% block auth_content %}{% endblock %}
+</main>
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

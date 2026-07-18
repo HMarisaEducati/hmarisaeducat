@@ -1,0 +1,172 @@
+{% extends "control_center/base.html" %}
+{% block title %}Konten &amp; Pengumuman{% endblock %}
+
+{% block breadcrumb %}
+<span class="cc-bc-sep">/</span>
+<span>Konten &amp; Pengumuman</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <h1 class="cc-page-title"><i class="fa-solid fa-newspaper"></i> Konten &amp; Pengumuman</h1>
+    <p class="cc-page-sub">Kelola pengumuman, banner, dan konten portal dari satu tempat</p>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('portal_control_content_v17') }}" class="cc-btn cc-btn-primary" target="_blank">
+      <i class="fa-solid fa-plus"></i> Tambah Konten Baru
+    </a>
+  </div>
+</div>
+
+<!-- CMS Navigation Cards -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;margin-bottom:2rem">
+  <a href="{{ url_for('portal_control_content_v17') }}" target="_blank" class="cc-card cc-cms-card" style="text-decoration:none;color:inherit">
+    <div class="cc-card-body" style="display:flex;align-items:center;gap:1.2rem">
+      <div class="cc-module-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);flex-shrink:0">
+        <i class="fa-solid fa-bullhorn"></i>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:.2rem">Pengumuman &amp; Banner</div>
+        <div style="font-size:.82rem;opacity:.6">{{ content_counts.announcement or 0 }} konten aktif</div>
+        <div style="font-size:.78rem;color:#f59e0b;margin-top:.3rem">Buka di Pusat Kendali Portal →</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('portal_control_pages_v17') }}" target="_blank" class="cc-card cc-cms-card" style="text-decoration:none;color:inherit">
+    <div class="cc-card-body" style="display:flex;align-items:center;gap:1.2rem">
+      <div class="cc-module-icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);flex-shrink:0">
+        <i class="fa-solid fa-file-code"></i>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:.2rem">Halaman Portal</div>
+        <div style="font-size:.82rem;opacity:.6">{{ content_counts.pages or 0 }} halaman</div>
+        <div style="font-size:.78rem;color:#0ea5e9;margin-top:.3rem">Buka di Pusat Kendali Portal →</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('portal_control_media_v17') }}" target="_blank" class="cc-card cc-cms-card" style="text-decoration:none;color:inherit">
+    <div class="cc-card-body" style="display:flex;align-items:center;gap:1.2rem">
+      <div class="cc-module-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);flex-shrink:0">
+        <i class="fa-solid fa-images"></i>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:.2rem">Media &amp; Gambar</div>
+        <div style="font-size:.82rem;opacity:.6">Upload foto, banner, dokumen</div>
+        <div style="font-size:.78rem;color:#8b5cf6;margin-top:.3rem">Buka di Pusat Kendali Portal →</div>
+      </div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('portal_control_forms_v17') }}" target="_blank" class="cc-card cc-cms-card" style="text-decoration:none;color:inherit">
+    <div class="cc-card-body" style="display:flex;align-items:center;gap:1.2rem">
+      <div class="cc-module-icon" style="background:linear-gradient(135deg,#10b981,#34d399);flex-shrink:0">
+        <i class="fa-solid fa-wpforms"></i>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:.2rem">Formulir &amp; Pendaftaran</div>
+        <div style="font-size:.82rem;opacity:.6">{{ content_counts.forms or 0 }} formulir</div>
+        <div style="font-size:.78rem;color:#10b981;margin-top:.3rem">Buka di Pusat Kendali Portal →</div>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- Teks Situs (CC Settings integration) -->
+<div class="cc-card" style="margin-bottom:1.5rem">
+  <div class="cc-card-header">
+    <h2 class="cc-section-title"><i class="fa-solid fa-font"></i> Teks &amp; Identitas Situs</h2>
+    <a href="{{ url_for('control_center_settings') }}" class="cc-btn cc-btn-outline" style="font-size:.82rem">
+      <i class="fa-solid fa-pen"></i> Edit Pengaturan
+    </a>
+  </div>
+  <div class="cc-card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+      {% for key, label, icon in [
+        ('site_name', 'Nama Situs', 'fa-signature'),
+        ('tpq_name', 'Nama TPQ', 'fa-school'),
+        ('short_description', 'Deskripsi', 'fa-align-left'),
+        ('tagline', 'Tagline', 'fa-quote-left'),
+        ('announcement_text', 'Teks Pengumuman', 'fa-bullhorn'),
+        ('footer_text', 'Teks Footer', 'fa-scroll'),
+        ('address', 'Alamat', 'fa-location-dot'),
+        ('phone', 'Telepon', 'fa-phone'),
+      ] %}
+      <div class="cc-setting-preview">
+        <div class="cc-setting-label"><i class="fa-solid {{ icon }}"></i> {{ label }}</div>
+        <div class="cc-setting-val">{{ site_settings.get(key, '—') or '—' }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--cc-border)">
+      <a href="{{ url_for('control_center_settings') }}" class="cc-btn cc-btn-primary">
+        <i class="fa-solid fa-sliders"></i> Edit Semua Pengaturan Teks &amp; Identitas
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Latest Announcements from portal_control_v17 -->
+{% if recent_contents %}
+<div class="cc-card">
+  <div class="cc-card-header">
+    <h2 class="cc-section-title"><i class="fa-solid fa-bullhorn"></i> Konten Terbaru</h2>
+    <a href="{{ url_for('portal_control_content_v17') }}" class="cc-btn cc-btn-outline" style="font-size:.82rem" target="_blank">
+      Kelola Semua <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    </a>
+  </div>
+  <div class="cc-card-body" style="padding:0">
+    <div class="cc-table-wrapper">
+      <table class="cc-table">
+        <thead>
+          <tr>
+            <th>Judul</th>
+            <th>Tipe</th>
+            <th>Status</th>
+            <th>Dibuat</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in recent_contents %}
+          <tr>
+            <td style="font-weight:600">{{ c.title }}</td>
+            <td>
+              <span class="cc-badge cc-badge-{% if c.content_type == 'announcement' %}warning{% elif c.content_type == 'banner' %}primary{% else %}info{% endif %}">
+                {{ c.content_type }}
+              </span>
+            </td>
+            <td>
+              {% if c.is_active %}
+              <span class="cc-badge cc-badge-success">Aktif</span>
+              {% else %}
+              <span class="cc-badge cc-badge-secondary">Nonaktif</span>
+              {% endif %}
+            </td>
+            <td>{{ c.created_at.strftime('%d/%m/%Y') if c.created_at else '—' }}</td>
+            <td>
+              <a href="{{ url_for('portal_control_content_edit_v17', content_id=c.id) }}" class="cc-btn-icon" title="Edit" target="_blank">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="cc-card">
+  <div class="cc-card-body cc-empty-state">
+    <i class="fa-solid fa-newspaper" style="font-size:2.5rem;opacity:.3;margin-bottom:.8rem;display:block"></i>
+    <p>Belum ada konten. Buat pengumuman pertama melalui Pusat Kendali Portal.</p>
+    <a href="{{ url_for('portal_control_content_v17') }}" class="cc-btn cc-btn-primary" target="_blank">
+      <i class="fa-solid fa-plus"></i> Buat Konten Pertama
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

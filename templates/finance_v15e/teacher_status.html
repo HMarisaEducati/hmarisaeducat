@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Status Iuran {{ class_name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15e-page">
+  <div class="page-heading"><div><span class="eyebrow">Akses Guru · Baca Saja</span><h1>Status Iuran Kelas {{ class_name }}</h1><p>Guru hanya dapat melihat data kelas yang diampu dan tidak dapat mengubah transaksi.</p></div>{% if can_download %}<a class="btn btn-outline" href="{{ url_for('finance_teacher_export_v15e', academic_year=academic_year, semester=semester) }}"><i class="fa-solid fa-file-excel"></i> Download Excel</a>{% endif %}</div>
+  <form method="get" class="card finance-v15e-filter">
+    <label>Tahun Ajaran<input value="{{ academic_year }}" name="academic_year" readonly></label>
+    <label>Semester<select name="semester"><option {% if semester=='Semester 1' %}selected{% endif %}>Semester 1</option><option {% if semester=='Semester 2' %}selected{% endif %}>Semester 2</option></select></label>
+    <label>Periode<input name="period" value="{{ period }}" placeholder="Contoh: Juli"></label>
+    <label>Status<select name="status"><option value="">Semua Status</option>{% for item in ['Lunas','Sebagian','Belum Lunas','Dibebaskan'] %}<option value="{{ item }}" {% if status==item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+    <button class="btn btn-primary" type="submit">Tampilkan</button>
+  </form>
+  <section class="card finance-v15e-card"><div class="card-head"><div><h2>Daftar Status</h2><p class="muted">Nominal hanya untuk pemantauan kelas.</p></div><span class="badge">{{ bills|length }} tagihan</span></div><div class="finance-v15e-table-wrap"><table class="finance-v15e-table"><thead><tr><th>Santri</th><th>Jenis</th><th>Periode</th><th>Nominal</th><th>Dibayar</th><th>Sisa</th><th>Status</th></tr></thead><tbody>{% for bill in bills %}{% set student=student_map.get(bill.santri_id) %}{% set charge=charge_map.get(bill.charge_type_id) %}<tr><td><strong>{{ student.name if student else 'Santri tidak ditemukan' }}</strong></td><td>{{ charge.name if charge else 'Tagihan' }}</td><td>{{ bill.period_label }} {{ bill.period_year }}</td><td>{{ bill.amount|rupiah }}</td><td>{{ bill.paid_amount|rupiah }}</td><td>{{ bill.remaining_amount|rupiah }}</td><td><span class="finance-v15e-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></td></tr>{% else %}<tr><td colspan="7"><div class="finance-v15e-empty"><strong>Belum ada data sesuai filter.</strong><span>Data akan tampil setelah admin membuat tagihan.</span></div></td></tr>{% endfor %}</tbody></table></div></section>
+</div>
+{% endblock %}

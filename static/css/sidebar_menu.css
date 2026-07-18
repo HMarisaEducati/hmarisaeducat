@@ -1,0 +1,173 @@
+/* ==========================================================================
+   Sidebar Menu Dinamis — v1
+   Parent-child collapsible nav + Admin management UI
+   ========================================================================== */
+
+/* ── Collapsible nav group ─────────────────────────────────────────────── */
+.nav-group { display: flex; flex-direction: column; }
+
+/* Parent button inherits all .nav-item styles */
+.nav-parent {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  /* nav-item base repeated so no dependency order needed */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.nav-parent:hover { background: rgba(7,95,70,.08); color: #075f46; }
+.nav-group.active > .nav-parent { background: #075f46; color: #fff; }
+.nav-group.active > .nav-parent:hover { background: #064e3b; }
+
+/* Chevron */
+.nav-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: .55;
+  transition: transform .22s ease, opacity .15s;
+  flex-shrink: 0;
+}
+.nav-group.active .nav-chevron { opacity: 1; }
+[data-nav-toggle][aria-expanded="true"] .nav-chevron { transform: rotate(-180deg); }
+
+/* Collapsible children */
+.nav-children {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .28s ease;
+  padding-left: 8px;
+}
+.nav-children.open { max-height: 600px; }
+
+/* Child item */
+.nav-child {
+  padding-left: 28px !important;
+  font-size: 13.5px;
+  position: relative;
+}
+.nav-child::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .35;
+}
+.nav-child.active::before { opacity: 1; background: #fff; }
+.nav-child i { font-size: 13px; }
+
+/* Group active: keep children visible immediately on page load */
+.nav-group.active > .nav-children { max-height: 600px; }
+
+
+/* ==========================================================================
+   Admin Management UI (/admin/sidebar-menu)
+   ========================================================================== */
+
+.sm-page { display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .sm-page { grid-template-columns: 1fr; } }
+
+/* ── Menu tree table ── */
+.sm-tree { background: #fff; border: 1px solid #dce8e2; border-radius: 18px; overflow: hidden; }
+.sm-tree-header { display: grid; grid-template-columns: 32px 1fr auto auto; gap: 8px; align-items: center; padding: 10px 16px; background: #f6faf8; border-bottom: 1px solid #e2ebe6; font-size: 11px; font-weight: 800; color: #9cad9f; text-transform: uppercase; letter-spacing: .06em; }
+.sm-row { border-bottom: 1px solid #f0f5f2; }
+.sm-row:last-child { border-bottom: none; }
+.sm-row-inner {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 11px 14px;
+  transition: background .12s;
+}
+.sm-row-inner:hover { background: #f9fcfa; }
+.sm-row.is-child .sm-row-inner { padding-left: 38px; background: #fafcfb; }
+.sm-row.is-child:last-child { border-bottom: none; }
+.sm-row.inactive .sm-row-inner { opacity: .5; }
+
+.sm-icon-preview {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: #dff5e9; color: #075f46;
+  display: grid; place-items: center; font-size: 14px;
+  flex-shrink: 0;
+}
+.sm-row.is-child .sm-icon-preview { width: 26px; height: 26px; border-radius: 7px; font-size: 12px; background: #f1f5f9; color: #64748b; }
+
+.sm-meta { min-width: 0; }
+.sm-meta strong { display: block; font-size: 13.5px; color: #173229; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sm-meta small { font-size: 11px; color: #9cad9f; }
+.sm-badge-system { display: inline-block; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 999px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; margin-left: 5px; vertical-align: middle; }
+.sm-badge-inactive { background: #f8f9fa; color: #94a3b8; border-color: #e2e8f0; }
+
+.sm-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.sm-btn {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid #dce8e2;
+  background: #fff; color: #475569; cursor: pointer; font-size: 12px;
+  display: grid; place-items: center; transition: all .12s;
+}
+.sm-btn:hover { border-color: #075f46; color: #075f46; background: #f0fdf4; }
+.sm-btn.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+.sm-btn.toggle-on { background: #dff5e9; border-color: #a7f3d0; color: #065f46; }
+.sm-btn.toggle-off { background: #f8f9fa; border-color: #e2e8f0; color: #94a3b8; }
+
+.sm-roles-pills { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.sm-role-pill { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: #e0f2fe; color: #0369a1; }
+.sm-role-pill.guardian { background: #fce7f3; color: #9d174d; }
+.sm-role-pill.guru     { background: #fef3c7; color: #92400e; }
+.sm-role-pill.bendahara{ background: #ede9fe; color: #7c3aed; }
+
+/* ── Form panel ── */
+.sm-form-panel { background: #fff; border: 1px solid #dce8e2; border-radius: 18px; padding: 20px; position: sticky; top: 16px; }
+.sm-form-panel h2 { font-size: 16px; color: #173229; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; }
+.sm-form-panel h2 i { color: #075f46; }
+
+.sm-field { margin-bottom: 13px; }
+.sm-field label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.sm-field input, .sm-field select, .sm-field textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid #dce8e2; border-radius: 9px;
+  font-size: 13px; font-family: inherit; background: #f9fcfa; color: #173229;
+  transition: border-color .15s;
+}
+.sm-field input:focus, .sm-field select:focus, .sm-field textarea:focus {
+  outline: none; border-color: #075f46; background: #fff;
+}
+.sm-field textarea { resize: vertical; min-height: 60px; }
+
+/* Icon picker grid */
+.sm-icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 5px; max-height: 200px; overflow-y: auto; border: 1px solid #dce8e2; border-radius: 9px; padding: 8px; background: #f9fcfa; }
+.sm-icon-opt { width: 38px; height: 38px; border-radius: 8px; border: 2px solid transparent; display: grid; place-items: center; font-size: 15px; cursor: pointer; color: #475569; transition: all .12s; }
+.sm-icon-opt:hover { border-color: #a7f3d0; background: #dff5e9; color: #075f46; }
+.sm-icon-opt.selected { border-color: #075f46; background: #dff5e9; color: #075f46; }
+.sm-icon-preview-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.sm-icon-preview-row .sm-icon-big { width: 40px; height: 40px; border-radius: 11px; background: #dff5e9; color: #075f46; display: grid; place-items: center; font-size: 18px; }
+.sm-icon-preview-row span { font-size: 12px; color: #475569; }
+
+/* Role checkboxes */
+.sm-roles-check { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.sm-roles-check label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer; padding: 5px 8px; border: 1px solid #e2ebe6; border-radius: 7px; transition: all .12s; }
+.sm-roles-check label:has(input:checked) { border-color: #075f46; background: #f0fdf4; color: #065f46; }
+.sm-roles-check input { accent-color: #075f46; }
+
+.sm-form-actions { display: flex; gap: 8px; margin-top: 16px; }
+.sm-form-actions .btn { flex: 1; }
+
+.sm-add-fab { margin-bottom: 16px; display: flex; justify-content: flex-end; }
+
+/* Empty state */
+.sm-empty { text-align: center; padding: 32px 16px; color: #9cad9f; }
+.sm-empty i { font-size: 32px; margin-bottom: 8px; display: block; }

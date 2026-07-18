@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Perkembangan {{ student.name }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Perkembangan Santri</span>
+    <h1>{{ student.name }}</h1>
+    <p>NIS {{ student.nis }} · Kelas {{ student.class_name }}</p>
+  </div>
+  <div class="button-row"><a class="btn btn-outline" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a>{% if raport.status == 'Diterbitkan' %}<a class="btn btn-primary" href="{{ url_for('guardian_report', student_id=student.id) }}"><i class="fa-solid fa-file-pdf"></i> Lihat Raport</a>{% endif %}</div>
+</div>
+
+<section class="card">
+  {% set done = hafalan.values()|select|list|length %}
+  {% set percent = ((done / SURAH_JUZ30|length) * 100)|round|int %}
+  <div class="card-head"><h2>Hafalan Juz 30</h2><strong>{{ done }}/{{ SURAH_JUZ30|length }}</strong></div>
+  <div class="progress"><i style="width: {{ percent }}%"></i></div>
+  <p class="muted">Progres hafalan diperbarui oleh admin atau ustadz.</p>
+  <div class="surah-grid guardian-surah-grid">
+    {% for surah in SURAH_JUZ30 %}
+    <div class="surah-check static {% if hafalan.get(surah) %}done{% endif %}">
+      <i class="fa-solid {{ 'fa-circle-check' if hafalan.get(surah) else 'fa-circle' }}"></i>
+      <span>{{ loop.index }}. {{ surah }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Jurnal Mutabaah</h2><span class="muted">Catatan perkembangan belajar</span></div>
+  <div class="timeline">
+  {% for entry in mutabaah %}
+    <article>
+      <time>{{ entry.date }}</time>
+      <div>
+        <strong>{{ entry.tilawati or 'Progres mengaji' }}</strong>
+        {% if entry.subject or entry.material %}<p>{{ entry.subject or '' }}{% if entry.material %} — {{ entry.material }}{% endif %}</p>{% endif %}
+        {% if entry.notes %}<small>{{ entry.notes }}</small>{% endif %}
+      </div>
+    </article>
+  {% else %}<p class="empty">Belum ada jurnal belajar.</p>{% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Tagihan Iuran</h2><span class="muted">Kelola pembayaran ananda</span></div>
+  <div class="bill-grid">
+    {% for bill in bills %}
+    <article class="bill-card">
+      <div><span class="badge">{{ bill.month }} {{ bill.year }}</span><h3>{{ bill.nominal|rupiah }}</h3><p class="status-text">{{ bill.status }}</p></div>
+      <div class="button-row compact">
+        {% if bill.status == 'Lunas' %}<a class="btn btn-small btn-outline" href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>{% endif %}
+        <a class="btn btn-small btn-whatsapp" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
+      </div>
+      {% if bill.status != 'Lunas' %}
+      <form method="post" action="{{ url_for('upload_bill_proof', bill_id=bill.id) }}" enctype="multipart/form-data" class="upload-inline">
+        <input type="file" name="proof" accept="image/*,.pdf" required>
+        <button class="btn btn-small btn-primary" type="submit">Kirim Bukti</button>
+      </form>
+      {% endif %}
+    </article>
+    {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

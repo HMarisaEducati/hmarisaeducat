@@ -1,0 +1,18 @@
+PATCH DATABASE SANTRI FINAL V1
+
+Perubahan:
+1. Halaman dipisahkan menjadi tab Tambah Santri dan Database Santri.
+2. Import data menggunakan Excel .xlsx dengan pratinjau validasi sebelum disimpan.
+3. Tersedia template Excel resmi.
+4. Export tersedia dalam Excel dan PDF sesuai filter aktif.
+5. Tombol Edit Santri ditambahkan.
+6. Daftar desktop/tablet menjadi tabel ringkas; tampilan HP menjadi kartu.
+7. Aksi utama dibuat satu baris: Detail, Edit, Prestasi, dan menu Lainnya.
+8. Nonaktifkan/Aktifkan dan Hapus Permanen dipindahkan ke menu Lainnya.
+9. NIS duplikat dan kelas tidak dikenal divalidasi pada import dan edit.
+10. Data prestasi, mutabaah, hafalan, raport, dan iuran tidak dihapus saat data identitas diedit.
+
+Catatan:
+- Import PDF tidak digunakan karena PDF bukan format data terstruktur.
+- Import hanya Excel. Export dapat Excel atau PDF.
+- Patch tidak membawa database atau folder uploads.

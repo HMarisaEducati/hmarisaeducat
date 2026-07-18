@@ -1,0 +1,10 @@
+<nav class="pc17-tabs" aria-label="Pusat Kendali Portal">
+  <a class="{{ 'active' if request.endpoint=='portal_control_dashboard_v17' else '' }}" href="{{ url_for('portal_control_dashboard_v17') }}"><i class="fa-solid fa-gauge-high"></i> Ringkasan</a>
+  <a class="{{ 'active' if request.endpoint in ['portal_control_pages_v17','portal_control_page_edit_v17','portal_control_page_preview_v17'] else '' }}" href="{{ url_for('portal_control_pages_v17') }}"><i class="fa-solid fa-file-lines"></i> Halaman</a>
+  <a class="{{ 'active' if request.endpoint in ['portal_control_forms_v17','portal_control_form_edit_v17','portal_control_form_preview_v17'] else '' }}" href="{{ url_for('portal_control_forms_v17') }}"><i class="fa-solid fa-clipboard-list"></i> Form Builder</a>
+  <a class="{{ 'active' if request.endpoint in ['portal_control_submissions_v17','portal_control_submission_detail_v17'] else '' }}" href="{{ url_for('portal_control_submissions_v17') }}"><i class="fa-solid fa-inbox"></i> Data Masuk</a>
+  <a class="{{ 'active' if request.endpoint in ['portal_control_content_v17','portal_control_content_edit_v17'] else '' }}" href="{{ url_for('portal_control_content_v17') }}"><i class="fa-solid fa-bullhorn"></i> Konten</a>
+  <a class="{{ 'active' if request.endpoint=='portal_control_contacts_v17' else '' }}" href="{{ url_for('portal_control_contacts_v17') }}"><i class="fa-brands fa-whatsapp"></i> Kontak & Rekening</a>
+  <a class="{{ 'active' if request.endpoint=='portal_control_media_v17' else '' }}" href="{{ url_for('portal_control_media_v17') }}"><i class="fa-solid fa-photo-film"></i> Media</a>
+  <a class="{{ 'active' if request.endpoint=='portal_control_history_v17' else '' }}" href="{{ url_for('portal_control_history_v17') }}"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</a>
+</nav>

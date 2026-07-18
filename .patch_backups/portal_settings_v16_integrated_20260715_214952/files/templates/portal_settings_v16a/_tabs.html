@@ -1,0 +1,8 @@
+<nav class="ps16-tabs" aria-label="Bagian Pengaturan Portal">
+  <a class="{{ 'active' if active_section == 'overview' else '' }}" href="{{ url_for('portal_settings_v16a') }}"><i class="fa-solid fa-grid-2"></i> Ringkasan</a>
+  <a class="{{ 'active' if active_section == 'profile' else '' }}" href="{{ url_for('portal_settings_profile_v16a') }}"><i class="fa-solid fa-school"></i> Profil & Identitas</a>
+  <a class="{{ 'active' if active_section == 'academic' else '' }}" href="{{ url_for('portal_settings_academic_v16a') }}"><i class="fa-solid fa-calendar-days"></i> Tahun Ajaran</a>
+  <a class="{{ 'active' if active_section == 'assets' else '' }}" href="{{ url_for('portal_settings_assets_v16a') }}"><i class="fa-solid fa-images"></i> Aset Portal</a>
+  <a class="{{ 'active' if active_section == 'preview' else '' }}" href="{{ url_for('portal_settings_preview_v16a') }}"><i class="fa-solid fa-eye"></i> Preview</a>
+  <a class="{{ 'active' if active_section == 'history' else '' }}" href="{{ url_for('portal_settings_history_v16a') }}"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</a>
+</nav>

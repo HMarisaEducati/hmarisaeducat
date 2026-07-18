@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Hak Akses Keuangan{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15a.css') }}?v=20260715-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15e-page">
+  <div class="finance-v15a-heading"><div><span class="eyebrow">Admin Utama · Sistem Keuangan</span><h1>Hak Akses</h1><p>Atur akses baca-saja status iuran untuk guru. Admin dan Bendahara mengikuti kebijakan peran sistem.</p></div><a class="btn btn-outline" href="{{ url_for('finance_settings_general') }}">Kembali ke Pengaturan</a></div>
+  {% set active_tab = 'settings' %}{% include "finance_v15b/_tabs.html" %}
+  <nav class="finance-v15a-subtabs" aria-label="Submenu pengaturan keuangan">
+    <a href="{{ url_for('finance_settings_general') }}"><i class="fa-solid fa-building"></i><span>Umum</span></a>
+    <a href="{{ url_for('finance_settings_billing') }}"><i class="fa-solid fa-file-invoice"></i><span>Tagihan</span></a>
+    <a href="{{ url_for('finance_settings_payment') }}"><i class="fa-solid fa-building-columns"></i><span>Pembayaran</span></a>
+    <a href="{{ url_for('finance_settings_whatsapp') }}"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
+    <a href="{{ url_for('finance_settings_receipt') }}"><i class="fa-solid fa-receipt"></i><span>Bukti Pembayaran</span></a>
+    <a class="active" href="{{ url_for('finance_access_v15e') }}"><i class="fa-solid fa-user-shield"></i><span>Hak Akses</span></a>
+    <a href="{{ url_for('finance_audit_v15e') }}"><i class="fa-solid fa-list-check"></i><span>Audit Trail</span></a>
+  </nav>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Kebijakan Peran</h2><p class="muted">Pemeriksaan dilakukan di backend, bukan hanya menyembunyikan tombol.</p></div></div>
+    <div class="finance-role-policy">
+      <article><strong>Admin Utama / Admin</strong><span>Mengelola seluruh Administrasi Iuran sesuai kewenangan.</span></article>
+      <article><strong>Bendahara</strong><span>Masuk langsung ke Keuangan; dapat membuat tagihan, mencatat pembayaran, dan mengunduh laporan, tetapi tidak dapat membuka pengaturan, arsip/restore, pembebasan, atau modul portal lain.</span></article>
+      <article><strong>Guru</strong><span>Hanya dapat melihat status kelasnya setelah izin diaktifkan. Download dapat diizinkan secara terpisah.</span></article>
+      <article><strong>Wali Santri</strong><span>Hanya dapat melihat tagihan, riwayat, dan bukti pembayaran anak yang dipilih.</span></article>
+    </div>
+  </section>
+
+  <section class="card finance-v15e-card">
+    <div class="card-head"><div><h2>Akses Guru per Kelas</h2><p class="muted">Guru tidak dapat mencatat, mengedit, menghapus, atau membebaskan tagihan.</p></div><span class="badge">{{ teachers|length }} guru</span></div>
+    <div class="finance-access-list">
+      {% for teacher in teachers %}{% set perm = permission_map.get(teacher.id) %}
+      <form method="post" class="finance-access-row">
+        <input type="hidden" name="user_id" value="{{ teacher.id }}">
+        <div><strong>{{ teacher.full_name }}</strong><span>{{ teacher.assigned_class or 'Kelas belum ditentukan' }}</span></div>
+        <label><input type="checkbox" name="can_view_class_status" value="1" {% if perm and perm.can_view_class_status %}checked{% endif %}> Lihat status iuran kelas</label>
+        <label><input type="checkbox" name="can_download_class_report" value="1" {% if perm and perm.can_download_class_report %}checked{% endif %}> Download Excel</label>
+        <button class="btn btn-primary btn-small" type="submit">Simpan</button>
+      </form>
+      {% else %}<div class="finance-v15e-empty"><strong>Belum ada akun Guru.</strong><span>Tambahkan akun Guru melalui Data Master.</span></div>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

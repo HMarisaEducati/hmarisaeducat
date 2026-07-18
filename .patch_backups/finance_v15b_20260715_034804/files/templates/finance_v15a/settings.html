@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan Keuangan · TPQ HMarisa{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15a.css') }}?v=20260715-1">
+{% endblock %}
+{% block content %}
+<div class="finance-v15a-page" data-finance-settings data-active-section="{{ section }}">
+  <div class="finance-v15a-heading">
+    <div>
+      <span class="eyebrow">Keuangan V15-A · Fondasi Pengaturan</span>
+      <h1>Pengaturan Administrasi Iuran</h1>
+      <p>Ubah profil, nominal, rekening, QRIS, kontak admin, dan isi bukti pembayaran tanpa mengubah kode aplikasi.</p>
+    </div>
+    <div class="finance-v15a-heading-actions">
+      <span class="finance-v15a-version"><i class="fa-solid fa-shield-halved"></i> Baseline V14 terlindungi</span>
+      <a class="btn btn-outline" href="{{ url_for('finance') }}"><i class="fa-solid fa-arrow-left"></i> Administrasi Iuran Lama</a>
+    </div>
+  </div>
+
+  <nav class="finance-v15a-subtabs" aria-label="Submenu pengaturan keuangan">
+    <a class="{{ 'active' if section == 'general' else '' }}" href="{{ url_for('finance_settings_general') }}"><i class="fa-solid fa-building"></i><span>Umum</span></a>
+    <a class="{{ 'active' if section == 'billing' else '' }}" href="{{ url_for('finance_settings_billing') }}"><i class="fa-solid fa-file-invoice"></i><span>Tagihan</span></a>
+    <a class="{{ 'active' if section == 'payment' else '' }}" href="{{ url_for('finance_settings_payment') }}"><i class="fa-solid fa-building-columns"></i><span>Pembayaran</span></a>
+    <a class="{{ 'active' if section == 'whatsapp' else '' }}" href="{{ url_for('finance_settings_whatsapp') }}"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
+    <a class="{{ 'active' if section == 'receipt' else '' }}" href="{{ url_for('finance_settings_receipt') }}"><i class="fa-solid fa-receipt"></i><span>Bukti Pembayaran</span></a>
+  </nav>
+
+  {% if section == 'general' %}
+  <section class="finance-v15a-layout">
+    <form method="post" enctype="multipart/form-data" class="card finance-v15a-form" data-dirty-form>
+      <div class="card-head"><div><h2>Pengaturan Umum</h2><p class="muted">Nilai ini menjadi sumber konfigurasi dokumen Keuangan V15.</p></div><span class="badge">Admin Utama</span></div>
+      <div class="finance-v15a-form-grid two-column">
+        <label>Tahun Ajaran Aktif
+          <input name="academic_year_active" value="{{ general.academic_year_active }}" placeholder="2026/2027" required inputmode="numeric">
+          <small>Gunakan format tahun awal/tahun akhir.</small>
+        </label>
+        <label>Semester Aktif
+          <select name="semester_active" required>
+            <option value="Semester 1" {% if general.semester_active == 'Semester 1' %}selected{% endif %}>Semester 1</option>
+            <option value="Semester 2" {% if general.semester_active == 'Semester 2' %}selected{% endif %}>Semester 2</option>
+          </select>
+        </label>
+        <label>Nama TPQ
+          <input name="tpq_name" value="{{ general.tpq_name }}" maxlength="160" required>
+        </label>
+        <label class="span-2">Alamat TPQ
+          <textarea name="tpq_address" rows="3" placeholder="Alamat lengkap TPQ">{{ general.tpq_address }}</textarea>
+        </label>
+        <label class="span-2">Logo TPQ
+          <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" data-image-input data-preview-target="general-logo-preview">
+          <small>PNG/JPG/WEBP, maksimal 5 MB. Kosongkan bila logo tidak diganti.</small>
+        </label>
+      </div>
+      <div class="finance-v15a-preview-box">
+        {% if general.logo_path %}
+        <img id="general-logo-preview" src="{{ url_for('finance_settings_asset', filename=general.logo_path) }}" alt="Preview logo TPQ">
+        {% else %}
+        <div id="general-logo-preview" class="finance-v15a-empty-preview"><i class="fa-regular fa-image"></i><span>Belum ada logo khusus Keuangan</span></div>
+        {% endif %}
+      </div>
+      <div class="finance-v15a-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Umum</button></div>
+    </form>
+    {% include "finance_v15a/_audit_panel.html" %}
+  </section>
+
+  {% elif section == 'billing' %}
+  <section class="finance-v15a-stack">
+    <form method="post" class="card finance-v15a-form" data-dirty-form>
+      <input type="hidden" name="action" value="save_defaults">
+      <div class="card-head"><div><h2>Default Tagihan</h2><p class="muted">Nominal awal tetap dapat diedit saat pembuatan tagihan nanti.</p></div></div>
+      {% set spp = (charge_types|selectattr('slug', 'equalto', 'spp')|list|first) %}
+      <div class="finance-v15a-form-grid two-column">
+        <label>Nominal Default SPP
+          <div class="finance-v15a-money"><span>Rp</span><input type="number" name="spp_amount" value="{{ spp.default_amount if spp else 50000 }}" min="0" step="1000" required></div>
+        </label>
+        <label>Jatuh Tempo Default
+          <div class="finance-v15a-suffix"><input type="number" name="default_due_day" value="{{ billing.default_due_day }}" min="1" max="31" required><span>setiap bulan</span></div>
+        </label>
+      </div>
+      <div class="finance-v15a-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Default</button></div>
+    </form>
+
+    <section class="card">
+      <div class="card-head"><div><h2>Daftar Jenis Tagihan</h2><p class="muted">Data yang pernah digunakan dinonaktifkan, bukan dihapus permanen.</p></div><span class="badge">{{ charge_types|length }} jenis</span></div>
+      <form method="post" class="finance-v15a-inline-create" data-dirty-form>
+        <input type="hidden" name="action" value="add_type">
+        <label>Nama<input name="name" placeholder="Contoh: Study Tour" required></label>
+        <label>Nominal Default<input type="number" name="default_amount" value="0" min="0" step="1000" required></label>
+        <label>Jatuh Tempo<input type="number" name="due_day" min="1" max="31" placeholder="Ikuti default"></label>
+        <label>Urutan<input type="number" name="sort_order" value="{{ charge_types|length + 1 }}" min="0" max="999"></label>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Tambah</button>
+      </form>
+      <div class="finance-v15a-list">
+        {% for item in charge_types %}
+        <article class="finance-v15a-record {{ 'inactive' if not item.is_active else '' }}">
+          <div class="finance-v15a-record-summary">
+            <div><strong>{{ item.name }}</strong><small>{{ item.default_amount|rupiah }} · Jatuh tempo {{ item.due_day or billing.default_due_day }}</small></div>
+            <div class="finance-v15a-record-badges"><span class="badge">Urutan {{ item.sort_order }}</span><span class="finance-v15a-status {{ 'active' if item.is_active else 'inactive' }}">{{ 'Aktif' if item.is_active else 'Tidak Aktif' }}</span></div>
+          </div>
+          <details>
+            <summary><i class="fa-solid fa-pen"></i> Edit jenis tagihan</summary>
+            <form method="post" class="finance-v15a-edit-grid" data-dirty-form>
+              <input type="hidden" name="action" value="update_type"><input type="hidden" name="type_id" value="{{ item.id }}">
+              <label>Nama<input name="name" value="{{ item.name }}" required></label>
+              <label>Nominal<input type="number" name="default_amount" value="{{ item.default_amount }}" min="0" step="1000"></label>
+              <label>Jatuh Tempo<input type="number" name="due_day" value="{{ item.due_day or '' }}" min="1" max="31" placeholder="Ikuti default"></label>
+              <label>Urutan<input type="number" name="sort_order" value="{{ item.sort_order }}" min="0" max="999"></label>
+              <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
+            </form>
+          </details>
+          <form method="post" class="finance-v15a-toggle-form" data-confirm="{{ 'Aktifkan kembali jenis tagihan ini?' if not item.is_active else 'Nonaktifkan jenis tagihan ini? Data lama tetap tersimpan.' }}">
+            <input type="hidden" name="action" value="toggle_type"><input type="hidden" name="type_id" value="{{ item.id }}">
+            <button type="submit" class="btn btn-small btn-outline">{{ 'Aktifkan' if not item.is_active else 'Nonaktifkan' }}</button>
+          </form>
+        </article>
+        {% else %}<div class="finance-v15a-empty-state"><i class="fa-solid fa-file-circle-plus"></i><strong>Belum ada jenis tagihan.</strong><span>Tambahkan jenis tagihan pertama melalui formulir di atas.</span></div>{% endfor %}
+      </div>
+    </section>
+  </section>
+
+  {% elif section == 'payment' %}
+  <section class="finance-v15a-stack">
+    <form method="post" enctype="multipart/form-data" class="card finance-v15a-form" data-dirty-form>
+      <input type="hidden" name="action" value="add_channel">
+      <div class="card-head"><div><h2>Tambah Informasi Pembayaran</h2><p class="muted">Tambahkan rekening bank atau QRIS. Beberapa kanal dapat aktif bersamaan.</p></div></div>
+      <div class="finance-v15a-form-grid three-column">
+        <label>Jenis Kanal<select name="channel_type" data-channel-type><option value="bank">Rekening Bank</option><option value="qris">QRIS</option></select></label>
+        <label>Nama Tampilan<input name="label" placeholder="Contoh: BCA Utama"></label>
+        <label>Urutan<input type="number" name="sort_order" value="{{ payment_channels|length + 1 }}" min="0" max="999"></label>
+        <label data-bank-field>Nama Bank<input name="bank_name" placeholder="BCA / BRI / BSI"></label>
+        <label data-bank-field>Nomor Rekening<input name="account_number" inputmode="numeric" placeholder="1234567890"></label>
+        <label data-bank-field>Atas Nama<input name="account_holder" placeholder="TPQ HMarisa"></label>
+        <label class="span-3 is-hidden" data-qris-field>Upload QRIS<input type="file" name="qris_image" accept="image/png,image/jpeg,image/webp" data-image-input data-preview-target="new-qris-preview"></label>
+      </div>
+      <div id="new-qris-preview" class="finance-v15a-empty-preview is-hidden"><i class="fa-solid fa-qrcode"></i><span>Preview QRIS</span></div>
+      <div class="finance-v15a-check-row">
+        <label class="check-line"><input type="checkbox" name="is_primary" value="1"> Jadikan utama</label>
+        <label class="check-line"><input type="checkbox" name="show_on_receipt" value="1"> Tampilkan di bukti pembayaran</label>
+      </div>
+      <div class="finance-v15a-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Tambah Kanal</button></div>
+    </form>
+
+    <section class="card">
+      <div class="card-head"><div><h2>Daftar Rekening dan QRIS</h2><p class="muted">Nomor rekening disimpan sebagai teks agar angka nol di awal tidak hilang.</p></div><span class="badge">{{ payment_channels|length }} kanal</span></div>
+      <div class="finance-v15a-channel-grid">
+        {% for channel in payment_channels %}
+        <article class="finance-v15a-channel-card {{ 'inactive' if not channel.is_active else '' }}">
+          <div class="finance-v15a-channel-icon"><i class="fa-solid {{ 'fa-qrcode' if channel.channel_type == 'qris' else 'fa-building-columns' }}"></i></div>
+          <div class="finance-v15a-channel-main">
+            <div class="finance-v15a-channel-title"><strong>{{ channel.label }}</strong>{% if channel.is_primary %}<span class="badge">Utama</span>{% endif %}</div>
+            {% if channel.channel_type == 'bank' %}<p>{{ channel.bank_name }} · {{ channel.account_number }}</p><small>Atas nama {{ channel.account_holder }}</small>{% else %}<p>QRIS</p>{% if channel.qris_path %}<a href="{{ url_for('finance_settings_asset', filename=channel.qris_path) }}" target="_blank">Lihat gambar QRIS</a>{% endif %}{% endif %}
+            <div class="finance-v15a-record-badges"><span class="finance-v15a-status {{ 'active' if channel.is_active else 'inactive' }}">{{ 'Aktif' if channel.is_active else 'Tidak Aktif' }}</span>{% if channel.show_on_receipt %}<span class="badge">Tampil di bukti</span>{% endif %}</div>
+          </div>
+          <details class="finance-v15a-channel-edit">
+            <summary><i class="fa-solid fa-pen"></i> Edit</summary>
+            <form method="post" enctype="multipart/form-data" class="finance-v15a-edit-grid" data-dirty-form>
+              <input type="hidden" name="action" value="update_channel"><input type="hidden" name="channel_id" value="{{ channel.id }}">
+              <label>Nama Tampilan<input name="label" value="{{ channel.label }}" required></label>
+              {% if channel.channel_type == 'bank' %}
+              <label>Nama Bank<input name="bank_name" value="{{ channel.bank_name }}" required></label>
+              <label>Nomor Rekening<input name="account_number" value="{{ channel.account_number }}" required></label>
+              <label>Atas Nama<input name="account_holder" value="{{ channel.account_holder }}" required></label>
+              {% else %}
+              <label class="span-2">Ganti QRIS<input type="file" name="qris_image" accept="image/png,image/jpeg,image/webp"></label>
+              {% endif %}
+              <label>Urutan<input type="number" name="sort_order" value="{{ channel.sort_order }}" min="0" max="999"></label>
+              <div class="finance-v15a-check-row span-2"><label class="check-line"><input type="checkbox" name="is_active" value="1" {% if channel.is_active %}checked{% endif %}> Aktif</label><label class="check-line"><input type="checkbox" name="is_primary" value="1" {% if channel.is_primary %}checked{% endif %}> Utama</label><label class="check-line"><input type="checkbox" name="show_on_receipt" value="1" {% if channel.show_on_receipt %}checked{% endif %}> Tampil di bukti</label></div>
+              <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
+            </form>
+          </details>
+          <form method="post" data-confirm="{{ 'Aktifkan kembali kanal pembayaran ini?' if not channel.is_active else 'Nonaktifkan kanal pembayaran ini? Riwayat lama tetap tersimpan.' }}">
+            <input type="hidden" name="action" value="toggle_channel"><input type="hidden" name="channel_id" value="{{ channel.id }}">
+            <button class="btn btn-small btn-outline" type="submit">{{ 'Aktifkan' if not channel.is_active else 'Nonaktifkan' }}</button>
+          </form>
+        </article>
+        {% else %}<div class="finance-v15a-empty-state span-all"><i class="fa-solid fa-building-columns"></i><strong>Belum ada rekening atau QRIS.</strong><span>Tambahkan informasi pembayaran melalui formulir di atas.</span></div>{% endfor %}
+      </div>
+    </section>
+  </section>
+
+  {% elif section == 'whatsapp' %}
+  <section class="finance-v15a-stack">
+    <form method="post" class="card finance-v15a-form" data-dirty-form>
+      <input type="hidden" name="action" value="save_template">
+      <div class="card-head"><div><h2>Template WhatsApp Pengingat</h2><p class="muted">Pesan hanya dibuka setelah tindakan admin, tidak dikirim otomatis.</p></div></div>
+      <label>Isi Pesan<textarea name="reminder_template" rows="9" required>{{ whatsapp.reminder_template }}</textarea><small>Variabel: {nama_santri}, {jenis_tagihan}, {periode}, {nominal}, {dibayar}, {sisa}</small></label>
+      <div class="finance-v15a-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Template</button></div>
+    </form>
+
+    <section class="card">
+      <div class="card-head"><div><h2>Daftar Admin WhatsApp</h2><p class="muted">Nomor 08… otomatis dinormalisasi menjadi 628….</p></div><span class="badge">{{ contacts|length }} kontak</span></div>
+      <form method="post" class="finance-v15a-inline-create" data-dirty-form>
+        <input type="hidden" name="action" value="add_contact">
+        <label>Nama Admin<input name="name" placeholder="Yeni Susilawati" required></label>
+        <label>Nomor WhatsApp<input name="phone" inputmode="tel" placeholder="081234567890" required></label>
+        <label>Jabatan<input name="position" value="Admin" required></label>
+        <label>Urutan<input type="number" name="sort_order" value="{{ contacts|length + 1 }}" min="0" max="999"></label>
+        <label class="check-line compact"><input type="checkbox" name="is_primary" value="1"> Admin utama</label>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Tambah</button>
+      </form>
+      <div class="finance-v15a-list">
+        {% for contact in contacts %}
+        <article class="finance-v15a-record {{ 'inactive' if not contact.is_active else '' }}">
+          <div class="finance-v15a-record-summary">
+            <div><strong>{{ contact.name }}</strong><small>{{ contact.position }} · {{ contact.phone }}</small></div>
+            <div class="finance-v15a-record-badges">{% if contact.is_primary %}<span class="badge">Utama</span>{% endif %}<span class="finance-v15a-status {{ 'active' if contact.is_active else 'inactive' }}">{{ 'Aktif' if contact.is_active else 'Tidak Aktif' }}</span></div>
+          </div>
+          <details>
+            <summary><i class="fa-solid fa-pen"></i> Edit kontak</summary>
+            <form method="post" class="finance-v15a-edit-grid" data-dirty-form>
+              <input type="hidden" name="action" value="update_contact"><input type="hidden" name="contact_id" value="{{ contact.id }}">
+              <label>Nama<input name="name" value="{{ contact.name }}" required></label>
+              <label>Nomor WhatsApp<input name="phone" value="{{ contact.phone }}" required></label>
+              <label>Jabatan<input name="position" value="{{ contact.position }}" required></label>
+              <label>Urutan<input type="number" name="sort_order" value="{{ contact.sort_order }}" min="0" max="999"></label>
+              <div class="finance-v15a-check-row span-2"><label class="check-line"><input type="checkbox" name="is_active" value="1" {% if contact.is_active %}checked{% endif %}> Aktif</label><label class="check-line"><input type="checkbox" name="is_primary" value="1" {% if contact.is_primary %}checked{% endif %}> Admin utama</label></div>
+              <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
+            </form>
+          </details>
+          <form method="post" data-confirm="{{ 'Aktifkan kembali kontak ini?' if not contact.is_active else 'Nonaktifkan kontak ini? Riwayat lama tetap tersimpan.' }}">
+            <input type="hidden" name="action" value="toggle_contact"><input type="hidden" name="contact_id" value="{{ contact.id }}">
+            <button class="btn btn-small btn-outline" type="submit">{{ 'Aktifkan' if not contact.is_active else 'Nonaktifkan' }}</button>
+          </form>
+        </article>
+        {% else %}<div class="finance-v15a-empty-state"><i class="fa-brands fa-whatsapp"></i><strong>Belum ada kontak admin.</strong><span>Tambahkan nomor admin pertama melalui formulir di atas.</span></div>{% endfor %}
+      </div>
+    </section>
+  </section>
+
+  {% elif section == 'receipt' %}
+  <section class="finance-v15a-layout">
+    <form method="post" class="card finance-v15a-form" data-dirty-form>
+      <div class="card-head"><div><h2>Bukti Pembayaran</h2><p class="muted">Pilihan ini akan digunakan pada PDF bukti pembayaran di tahap V15-C.</p></div></div>
+      <div class="finance-v15a-form-grid two-column">
+        <label>Nama Bendahara<input name="treasurer_name" value="{{ receipt.treasurer_name }}" placeholder="Yeni Susilawati"></label>
+        <label>Jabatan<input name="treasurer_position" value="{{ receipt.treasurer_position }}" placeholder="Bendahara TPQ"></label>
+        <label class="span-2">Catatan/Footer<textarea name="footer_note" rows="3" placeholder="Terima kasih atas pembayaran administrasi ananda.">{{ receipt.footer_note }}</textarea></label>
+      </div>
+      <div class="finance-v15a-check-row">
+        <label class="check-line"><input type="checkbox" name="show_logo" value="1" {% if receipt.show_logo %}checked{% endif %}> Tampilkan logo TPQ</label>
+        <label class="check-line"><input type="checkbox" name="show_qris" value="1" {% if receipt.show_qris %}checked{% endif %}> Izinkan QRIS tampil</label>
+      </div>
+      <fieldset class="finance-v15a-fieldset">
+        <legend>Rekening/QRIS yang tampil pada bukti</legend>
+        {% for channel in payment_channels if channel.is_active %}
+        <label class="finance-v15a-channel-choice"><input type="checkbox" name="receipt_channel_ids" value="{{ channel.id }}" {% if channel.show_on_receipt %}checked{% endif %}><span><strong>{{ channel.label }}</strong><small>{% if channel.channel_type == 'bank' %}{{ channel.bank_name }} · {{ channel.account_number }} · {{ channel.account_holder }}{% else %}QRIS{% endif %}</small></span></label>
+        {% else %}<div class="finance-v15a-empty-state compact"><strong>Belum ada kanal aktif.</strong><span>Tambahkan rekening atau QRIS di tab Pembayaran.</span></div>{% endfor %}
+      </fieldset>
+      <div class="finance-v15a-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Bukti</button></div>
+    </form>
+
+    <aside class="card finance-v15a-receipt-preview">
+      <div class="card-head"><div><h2>Preview Konfigurasi</h2><p class="muted">Ini preview data, belum dokumen PDF final.</p></div></div>
+      <div class="finance-v15a-receipt-paper">
+        {% if receipt.show_logo and general.logo_path %}<img src="{{ url_for('finance_settings_asset', filename=general.logo_path) }}" alt="Logo">{% else %}<div class="finance-v15a-logo-placeholder">TPQ</div>{% endif %}
+        <h3>{{ general.tpq_name }}</h3><p>{{ general.tpq_address or 'Alamat belum diisi' }}</p><hr>
+        <strong>BUKTI PEMBAYARAN</strong>
+        <div class="finance-v15a-preview-lines"><span>Nama Santri</span><b>Contoh Santri</b><span>Nomor Transaksi</span><b>TPQ-2026-0001</b><span>Nominal</span><b>Rp50.000</b></div>
+        <div class="finance-v15a-preview-accounts">
+          {% for channel in payment_channels if channel.is_active and channel.show_on_receipt %}<small>{{ channel.label }}{% if channel.channel_type == 'bank' %}: {{ channel.account_number }} a.n. {{ channel.account_holder }}{% else %}: QRIS aktif{% endif %}</small>{% else %}<small>Rekening belum dipilih.</small>{% endfor %}
+        </div>
+        <div class="finance-v15a-signature"><span>{{ receipt.treasurer_position }}</span><strong>{{ receipt.treasurer_name or 'Belum diisi' }}</strong></div>
+        {% if receipt.footer_note %}<footer>{{ receipt.footer_note }}</footer>{% endif %}
+      </div>
+    </aside>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/finance_v15a.js') }}?v=20260715-1"></script>
+{% endblock %}

@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 {% block title %}{{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
 {% block content %}
 <div class="page-heading">
   <div><span class="eyebrow">Profil Santri</span><h1>{{ student.name }}</h1><p>NIS {{ student.nis }} · {{ student.class_name }} · Wali: {{ student.guardian.full_name }}</p></div>
   <div class="button-row">
-    <a class="btn btn-outline" href="{{ url_for('report_pdf', student_id=student.id) }}">Unduh E-Raport</a>
-    {% if current_user.is_admin %}<a class="btn btn-primary" href="{{ url_for('academics', student_id=student.id) }}">Edit Akademik</a>{% endif %}
+    <a class="btn btn-outline" href="{{ url_for('report_preview', student_id=student.id) }}">Preview E-Raport</a>
+    {% if current_user.is_admin %}<a class="btn btn-primary" href="{{ url_for('academics', student_id=student.id, source='student_detail') }}">Edit Akademik</a>{% endif %}
   </div>
 </div>
+{% set active_student_tab = 'profile' %}
+{% include "finance_v15e/_student_tabs.html" %}
 
 <section class="two-column">
   <article class="card">
@@ -27,7 +30,7 @@
 </section>
 
 <section class="card">
-  <div class="card-head"><h2>Jurnal Mutabaah</h2>{% if current_user.is_admin %}<a href="{{ url_for('academics', student_id=student.id) }}#mutabaah">Tambah catatan</a>{% endif %}</div>
+  <div class="card-head"><h2>Jurnal Mutabaah</h2>{% if current_user.is_admin %}<a href="{{ url_for('academics', student_id=student.id, source='student_detail') }}#mutabaah">Tambah catatan</a>{% endif %}</div>
   <div class="timeline">
   {% for entry in raport.mutabaah() %}
     <article><time>{{ entry.date }}</time><div><strong>{{ entry.tilawati or 'Tilawati/Iqro belum diisi' }}</strong><p>{{ entry.fiqih }}</p><small>{{ entry.notes }}</small></div></article>
@@ -35,24 +38,17 @@
   </div>
 </section>
 
-<section class="card">
-  <div class="card-head"><h2>Tagihan Iuran</h2><span class="muted">Nominal standar Rp 50.000</span></div>
-  <div class="bill-grid">
-    {% for bill in bills %}
-    <article class="bill-card">
-      <div><span class="badge">{{ bill.month }} {{ bill.year }}</span><h3>{{ bill.nominal|rupiah }}</h3><p class="status-text">{{ bill.status }}</p></div>
-      <div class="button-row compact">
-        <a class="btn btn-small btn-outline" href="{{ url_for('bill_receipt', bill_id=bill.id) }}">Kuitansi</a>
-        <a class="btn btn-small btn-whatsapp" href="{{ url_for('bill_whatsapp', bill_id=bill.id) }}" target="_blank">WhatsApp</a>
-      </div>
-      {% if not current_user.is_admin and bill.status != 'Lunas' %}
-      <form method="post" action="{{ url_for('upload_bill_proof', bill_id=bill.id) }}" enctype="multipart/form-data" class="upload-inline">
-        <input type="file" name="proof" accept="image/*,.pdf" required><button class="btn btn-small btn-primary" type="submit">Kirim Bukti</button>
-      </form>
-      {% endif %}
-    </article>
-    {% else %}<p class="empty">Belum ada tagihan.</p>{% endfor %}
+<section class="card finance-v15e-card">
+  <div class="card-head"><div><h2>Administrasi Iuran</h2><p class="muted">Data terhubung ke Sistem Keuangan V15.</p></div><a href="{{ url_for('student_finance_v15e', student_id=student.id) }}">Buka Keuangan</a></div>
+  {% set finance_summary = student_finance_summary_v15e %}
+  {% if finance_summary %}
+  <div class="finance-v15e-stat-grid">
+    <article><span>Total Tagihan</span><strong>{{ finance_summary.total|rupiah }}</strong><small>{{ finance_summary.bill_count }} tagihan aktif</small></article>
+    <article><span>Total Dibayar</span><strong>{{ finance_summary.paid|rupiah }}</strong><small>Pembayaran tercatat</small></article>
+    <article><span>Sisa</span><strong>{{ finance_summary.remaining|rupiah }}</strong><small>{{ finance_summary.unpaid_count }} tagihan belum selesai</small></article>
+    <article><span>Status</span><strong>{{ 'Selesai' if finance_summary.remaining == 0 and finance_summary.bill_count else ('Belum ada tagihan' if not finance_summary.bill_count else 'Perlu diperiksa') }}</strong><small>Lihat rincian pada tab Keuangan</small></article>
   </div>
+  {% else %}<p class="empty">Ringkasan Keuangan belum tersedia.</p>{% endif %}
 </section>
 
 {% if current_user.is_admin %}

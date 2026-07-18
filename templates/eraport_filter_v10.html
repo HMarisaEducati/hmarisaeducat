@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}E-Raport TPQ HMarisa{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+<div class="page-heading er10-page-heading">
+  <div><span class="eyebrow">Admin · E-Raport</span><h1>E-Raport TPQ HMarisa</h1><p>Pilih kelas dan periode. Seluruh santri aktif pada kelas tersebut akan dimuat otomatis.</p></div>
+</div>
+<section class="card er10-filter-card">
+  <form method="get" action="{{ url_for('eraport_class_dashboard') }}" class="er10-filter-grid">
+    <label><span>Kelas</span><select name="class_name" required><option value="">Pilih kelas</option>{% for item in classes %}<option value="{{ item }}">{{ item }}</option>{% endfor %}</select></label>
+    <label><span>Tahun Ajaran — Semester</span><select name="period" required>{% for value, year, semester in period_options %}<option value="{{ value }}" {% if selected_period == value %}selected{% endif %}>{{ year }} — {{ semester }}</option>{% endfor %}</select></label>
+    <label><span>Status</span><select name="status"><option {% if selected_status == 'Semua' %}selected{% endif %}>Semua</option><option {% if selected_status == 'Draft' %}selected{% endif %}>Draft</option><option {% if selected_status == 'Diterbitkan' %}selected{% endif %}>Diterbitkan</option></select></label>
+    <div class="er10-filter-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-folder-open"></i> Tampilkan E-Raport</button><a class="btn btn-outline" href="{{ url_for('eraport') }}">Reset</a></div>
+  </form>
+</section>
+<section class="card er10-empty-state"><i class="fa-regular fa-file-lines"></i><h2>Pilih kelas untuk membuka Dashboard E-Raport</h2><p>Nama santri diambil otomatis dari Database Santri.</p></section>
+{% endblock %}

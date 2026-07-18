@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Hafalan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+{% include '_eraport_student_header_v10.html' %}
+{% include '_eraport_tabs_v10.html' %}
+<section class="card er10-section-card">
+  <div class="card-head"><div><h2>Progres Hafalan Juz 30</h2><p class="muted">Data otomatis dari Tracker Hafalan yang sama dengan Prestasi Harian.</p></div><strong>{{ hafalan.done }}/{{ hafalan.total }} surat</strong></div>
+  <div class="er10-hafalan-stats"><article><span>Selesai</span><strong>{{ hafalan.done }}</strong></article><article><span>Proses</span><strong>{{ hafalan.process }}</strong></article><article><span>Belum Mulai</span><strong>{{ hafalan.not_started }}</strong></article></div>
+  <div class="er10-progress"><span style="width:{{ hafalan.percent }}%"></span></div>
+  <div class="er10-form-actions"><a class="btn btn-primary" href="{{ url_for('eraport_hafalan_detail', student_id=student.id, **period_query) }}"><i class="fa-solid fa-list-check"></i> Lihat Detail Hafalan</a><a class="btn btn-outline" href="{{ url_for('eraport_attitude', student_id=student.id, **period_query) }}">Lanjut ke Sikap & Kehadiran</a><a class="btn btn-ghost" href="{{ url_for('eraport_class_dashboard', class_name=student.class_name, **period_query) }}">Kembali ke Dashboard E-Raport</a></div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+PETUNJUK UPDATE PORTAL TPQ HMARISA DI PYTHONANYWHERE
+===================================================
+
+Folder aplikasi:
+/home/HMarisaEducation/portal-tpq-hmarisa-final
+
+Sebelum mengganti aplikasi
+--------------------------
+1. Unduh/backup folder proyek dan database aktif.
+2. Jangan menghapus folder instance atau uploads sebelum cadangannya aman.
+3. File cadangan database sebelum revisi sudah disertakan di:
+   instance/tpq_hmarisa_before_final_revision.db
+
+Cara memasang paket revisi
+--------------------------
+1. Unggah ZIP ke /home/HMarisaEducation/
+2. Buka Bash Console.
+3. Jalankan:
+
+   cd /home/HMarisaEducation
+   mv portal-tpq-hmarisa-final portal-tpq-hmarisa-final-sebelum-revisi
+   unzip Portal_TPQ_HMarisa_REVISI_FINAL.zip
+
+4. Aktifkan virtualenv yang dipakai web app, lalu instal kebutuhan:
+
+   source /home/HMarisaEducation/.virtualenvs/tpq-hmarisa-env2/bin/activate
+   pip install -r /home/HMarisaEducation/portal-tpq-hmarisa-final/requirements.txt
+
+5. Pastikan WSGI tetap mengarah ke folder berikut:
+   /home/HMarisaEducation/portal-tpq-hmarisa-final
+
+6. Buka tab Web di PythonAnywhere lalu tekan Reload.
+
+Database dan migrasi
+--------------------
+- Aplikasi menjalankan pembaruan skema secara otomatis saat pertama kali dimuat.
+- Database aktif paket berada di instance/tpq_hmarisa.db.
+- Jangan menimpa database produksi dengan database kosong.
+- Untuk mempertahankan database produksi terbaru, salin file database aktif lama ke
+  folder instance paket baru sebelum Reload, lalu biarkan migrasi otomatis berjalan.
+
+Rahasia aplikasi
+----------------
+Atur SECRET_KEY melalui environment/WSGI, jangan menyimpan rahasia produksi di GitHub.
+Contoh di WSGI sebelum import app:
+
+   import os
+   os.environ['SECRET_KEY'] = 'GANTI_DENGAN_NILAI_ACAK_YANG_KUAT'
+
+Poster mingguan
+---------------
+Dashboard menyediakan tombol Jalankan Sekarang/Buat Ulang Poster. Untuk proses server
+setiap Ahad, tambahkan tugas terjadwal yang menjalankan:
+
+   /home/HMarisaEducation/.virtualenvs/tpq-hmarisa-env2/bin/python \
+   /home/HMarisaEducation/portal-tpq-hmarisa-final/scheduled_weekly.py
+
+Skrip aman dijalankan setiap hari pukul 06.00 WIB karena hanya memproses pada hari Ahad.
+Poster tetap dibagikan manual lewat tombol Unduh & Bagikan ke WhatsApp.
+
+Pemeriksaan setelah Reload
+--------------------------
+1. Buka Halaman Utama dan cek pilihan Kelas -> Nama Santri.
+2. Login admin dan cek Dashboard.
+3. Cek Data Master, Hadis Harian, Database Santri, Silabus Bulanan.
+4. Cek Prestasi Harian, Jurnal Mutabaah dan Tracker Hafalan.
+5. Cek E-Raport: Simpan Draf -> Lihat Raport -> Terbitkan -> Unduh PDF.
+6. Uji pada MatePad dan ponsel.
+
+Login admin bawaan lama tetap dipertahankan. Demi keamanan, ubah sandi admin setelah
+portal berhasil dimuat apabila sandi tersebut masih menggunakan sandi awal.

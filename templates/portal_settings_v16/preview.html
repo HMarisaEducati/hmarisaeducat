@@ -1,0 +1,10 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<div class="ps16-preview-toolbar"><div><h3>Preview Terpadu</h3><p>Pilih bagian lalu bandingkan versi aktif dan draft. Preview ini tidak menerbitkan perubahan.</p></div><select onchange="location.href='{{ url_for('portal_settings_integrated_preview_v16') }}?section='+this.value">{% for key,label in [('admin_theme','Tampilan Admin'),('guardian_theme','Tampilan Wali'),('navigation','Menu'),('module_visibility','Bagian Dashboard'),('eraport_design','E-Raport'),('achievement_design','Prestasi Bulanan')] %}<option value="{{ key }}" {% if experience_section==key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+<div class="ps16x-preview-grid">
+  <article><span>AKTIF · V{{ experience_active.version_no }}</span><pre>{{ active_payload|tojson(indent=2) }}</pre></article>
+  <article class="draft"><span>DRAFT · V{{ experience_draft.version_no }}</span><pre>{{ draft_payload|tojson(indent=2) }}</pre></article>
+</div>
+{% if experience_section in ['admin_theme','guardian_theme'] %}<div class="ps16x-device-preview" style="--pe-primary:{{ draft_payload.primary }};--pe-secondary:{{ draft_payload.secondary }};--pe-accent:{{ draft_payload.accent }};--pe-bg:{{ draft_payload.page_bg }};--pe-surface:{{ draft_payload.surface }};--pe-text:{{ draft_payload.text }}"><aside><b>{{ draft_settings.tpq_name }}</b><small>{{ 'Portal Admin' if experience_section=='admin_theme' else 'Portal Wali' }}</small><nav><i></i><i></i><i></i><i></i></nav></aside><main><header></header><section><div></div><div></div><div></div></section><article></article></main></div>{% endif %}
+<div class="ps16x-publish-row"><p>Terbitkan hanya bagian yang sedang diperiksa.</p><form method="post" action="{{ url_for('portal_settings_integrated_publish_v16', section=experience_section) }}" data-confirm="Terbitkan draft bagian ini?"><input type="hidden" name="reason" value="Terbitkan setelah Preview Terpadu"><button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan Bagian Ini</button></form></div>
+{% endblock %}

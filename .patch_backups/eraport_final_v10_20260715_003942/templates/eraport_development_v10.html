@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Catatan Perkembangan {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/eraport_final_v10.css') }}?v=10.0">{% endblock %}
+{% block content %}
+{% include '_eraport_student_header_v10.html' %}
+{% include '_eraport_tabs_v10.html' %}
+<form method="post" class="card er10-section-card">
+  <div class="card-head"><div><h2>Catatan Perkembangan</h2><p class="muted">Wajib diperiksa wali kelas sebelum raport diterbitkan.</p></div></div>
+  <label class="er10-full-label"><span>Catatan Perkembangan</span><textarea class="er10-development-textarea" name="development_notes" rows="9" placeholder="Ringkas perkembangan bacaan, hafalan, adab, ibadah, kekuatan, dan tindak lanjut.">{{ raport.development_notes }}</textarea></label>
+  <p class="er10-help">Catatan dapat disusun dari Jurnal Mutabaah, tetapi harus diperiksa wali kelas sebelum raport diterbitkan.</p>
+  {% set next_label='Penerbitan' %}{% include '_eraport_actions_v10.html' %}
+</form>
+{% endblock %}

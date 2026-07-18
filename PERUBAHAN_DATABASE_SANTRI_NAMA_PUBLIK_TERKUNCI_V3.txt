@@ -1,0 +1,9 @@
+PATCH DATABASE SANTRI V3 — NAMA TAMPILAN PUBLIK TERKUNCI
+
+1. Pada Tambah Santri, Nama Tampilan Publik terkunci dan otomatis mengikuti Nama Lengkap.
+2. Kolom hanya bisa diedit setelah mencentang "Gunakan nama tampilan berbeda".
+3. Jika centang dibatalkan, isi kembali mengikuti Nama Lengkap.
+4. Pada Edit Santri, nama publik yang sama dengan Nama Lengkap tetap terkunci.
+5. Nama publik lama yang memang berbeda tetap ditampilkan sebagai pilihan khusus dan dapat diedit.
+6. Patch hanya mengubah templates/students.html dan templates/student_edit.html.
+7. Tidak mengubah app.py, database, Dashboard, Santri Terbaik Bulanan, E-Raport, maupun halaman lain.

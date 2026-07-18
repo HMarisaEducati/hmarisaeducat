@@ -1,0 +1,17 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card" method="post" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Profil & Identitas TPQ</h3><p>Data disimpan sebagai draft dan belum tampil di portal sampai diterbitkan.</p></div><span class="ps16-draft-badge">Draft V{{ draft_settings.version_no }}</span></div>
+  <div class="ps16-form-grid">
+    <label><span>Nama TPQ *</span><input type="text" name="tpq_name" value="{{ draft_settings.tpq_name }}" maxlength="160" required></label>
+    <label><span>Nama Yayasan</span><input type="text" name="foundation_name" value="{{ draft_settings.foundation_name }}" maxlength="180"></label>
+    <label class="ps16-span-2"><span>Alamat TPQ</span><textarea name="address" rows="3" maxlength="1000">{{ draft_settings.address }}</textarea></label>
+    <label><span>Nomor Telepon</span><input type="text" name="phone" value="{{ draft_settings.phone }}" maxlength="40" inputmode="tel"></label>
+    <label><span>Nomor WhatsApp</span><input type="text" name="whatsapp" value="{{ draft_settings.whatsapp }}" maxlength="40" inputmode="tel" placeholder="0812... atau 62812..."><small>Otomatis dinormalisasi ke format 62.</small></label>
+    <label><span>Email</span><input type="email" name="email" value="{{ draft_settings.email }}" maxlength="160"></label>
+    <label><span>Nama Kepala TPQ</span><input type="text" name="principal_name" value="{{ draft_settings.principal_name }}" maxlength="180"></label>
+    <label class="ps16-span-2"><span>Deskripsi Singkat</span><input type="text" name="short_description" value="{{ draft_settings.short_description }}" maxlength="240"></label>
+  </div>
+  <div class="ps16-form-actions"><a class="ps16-btn ps16-btn-secondary" href="{{ url_for('portal_settings_v16a') }}">Batal</a><button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card" method="post" enctype="multipart/form-data" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Aset Portal</h3><p>Unggah aset resmi. Jika file bermasalah atau dikosongkan, portal memakai aset lama sebagai fallback.</p></div><span class="ps16-draft-badge">Draft V{{ draft_settings.version_no }}</span></div>
+  <div class="ps16-assets-grid">
+    <article class="ps16-asset-card"><div class="ps16-asset-preview ps16-logo-preview"><img src="{{ draft_logo_url }}" alt="Preview logo" data-image-preview="logo"></div><h4>Logo Portal</h4><p>PNG, JPG, JPEG, atau WEBP. Maksimal 5 MB.</p><input type="file" name="logo" accept=".png,.jpg,.jpeg,.webp" data-image-input="logo"><label class="ps16-check"><input type="checkbox" name="reset_logo" value="1"> Gunakan logo bawaan</label></article>
+    <article class="ps16-asset-card"><div class="ps16-asset-preview ps16-favicon-preview"><img src="{{ draft_favicon_url }}" alt="Preview favicon" data-image-preview="favicon"></div><h4>Favicon</h4><p>PNG atau ICO. Maksimal 5 MB.</p><input type="file" name="favicon" accept=".png,.ico" data-image-input="favicon"><label class="ps16-check"><input type="checkbox" name="reset_favicon" value="1"> Gunakan favicon bawaan</label></article>
+    <article class="ps16-asset-card ps16-asset-wide"><div class="ps16-asset-preview ps16-letterhead-preview"><img src="{{ draft_letterhead_url }}" alt="Preview kop resmi" data-image-preview="letterhead"></div><h4>Kop Resmi</h4><p>PNG, JPG, JPEG, atau WEBP. Maksimal 8 MB. Integrasi ke tiap dokumen dilakukan bertahap agar desain lama tidak berubah mendadak.</p><input type="file" name="letterhead" accept=".png,.jpg,.jpeg,.webp" data-image-input="letterhead"><label class="ps16-check"><input type="checkbox" name="reset_letterhead" value="1"> Gunakan kop bawaan</label></article>
+  </div>
+  <div class="ps16-form-actions"><a class="ps16-btn ps16-btn-secondary" href="{{ url_for('portal_settings_v16a') }}">Batal</a><button class="ps16-btn ps16-btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button></div>
+</form>
+{% endblock %}

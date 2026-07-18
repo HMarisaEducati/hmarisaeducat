@@ -1,0 +1,11 @@
+<section class="er10-student-head">
+  <div>
+    <span class="er10-eyebrow">E-Raport · {{ raport.academic_year }} · {{ raport.semester }}</span>
+    <h1>{{ student.name }}</h1>
+    <p>NIS {{ student.nis }} · {{ student.class_name }} · Status {{ 'Diterbitkan' if raport.status == 'Diterbitkan' else 'Draft' }}</p>
+  </div>
+  <div class="er10-progress-card">
+    <strong>{{ raport.completeness }}%</strong>
+    <span>Kelengkapan</span>
+  </div>
+</section>

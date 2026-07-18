@@ -1,0 +1,8 @@
+<div class="pc17-public-fields">{% for field in fields %}<label class="pc17-public-field {{ 'span-2' if field.type in ['textarea','file'] else '' }}"><span>{{ field.label }}{% if field.required %} <b>*</b>{% endif %}</span>{% if field.help %}<small>{{ field.help }}</small>{% endif %}
+{% if field.type=='textarea' %}<textarea name="{{ field.name }}" rows="4" {% if field.required %}required{% endif %}>{{ values.get(field.name,'') }}</textarea>
+{% elif field.type in ['select','class'] %}<select name="{{ field.name }}" {% if field.required %}required{% endif %}><option value="">Pilih</option>{% set opts=classes if field.type=='class' else field.options %}{% for opt in opts %}<option value="{{ opt }}" {% if values.get(field.name)==opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}</select>
+{% elif field.type in ['radio','checkbox'] %}<div class="pc17-choice-list">{% for opt in field.options %}<label><input type="{{ field.type }}" name="{{ field.name }}" value="{{ opt }}" {% if opt in values.get(field.name,[]) or values.get(field.name)==opt %}checked{% endif %}> {{ opt }}</label>{% endfor %}</div>
+{% elif field.type=='consent' %}<label class="pc17-consent"><input type="checkbox" name="{{ field.name }}" value="Ya" {% if field.required %}required{% endif %}> {{ field.label }}</label>
+{% elif field.type=='file' %}<input type="file" name="{{ field.name }}" {% if field.required %}required{% endif %}>
+{% else %}<input type="{{ 'tel' if field.type=='phone' else field.type }}" name="{{ field.name }}" value="{{ values.get(field.name,'') }}" {% if field.required %}required{% endif %}>{% endif %}
+{% if errors.get(field.name) %}<em class="pc17-error">{{ errors[field.name] }}</em>{% endif %}</label>{% endfor %}</div>

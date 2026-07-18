@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar %}
+{% block title %}{{ parent.label }} — Portal TPQ HMarisa{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v=1">
+{% endblock %}
+{% block content %}
+
+{{ page_toolbar(
+  title=parent.label,
+  subtitle='Pilih bagian yang ingin Anda kelola'
+) }}
+
+{% if children %}
+<div class="cms-hub-grid">
+  {% for child in children %}
+  {% set child_url = child.url if child.url else (url_for(child.endpoint) if child.endpoint else '#') %}
+  <a href="{{ child_url }}" class="cms-hub-card">
+    <div class="cms-hub-card-icon" style="background:linear-gradient(135deg,#075f46,#10b981)">
+      <i class="fa-solid {{ child.icon }}"></i>
+    </div>
+    <div>
+      <div class="cms-hub-card-label">{{ child.label }}</div>
+      <div class="cms-hub-card-sub">Kelola data {{ child.label }}</div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:3rem;color:var(--text-secondary)">
+  <i class="fa-solid fa-list-check" style="font-size:2rem;margin-bottom:1rem;display:block"></i>
+  <p>Belum ada sub-menu yang terdaftar di bagian ini.</p>
+</div>
+{% endif %}
+{% endblock %}

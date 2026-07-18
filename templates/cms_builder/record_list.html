@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar, page_tabs, search_bar, pagination, confirm_modal, upload_modal, import_modal, empty_state, row_actions, badge %}
+{% block title %}{{ module.name }} — Portal TPQ HMarisa{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v=1">
+{% endblock %}
+{% block content %}
+
+{# ── Page-Level Tabs (submenu sebagai tab halaman, bukan dropdown sidebar) ── #}
+{% if sibling_tabs and sibling_tabs|length > 1 %}
+{{ page_tabs(sibling_tabs, active_url=request.path) }}
+{% endif %}
+
+{# ── Toolbar ─────────────────────────────────────────────────────────────── #}
+{% set toolbar_actions = [] %}
+{% if module.has_feature('add') %}
+  {% set _ = toolbar_actions.append({"label": "Tambah", "url": url_for('cms_record_add', slug=module.slug), "icon": "fa-plus", "class": "btn-primary"}) %}
+{% endif %}
+{% if module.has_feature('import') %}
+  {% set _ = toolbar_actions.append({"label": "Import", "modal": "modal-import", "icon": "fa-file-import", "class": "btn-outline"}) %}
+{% endif %}
+{% if module.has_feature('template') %}
+  {% set _ = toolbar_actions.append({"label": "Template", "url": url_for('cms_module_template', slug=module.slug), "icon": "fa-file-arrow-down", "class": "btn-outline"}) %}
+{% endif %}
+{% if module.has_feature('export') %}
+  {% set _ = toolbar_actions.append({"label": "Excel", "url": url_for('cms_module_export_xlsx', slug=module.slug), "icon": "fa-file-excel", "class": "btn-outline"}) %}
+  {% set _ = toolbar_actions.append({"label": "CSV", "url": url_for('cms_module_export_csv', slug=module.slug), "icon": "fa-file-csv", "class": "btn-outline"}) %}
+{% endif %}
+{% if module.has_feature('print') %}
+  {% set _ = toolbar_actions.append({"label": "Cetak", "url": "#", "icon": "fa-print", "class": "btn-outline"}) %}
+{% endif %}
+{% set _ = toolbar_actions.append({"label": "Refresh", "url": request.path, "icon": "fa-rotate-right", "class": "btn-outline"}) %}
+
+{{ page_toolbar(
+  title=module.name,
+  subtitle=(module.description or ('Total: ' + total|string + ' data')),
+  actions=toolbar_actions
+) }}
+
+{# ── Search ──────────────────────────────────────────────────────────────── #}
+{% if module.has_feature('search') %}
+{{ search_bar(placeholder='Cari data ' + module.name + '...', value=q) }}
+{% endif %}
+
+{# ── Table ───────────────────────────────────────────────────────────────── #}
+{% if records %}
+<div class="cmp-data-table-wrap">
+  <table class="cmp-data-table">
+    <thead>
+      <tr>
+        <th style="width:48px">#</th>
+        {% for field in fields %}
+        <th>{{ field.label }}</th>
+        {% endfor %}
+        <th style="width:40px">Tgl</th>
+        {% if module.has_feature('edit') or module.has_feature('delete') %}
+        <th style="width:90px;text-align:center">Aksi</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% set offset = (page-1) * 20 %}
+      {% for rec in records %}
+      {% set d = rec.data_dict() %}
+      <tr>
+        <td style="color:var(--text-secondary);font-size:.75rem">{{ offset + loop.index }}</td>
+        {% for field in fields %}
+        <td>
+          {% set val = d.get(field.name, '') %}
+          {% if field.field_type == 'boolean' %}
+            {{ badge('Ya', 'green') if val in ('1','true','True','ya','Ya') else badge('Tidak', 'gray') }}
+          {% elif field.field_type == 'date' and val %}
+            {{ val }}
+          {% elif field.field_type == 'select' and val %}
+            <span class="cmp-badge cmp-badge-blue">{{ val }}</span>
+          {% elif val|length > 80 %}
+            <span title="{{ val }}">{{ val[:80] }}…</span>
+          {% else %}
+            {{ val or '—' }}
+          {% endif %}
+        </td>
+        {% endfor %}
+        <td style="font-size:.72rem;color:var(--text-secondary);white-space:nowrap">
+          {{ rec.created_at.strftime('%d/%m/%y') if rec.created_at else '—' }}
+        </td>
+        {% if module.has_feature('edit') or module.has_feature('delete') %}
+        <td>
+          {{ row_actions(
+            edit_url=(url_for('cms_record_edit', slug=module.slug, record_id=rec.id) if module.has_feature('edit') else ''),
+            delete_url=(url_for('cms_record_delete', slug=module.slug, record_id=rec.id) if module.has_feature('delete') else ''),
+            delete_confirm='Hapus data ini dari ' + module.name + '?'
+          ) }}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# Pagination #}
+{% if module.has_feature('pagination') %}
+{{ pagination(page, total_pages, base_url=url_for('cms_module_list', slug=module.slug), q=q) }}
+{% endif %}
+
+<div style="margin-top:.75rem;font-size:.75rem;color:var(--text-secondary)">
+  Menampilkan {{ records|length }} dari {{ total }} data
+  {% if q %} · Hasil pencarian: "{{ q }}"{% endif %}
+</div>
+
+{% else %}
+{{ empty_state(
+  icon=module.icon,
+  title='Belum ada data di ' + module.name,
+  message='Mulai tambahkan data atau import dari file Excel/CSV.',
+  action_url=(url_for('cms_record_add', slug=module.slug) if module.has_feature('add') else ''),
+  action_label='Tambah Data Pertama'
+) }}
+{% endif %}
+
+{# ── Modals ──────────────────────────────────────────────────────────────── #}
+{% if module.has_feature('import') %}
+{{ import_modal(
+  id='modal-import',
+  title='Import Data ' + module.name,
+  template_url=(url_for('cms_module_template', slug=module.slug) if module.has_feature('template') else ''),
+  form_action=url_for('cms_module_import', slug=module.slug),
+  accept='.xlsx,.csv',
+  columns=[f.label for f in fields]
+) }}
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+{% endblock %}

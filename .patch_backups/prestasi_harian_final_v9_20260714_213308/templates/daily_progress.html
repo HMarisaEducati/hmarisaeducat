@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Prestasi Harian{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Admin · Perkembangan Santri</span>
+    <h1>Prestasi Harian & Mutabaah Santri</h1>
+    <p>Pilih kelas terlebih dahulu. Database santri baru ditampilkan sesuai kelas yang dipilih.</p>
+  </div>
+</div>
+
+<section class="card progress-filter-card">
+  <form method="get" class="search-filter-form three-search-columns" id="progress-filter">
+    <label>Kelas
+      <select name="class_name" id="progress-class" required>
+        <option value="">-- Pilih Kelas --</option>
+        {% for c in CLASSES %}<option value="{{ c }}" {% if class_filter == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Nama Santri
+      <select name="student_id" id="progress-student" {% if not class_selected %}disabled{% endif %}>
+        <option value="">Semua Santri dalam Kelas</option>
+      </select>
+    </label>
+    <label>Status
+      <select name="status" id="progress-status">
+        <option value="Aktif" {% if status_filter == 'Aktif' %}selected{% endif %}>Aktif</option>
+        <option value="Nonaktif" {% if status_filter == 'Nonaktif' %}selected{% endif %}>Nonaktif</option>
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+    <a class="btn btn-outline" href="{{ url_for('daily_progress') }}">Reset</a>
+  </form>
+</section>
+
+{% if class_selected %}
+<section class="card progress-results-card">
+  <div class="card-head">
+    <div><h2>Santri Kelas {{ class_filter }}</h2><p class="muted">Hanya database sesuai kelas dan status yang dipilih.</p></div>
+    <span class="result-count">{{ total_matches }} data ditemukan</span>
+  </div>
+  <div class="student-card-list compact-list">
+    {% for student in students %}
+    <article class="student-result-card progress-student-card">
+      <div class="student-primary-info">
+        <span class="student-initial">{{ student.name[:1]|upper }}</span>
+        <div><h3>{{ student.name }}</h3><p>NIS {{ student.nis }} · <span class="badge">{{ student.class_name }}</span> · {{ 'Aktif' if student.is_active else 'Nonaktif' }}</p></div>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('academics', student_id=student.id) }}"><i class="fa-solid fa-book-open-reader"></i> Kelola Mutabaah</a>
+    </article>
+    {% else %}
+    <div class="progress-empty-state"><i class="fa-solid fa-user-slash"></i><strong>Belum ada santri sesuai filter</strong><p>Ubah status atau pilih nama santri lain.</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<section class="card progress-welcome-state">
+  <span class="welcome-icon"><i class="fa-solid fa-people-group"></i></span>
+  <div><h2>Pilih kelas untuk menampilkan santri</h2><p>Daftar database tidak ditampilkan sebelum kelas dipilih agar halaman lebih ringkas dan pencarian lebih tepat.</p></div>
+</section>
+{% endif %}
+
+<script type="application/json" id="progress-student-data">{{ students_by_class|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById('progress-student-data').textContent || '{}');
+  const form = document.getElementById('progress-filter');
+  const classSelect = document.getElementById('progress-class');
+  const studentSelect = document.getElementById('progress-student');
+  const statusSelect = document.getElementById('progress-status');
+  const selected = {{ student_id|default(0)|tojson }};
+
+  function fillStudents() {
+    const statusActive = statusSelect.value === 'Aktif';
+    const rows = (data[classSelect.value] || []).filter(row => Boolean(row.is_active) === statusActive);
+    studentSelect.disabled = !classSelect.value;
+    studentSelect.innerHTML = '<option value="">Semua Santri dalam Kelas</option>' + rows.map(row =>
+      `<option value="${row.id}">${row.name} — ${row.nis}</option>`
+    ).join('');
+    if (selected) studentSelect.value = String(selected);
+  }
+
+  classSelect.addEventListener('change', () => {
+    fillStudents();
+    if (classSelect.value) {
+      studentSelect.value = '';
+      form.submit();
+    } else {
+      window.location.href = {{ url_for('daily_progress')|tojson }};
+    }
+  });
+  statusSelect.addEventListener('change', fillStudents);
+  fillStudents();
+})();
+</script>
+{% endblock %}

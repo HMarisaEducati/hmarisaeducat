@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page">
+  <div class="finance-page-heading"><div><span class="eyebrow">Admin · Administrasi Iuran</span><h1>{{ page_title }}</h1><p>Bagian dari Sistem Keuangan terpadu.</p></div></div>
+  {% include "finance_v15b/_tabs.html" %}
+  <section class="finance-panel"><div class="finance-empty"><i class="fa-solid fa-layer-group"></i><strong>{{ page_title }}</strong><span>{{ message }}</span><a class="btn btn-primary" href="{{ url_for('finance_summary') }}">Kembali ke Ringkasan</a></div></section>
+</div>
+{% endblock %}

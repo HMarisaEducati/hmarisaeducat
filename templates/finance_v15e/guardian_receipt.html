@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Bukti {{ payment.transaction_number }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_administration_v15b2.css') }}?v=20260715-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15e.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15e-page">
+  <div class="page-heading"><div><span class="eyebrow">Preview sebelum download</span><h1>Bukti Pembayaran</h1><p>Periksa informasi transaksi sebelum mengunduh PDF.</p></div><div class="button-row"><a class="btn btn-outline" href="{{ url_for('guardian_finance_v15e', student_id=student.id) }}">Kembali</a><a class="btn btn-primary" href="{{ url_for('guardian_finance_receipt_pdf_v15e', student_id=student.id, payment_id=payment.id) }}"><i class="fa-solid fa-file-pdf"></i> Download PDF</a></div></div>
+  <article class="finance-receipt-preview">
+    <header><div><h2>{{ snapshot.tpq_name or 'TPQ HMarisa' }}</h2><p>{{ snapshot.tpq_address or '' }}</p></div><div><span>BUKTI PEMBAYARAN</span><strong>{{ payment.transaction_number }}</strong></div></header>
+    {% if payment.is_cancelled %}<div class="finance-cancelled-stamp">TRANSAKSI DIBATALKAN</div>{% endif %}
+    <dl><div><dt>Nama Santri</dt><dd>{{ student.name }}</dd></div><div><dt>Kelas</dt><dd>{{ student.class_name }}</dd></div><div><dt>Orang Tua/Wali</dt><dd>{{ student.guardian_name or snapshot.guardian_name }}</dd></div><div><dt>Jenis Tagihan</dt><dd>{{ charge_type.name if charge_type else snapshot.charge_type }}</dd></div><div><dt>Periode</dt><dd>{{ bill.period_label }} {{ bill.period_year }}</dd></div><div><dt>Nominal Tagihan</dt><dd>{{ bill.amount|rupiah }}</dd></div><div><dt>Nominal Dibayar</dt><dd><strong>{{ payment.amount|rupiah }}</strong></dd></div><div><dt>Total Dibayar</dt><dd>{{ bill.paid_amount|rupiah }}</dd></div><div><dt>Sisa Tagihan</dt><dd>{{ bill.remaining_amount|rupiah }}</dd></div><div><dt>Status</dt><dd><span class="finance-status status-{{ bill.status|lower|replace(' ', '-') }}">{{ bill.status }}</span></dd></div><div><dt>Tanggal</dt><dd>{{ payment.payment_date.strftime('%d/%m/%Y') }}</dd></div><div><dt>Metode</dt><dd>{{ payment.method }}</dd></div><div><dt>Admin/Penerima</dt><dd>{{ payment.receiver_name }}</dd></div><div><dt>Catatan</dt><dd>{{ payment.notes or 'Belum diisi' }}</dd></div></dl>
+    <footer><p>{{ snapshot.footer_note or 'Dokumen ini dibuat melalui Portal TPQ HMarisa.' }}</p>{% if snapshot.treasurer_name %}<div><span>{{ snapshot.treasurer_position or 'Bendahara TPQ' }}</span><strong>{{ snapshot.treasurer_name }}</strong></div>{% endif %}</footer>
+  </article>
+</div>
+{% endblock %}

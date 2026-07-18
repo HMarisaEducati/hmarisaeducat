@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar, empty_state, badge %}
+{% block title %}CMS Builder — Portal TPQ HMarisa{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v=1">
+{% endblock %}
+{% block content %}
+
+{{ page_toolbar(
+  title="CMS Builder",
+  subtitle="Buat dan kelola modul data baru tanpa menulis kode",
+  actions=[
+    {"label": "Buat Modul Baru", "url": url_for('cms_builder_new'), "icon": "fa-plus", "class": "btn-primary"}
+  ]
+) }}
+
+{% if modules %}
+<div class="cms-module-grid">
+  {% for m in modules %}
+  {% set feat = m.features_dict() %}
+  <div class="cms-module-card" style="position:relative">
+
+    {% if not m.is_active %}
+    <div style="position:absolute;top:10px;right:10px">
+      {{ badge("Nonaktif", "gray") }}
+    </div>
+    {% endif %}
+
+    <div class="cms-module-card-header">
+      <div class="cms-module-icon" style="background:{{ m.gradient() }}">
+        <i class="fa-solid {{ m.icon }}"></i>
+      </div>
+      <div>
+        <div class="cms-module-name">{{ m.name }}</div>
+        <div class="cms-module-desc">{{ m.description or 'Modul data kustom' }}</div>
+      </div>
+    </div>
+
+    <div class="cms-module-meta">
+      {% for key, label, icon in all_features %}
+      {% if feat.get(key) %}
+      <span class="cms-feature-pill">
+        <i class="fa-solid {{ icon }}"></i> {{ label }}
+      </span>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:.75rem;font-size:.75rem;color:var(--text-secondary)">
+      <i class="fa-solid fa-database"></i>
+      {{ m.fields_rel|length }} kolom ·
+      <span id="count-{{ m.id }}">—</span> data ·
+      Role: {{ m.role_access }}
+    </div>
+
+    <div class="cms-module-actions">
+      <a href="{{ url_for('cms_module_list', slug=m.slug) }}" class="btn btn-primary" style="flex:1;text-align:center">
+        <i class="fa-solid fa-eye"></i> Buka
+      </a>
+      <a href="{{ url_for('cms_builder_edit', module_id=m.id) }}" class="btn btn-outline">
+        <i class="fa-solid fa-pen"></i> Edit
+      </a>
+      <form method="post" action="{{ url_for('cms_builder_toggle', module_id=m.id) }}" style="display:inline">
+        <button type="submit" class="btn btn-outline" title="{{ 'Nonaktifkan' if m.is_active else 'Aktifkan' }}">
+          <i class="fa-solid {{ 'fa-eye-slash' if m.is_active else 'fa-eye' }}"></i>
+        </button>
+      </form>
+      <form method="post" action="{{ url_for('cms_builder_delete', module_id=m.id) }}"
+            onsubmit="return confirm('Hapus modul {{ m.name }}? Semua data di dalamnya ikut terhapus.')"
+            style="display:inline">
+        <input type="hidden" name="force" value="1">
+        <button type="submit" class="btn btn-outline" style="color:#dc2626;border-color:#fecaca">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+{{ empty_state(
+  icon='fa-cube',
+  title='Belum ada modul',
+  message='Buat modul data pertama Anda — pilih nama, ikon, kolom, dan fitur yang dibutuhkan.',
+  action_url=url_for('cms_builder_new'),
+  action_label='Buat Modul Pertama'
+) }}
+{% endif %}
+
+<script>
+// Load record counts per module
+document.addEventListener('DOMContentLoaded', function() {
+  {% for m in modules %}
+  fetch('/m/{{ m.slug }}?_count=1', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .catch(function(){});
+  {% endfor %}
+});
+</script>
+{% endblock %}

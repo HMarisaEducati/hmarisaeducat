@@ -1,0 +1,31 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}Pusat Kendali Portal{% endblock %}
+{% block pc17_subtitle %}Akses luas untuk mengelola Portal Admin dan Portal Wali melalui komponen yang aman.{% endblock %}
+{% block pc17_content %}
+<div class="pc17-stat-grid">
+  <a href="{{ url_for('portal_control_pages_v17') }}"><i class="fa-solid fa-file-lines"></i><strong>{{ counts.pages }}</strong><span>Halaman</span></a>
+  <a href="{{ url_for('portal_control_forms_v17') }}"><i class="fa-solid fa-clipboard-list"></i><strong>{{ counts.forms }}</strong><span>Formulir</span></a>
+  <a href="{{ url_for('portal_control_submissions_v17') }}"><i class="fa-solid fa-inbox"></i><strong>{{ counts.submissions }}</strong><span>Data Masuk</span><small>{{ counts.waiting }} menunggu verifikasi</small></a>
+  <a href="{{ url_for('portal_control_content_v17') }}"><i class="fa-solid fa-bullhorn"></i><strong>{{ counts.contents }}</strong><span>Konten</span></a>
+  <a href="{{ url_for('portal_control_media_v17') }}"><i class="fa-solid fa-photo-film"></i><strong>{{ counts.media }}</strong><span>Media</span></a>
+</div>
+<div class="pc17-grid-2">
+  <section class="card pc17-card">
+    <div class="card-head"><div><h2>Mulai dari sini</h2><p class="muted">Pilih kebutuhan tanpa menyentuh PythonAnywhere.</p></div></div>
+    <div class="pc17-action-list">
+      <a href="{{ url_for('portal_control_page_edit_v17') }}"><i class="fa-solid fa-plus"></i><span><strong>Buat halaman baru</strong><small>Banner, teks, tombol, gambar, kartu, dan formulir.</small></span></a>
+      <a href="{{ url_for('portal_control_forms_v17') }}"><i class="fa-solid fa-user-plus"></i><span><strong>Buat Form Pendaftaran Santri</strong><small>Gunakan preset siap pakai lalu sesuaikan kolom.</small></span></a>
+      <a href="{{ url_for('portal_control_content_edit_v17') }}"><i class="fa-solid fa-award"></i><span><strong>Kelola Santri Terbaik Bulanan</strong><small>Nama, kelas, periode, pesan, dan nomor WhatsApp.</small></span></a>
+      <a href="{{ url_for('portal_control_contacts_v17') }}"><i class="fa-brands fa-whatsapp"></i><span><strong>Ganti nomor WA atau rekening</strong><small>Menggunakan data Keuangan V15 yang sama, tidak digandakan.</small></span></a>
+    </div>
+  </section>
+  <section class="card pc17-card">
+    <div class="card-head"><h2>Riwayat terbaru</h2><a href="{{ url_for('portal_control_history_v17') }}">Lihat semua</a></div>
+    <div class="pc17-timeline">
+      {% for row in recent %}<article><i class="fa-solid fa-circle-check"></i><div><strong>{{ row.action }}</strong><span>{{ row.user_name }} · {{ row.created_at.strftime('%d/%m/%Y %H:%M') }}</span></div></article>{% else %}<p class="empty">Belum ada aktivitas V17.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+<section class="card pc17-card"><div class="card-head"><div><h2>Tema & Desain Portal</h2><p class="muted">Editor V16 tetap digunakan sebagai bagian dari Pusat Kendali.</p></div></div><div class="pc17-theme-links"><a href="{{ url_for('portal_settings_admin_theme_v16') }}"><i class="fa-solid fa-desktop"></i><span><strong>Tampilan Portal Admin</strong><small>Warna, font, kartu, sidebar, dan header.</small></span></a><a href="{{ url_for('portal_settings_guardian_theme_v16') }}"><i class="fa-solid fa-mobile-screen"></i><span><strong>Tampilan Portal Wali</strong><small>Tema, banner, sambutan, dan tampilan wali.</small></span></a><a href="{{ url_for('portal_settings_navigation_v16') }}"><i class="fa-solid fa-bars"></i><span><strong>Menu Inti & Navigasi</strong><small>Nama, ikon, urutan, dan visibilitas menu resmi.</small></span></a><a href="{{ url_for('portal_settings_eraport_design_v16') }}"><i class="fa-solid fa-file-pen"></i><span><strong>Desain E-Raport</strong><small>Preset, warna, judul, dan elemen aman.</small></span></a><a href="{{ url_for('portal_settings_achievement_design_v16') }}"><i class="fa-solid fa-award"></i><span><strong>Desain Prestasi Bulanan</strong><small>Template, warna, dan latar penghargaan.</small></span></a><a href="{{ url_for('portal_settings_profile_v16a') }}"><i class="fa-solid fa-building"></i><span><strong>Profil & Identitas TPQ</strong><small>Nama, alamat, logo, kontak, dan tahun ajaran.</small></span></a></div></section>
+<div class="pc17-note"><i class="fa-solid fa-lock"></i><div><strong>Akses penuh yang aman</strong><p>Admin dapat membuat halaman, formulir, konten, menu, workflow preset, mengubah WA dan rekening. Python, SQL, Bash, HTML/JS/CSS bebas, route inti, login, dan rumus data tetap dikunci agar portal tidak crash.</p></div></div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar, alert %}
+{% block title %}{{ 'Edit' if mode=='edit' else 'Tambah' }} Data — {{ module.name }}{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v=1">
+{% endblock %}
+{% block content %}
+
+{{ page_toolbar(
+  title=('Edit Data' if mode=='edit' else 'Tambah Data Baru'),
+  subtitle=module.name,
+  back_url=url_for('cms_module_list', slug=module.slug),
+  back_label='Kembali ke ' + module.name
+) }}
+
+<div class="cms-record-form">
+  <div style="background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:1.5rem">
+
+    <form method="post">
+      {% for field in fields %}
+      <div class="cms-form-group">
+        <label class="cms-form-label">
+          {{ field.label }}
+          {% if field.required %}<span class="req">*</span>{% endif %}
+        </label>
+
+        {% set val = form_data.get(field.name, '') %}
+        {% set err = errors.get(field.name, '') %}
+
+        {% if field.field_type == 'textarea' %}
+          <textarea name="{{ field.name }}"
+                    class="cms-form-control {% if err %}border-danger{% endif %}"
+                    placeholder="{{ field.placeholder or field.label }}"
+                    {% if field.required %}required{% endif %}
+                    rows="4">{{ val }}</textarea>
+
+        {% elif field.field_type == 'select' %}
+          <select name="{{ field.name }}" class="cms-form-control {% if err %}border-danger{% endif %}"
+                  {% if field.required %}required{% endif %}>
+            <option value="">— Pilih {{ field.label }} —</option>
+            {% for opt in field.options_list() %}
+            <option value="{{ opt }}" {% if val == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+
+        {% elif field.field_type == 'boolean' %}
+          <div style="display:flex;gap:1rem;margin-top:.25rem">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.88rem">
+              <input type="radio" name="{{ field.name }}" value="Ya" {% if val == 'Ya' %}checked{% endif %}> Ya
+            </label>
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.88rem">
+              <input type="radio" name="{{ field.name }}" value="Tidak" {% if val != 'Ya' %}checked{% endif %}> Tidak
+            </label>
+          </div>
+
+        {% elif field.field_type == 'date' %}
+          <input type="date" name="{{ field.name }}" value="{{ val }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+
+        {% elif field.field_type == 'datetime' %}
+          <input type="datetime-local" name="{{ field.name }}" value="{{ val }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+
+        {% elif field.field_type == 'number' %}
+          <input type="number" name="{{ field.name }}" value="{{ val }}"
+                 placeholder="{{ field.placeholder or '0' }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+
+        {% elif field.field_type == 'email' %}
+          <input type="email" name="{{ field.name }}" value="{{ val }}"
+                 placeholder="{{ field.placeholder or 'nama@email.com' }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+
+        {% elif field.field_type == 'phone' %}
+          <input type="tel" name="{{ field.name }}" value="{{ val }}"
+                 placeholder="{{ field.placeholder or '08xxxxxxxxxx' }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+
+        {% elif field.field_type == 'file' %}
+          {% if val %}
+          <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:.35rem">
+            <i class="fa-solid fa-file-check"></i> File saat ini: {{ val }}
+          </div>
+          {% endif %}
+          <input type="file" name="{{ field.name }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required and not val %}required{% endif %}>
+
+        {% else %}
+          <input type="text" name="{{ field.name }}" value="{{ val }}"
+                 placeholder="{{ field.placeholder or field.label }}"
+                 class="cms-form-control {% if err %}border-danger{% endif %}"
+                 {% if field.required %}required{% endif %}>
+        {% endif %}
+
+        {% if err %}
+        <div style="font-size:.75rem;color:#dc2626;margin-top:.25rem">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ err }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if not fields %}
+      {{ alert('Modul ini belum memiliki kolom. Edit modul di CMS Builder untuk menambahkan kolom.', type='warning') }}
+      {% endif %}
+
+      <div style="display:flex;gap:.75rem;padding-top:1rem;border-top:1px solid var(--border-color,#e2e8f0);margin-top:1rem">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i>
+          {{ 'Simpan Perubahan' if mode=='edit' else 'Simpan Data' }}
+        </button>
+        <a href="{{ url_for('cms_module_list', slug=module.slug) }}" class="btn btn-outline">
+          Batal
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

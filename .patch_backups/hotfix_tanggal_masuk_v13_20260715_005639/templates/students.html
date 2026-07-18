@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Database Santri{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/students_patch.css') }}">
+
+<div class="page-heading students-page-heading">
+  <div>
+    <span class="eyebrow">Admin · Data Santri</span>
+    <h1>Database Santri</h1>
+    <p>Tambah, cari, edit, arsipkan, impor, dan ekspor data santri dalam satu halaman yang ringkas.</p>
+  </div>
+  <a class="btn btn-outline" href="{{ url_for('data_master') }}"><i class="fa-solid fa-sliders"></i> Kelola Kelas</a>
+</div>
+
+<nav class="student-page-tabs" aria-label="Menu Database Santri">
+  <a class="{{ 'active' if active_tab == 'add' else '' }}" href="{{ url_for('students', tab='add') }}"><i class="fa-solid fa-user-plus"></i> Tambah Santri</a>
+  <a class="{{ 'active' if active_tab == 'database' else '' }}" href="{{ url_for('students', tab='database') }}"><i class="fa-solid fa-database"></i> Database Santri</a>
+</nav>
+
+{% if active_tab == 'add' %}
+<section class="card student-add-focus">
+  <div class="card-head"><div><h2>Tambah Santri Baru</h2><p class="muted">Isi data utama santri. NIS boleh dikosongkan agar dibuat otomatis.</p></div></div>
+  <form method="post" action="{{ url_for('students', tab='add') }}" class="form-grid form-grid-3">
+    <label>Nama Lengkap<input id="student-name" name="name" required></label>
+    <div class="public-name-safe-field">
+      <label>Nama Tampilan Publik
+        <input id="student-public-name" name="public_name" placeholder="Otomatis mengikuti Nama Lengkap" readonly aria-readonly="true">
+      </label>
+      <label class="check-line public-name-toggle"><input id="custom-public-name-toggle" type="checkbox"> Gunakan nama tampilan berbeda</label>
+      <small class="form-help"><i class="fa-solid fa-lock"></i> Terkunci dan otomatis mengikuti Nama Lengkap.</small>
+    </div>
+    <label>NIS<input name="nis" placeholder="Kosongkan untuk otomatis"></label>
+    <label>Kelas<select name="class_name" required><option value="">Pilih kelas</option>{% for c in CLASSES %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select></label>
+    <label>Nama Wali<input name="guardian_name"></label>
+    <label>Nomor Kontak Wali<input name="guardian_phone" inputmode="tel"></label>
+    <label>Tanggal Masuk<input type="date" name="joined_date" value="{{ current_date }}"></label>
+    <div class="form-action"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Simpan Santri</button></div>
+  </form>
+</section>
+{% else %}
+<section class="card student-tools-card">
+  <div class="student-data-tools">
+    <div>
+      <h2>Kelola Data Santri</h2>
+      <p class="muted">Import menggunakan Excel. Export tersedia dalam Excel dan PDF.</p>
+    </div>
+    <div class="student-tool-actions">
+      <a class="btn btn-gold" href="{{ url_for('bulk_students') }}"><i class="fa-solid fa-file-excel"></i> Import Excel</a>
+      <a class="btn btn-outline" href="{{ url_for('document_preview', document_type='students-template') }}"><i class="fa-solid fa-download"></i> Preview Template Excel</a>
+      <a class="btn btn-primary" href="{{ url_for('document_preview', document_type='students-database', class_name=class_filter, status=status_filter, q=q) }}"><i class="fa-solid fa-eye"></i> Preview Export</a>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Cari dan Filter</h2><span class="muted">{{ total_matches }} data ditemukan</span></div>
+  <form method="get" class="search-filter-form four-search-columns" id="student-filter-form">
+    <input type="hidden" name="tab" value="database">
+    <label>Kelas<select name="class_name" id="filter-class"><option value="">Semua Kelas</option>{% for c in CLASSES %}<option value="{{ c }}" {% if class_filter==c %}selected{% endif %}>{{ c }} — {{ class_counts.get(c,0) }} santri</option>{% endfor %}</select></label>
+    <label>Nama Santri<select name="student_id" id="filter-student"><option value="">Semua Santri dalam Kelas</option></select></label>
+    <label>Status<select name="status"><option {% if status_filter=='Aktif' %}selected{% endif %}>Aktif</option><option {% if status_filter=='Nonaktif' %}selected{% endif %}>Nonaktif</option><option {% if status_filter=='Semua Status' %}selected{% endif %}>Semua Status</option></select></label>
+    <label>Kata Kunci<input name="q" value="{{ q }}" placeholder="Nama, NIS, atau wali"></label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Tampilkan</button>
+    <a class="btn btn-outline" href="{{ url_for('students', tab='database') }}">Reset</a>
+  </form>
+</section>
+
+<section class="card student-database-card">
+  <div class="class-summary-chips">{% for c in CLASSES %}<span><strong>{{ c }}</strong> {{ class_counts.get(c,0) }}</span>{% endfor %}</div>
+
+  <div class="student-table-wrap">
+    <table class="student-compact-table">
+      <thead><tr><th>Santri</th><th>NIS</th><th>Kelas</th><th>Wali</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>
+      {% for student in students %}
+        <tr>
+          <td><strong>{{ student.name }}</strong><small>Nama publik: {{ student.public_name or student.nickname or student.name }}</small></td>
+          <td>{{ student.nis }}</td>
+          <td>{{ student.class_name }}</td>
+          <td><span>{{ student.guardian_name or student.guardian.full_name }}</span><small>{{ student.guardian_phone or 'Kontak belum diisi' }}</small></td>
+          <td><span class="status-pill {{ 'active' if student.is_active else 'inactive' }}">{{ 'Aktif' if student.is_active else 'Nonaktif' }}</span></td>
+          <td>
+            <div class="student-inline-actions">
+              <a class="compact-action" href="{{ url_for('student_detail', student_id=student.id) }}" title="Detail"><i class="fa-solid fa-eye"></i><span>Detail</span></a>
+              <a class="compact-action edit" href="{{ url_for('edit_student', student_id=student.id) }}" title="Edit"><i class="fa-solid fa-pen"></i><span>Edit</span></a>
+              <a class="compact-action primary" href="{{ url_for('academics', student_id=student.id, source='students') }}" title="Prestasi Harian"><i class="fa-solid fa-chart-line"></i><span>Prestasi</span></a>
+              <details class="student-more-menu">
+                <summary class="compact-action"><i class="fa-solid fa-ellipsis"></i><span>Lainnya</span></summary>
+                <div class="student-more-panel">
+                  <form method="post" action="{{ url_for('toggle_student', student_id=student.id) }}"><button type="submit"><i class="fa-solid fa-box-archive"></i> {{ 'Nonaktifkan' if student.is_active else 'Aktifkan kembali' }}</button></form>
+                  <details class="delete-inner"><summary><i class="fa-solid fa-trash"></i> Hapus Permanen</summary><form method="post" action="{{ url_for('delete_student', student_id=student.id) }}"><p>Ketik <b>HAPUS PERMANEN</b> untuk melanjutkan.</p><input name="confirmation" required><button class="danger-confirm" type="submit">Ya, Hapus Permanen</button></form></details>
+                </div>
+              </details>
+            </div>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="6" class="empty">Data santri tidak ditemukan.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="student-mobile-list">
+  {% for student in students %}
+    <article class="student-mobile-card">
+      <div class="student-mobile-head"><div><h3>{{ student.name }}</h3><p>NIS {{ student.nis }} • {{ student.class_name }}</p></div><span class="status-pill {{ 'active' if student.is_active else 'inactive' }}">{{ 'Aktif' if student.is_active else 'Nonaktif' }}</span></div>
+      <small>Nama publik: {{ student.public_name or student.nickname or student.name }}<br>Wali: {{ student.guardian_name or student.guardian.full_name }}</small>
+      <div class="student-inline-actions mobile-actions">
+        <a class="compact-action" href="{{ url_for('student_detail', student_id=student.id) }}"><i class="fa-solid fa-eye"></i><span>Detail</span></a>
+        <a class="compact-action edit" href="{{ url_for('edit_student', student_id=student.id) }}"><i class="fa-solid fa-pen"></i><span>Edit</span></a>
+        <a class="compact-action primary" href="{{ url_for('academics', student_id=student.id, source='students') }}"><i class="fa-solid fa-chart-line"></i><span>Prestasi</span></a>
+        <details class="student-more-menu"><summary class="compact-action"><i class="fa-solid fa-ellipsis"></i><span>Lainnya</span></summary><div class="student-more-panel"><form method="post" action="{{ url_for('toggle_student', student_id=student.id) }}"><button type="submit"><i class="fa-solid fa-box-archive"></i> {{ 'Nonaktifkan' if student.is_active else 'Aktifkan kembali' }}</button></form><details class="delete-inner"><summary><i class="fa-solid fa-trash"></i> Hapus Permanen</summary><form method="post" action="{{ url_for('delete_student', student_id=student.id) }}"><input name="confirmation" placeholder="HAPUS PERMANEN" required><button class="danger-confirm" type="submit">Hapus</button></form></details></div></details>
+      </div>
+    </article>
+  {% else %}<p class="empty">Data santri tidak ditemukan.</p>{% endfor %}
+  </div>
+</section>
+
+<script type="application/json" id="students-by-class">{{ students_by_class|tojson }}</script>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if active_tab == 'add' %}<script>
+(() => {
+  const name = document.getElementById('student-name');
+  const publicName = document.getElementById('student-public-name');
+  const toggle = document.getElementById('custom-public-name-toggle');
+  if (!name || !publicName || !toggle) return;
+
+  function syncPublicName() {
+    if (!toggle.checked) publicName.value = name.value;
+  }
+
+  function applyLockState() {
+    publicName.readOnly = !toggle.checked;
+    publicName.setAttribute('aria-readonly', String(!toggle.checked));
+    if (!toggle.checked) {
+      publicName.value = name.value;
+    } else {
+      publicName.focus();
+      publicName.select();
+    }
+  }
+
+  name.addEventListener('input', syncPublicName);
+  toggle.addEventListener('change', applyLockState);
+  syncPublicName();
+  applyLockState();
+})();
+</script>{% endif %}
+{% if active_tab == 'database' %}<script>
+(() => {const data=JSON.parse(document.getElementById('students-by-class').textContent||'{}');const c=document.getElementById('filter-class');const s=document.getElementById('filter-student');const selected={{ selected_id|default(0)|tojson }};function fill(){const rows=data[c.value]||[];s.innerHTML='<option value="">Semua Santri dalam Kelas</option>'+rows.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');if(selected)s.value=String(selected);}c.addEventListener('change',fill);fill();})();
+</script>{% endif %}
+{% endblock %}

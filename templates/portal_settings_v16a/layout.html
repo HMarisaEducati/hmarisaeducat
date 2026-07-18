@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan Portal — {{ portal_identity.tpq_name|default('TPQ HMarisa') }}{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_settings_v16a.css') }}?v=20260715-1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portal_experience_v16.css') }}?v=20260716-1">
+{% endblock %}
+{% block content %}
+<section class="portal-settings-v16a" data-settings-page>
+  <header class="ps16-hero">
+    <div>
+      <span class="ps16-eyebrow"><i class="fa-solid fa-shield-halved"></i> Khusus Admin Utama</span>
+      <h2>Pusat Pengaturan Portal</h2>
+      <p>Perubahan disimpan sebagai draft. Portal aktif hanya berubah setelah Anda memeriksa preview dan menekan <strong>Terbitkan</strong>.</p>
+    </div>
+    <div class="ps16-version-card">
+      <span>Versi aktif</span><strong>V{{ active_settings.version_no }}</strong>
+      <small>Draft V{{ draft_settings.version_no }}</small>
+    </div>
+  </header>
+  {% include "portal_settings_v16a/_tabs.html" %}
+  {% block settings_content %}{% endblock %}
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/portal_settings_v16a.js') }}?v=20260715-1"></script><script src="{{ url_for('static', filename='js/portal_settings_v16_integrated.js') }}?v=20260716-1"></script>{% endblock %}

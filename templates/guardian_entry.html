@@ -1,130 +1,60 @@
 {% extends "base.html" %}
-{% block title %}Portal Wali Santri — TPQ HMarisa{% endblock %}
+{% block title %}Portal Wali Santri — {{ portal_identity.tpq_name|default('TPQ HMarisa') }}{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/guardian_entry.css') }}?v=20260714-1">
+{% endblock %}
 {% block auth_content %}
-<section class="login-layout guardian-entry-layout">
-  <div class="login-showcase">
-    <div class="showcase-brand">
-      <span class="showcase-logo"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa"></span>
-      <span><strong>Portal TPQ HMarisa</strong><small>Pendidikan Al-Qur'an Terintegrasi</small></span>
+<section class="guardian-entry final-entry">
+  <div class="guardian-hero" {% if portal_current_theme.enabled and portal_current_theme.entry_image_url %}data-custom-image="1" style="--pe-custom-image:url('{{ portal_current_theme.entry_image_url }}')"{% endif %}>
+    <div class="guardian-brand-main">
+      <span class="guardian-logo"><img src="{{ portal_identity.logo_url }}" alt="Logo {{ portal_identity.tpq_name }}"></span>
+      <div><span class="eyebrow light">{{ portal_identity.short_description }}</span><h1>{{ portal_identity.tpq_name }}</h1><p>{% if portal_guardian_theme.enabled %}{{ portal_guardian_theme.welcome_text }}{% else %}Akses perkembangan dan dokumen ananda dengan aman.{% endif %}</p></div>
     </div>
-    <div class="showcase-content">
-      <span class="showcase-pill"><i class="fa-solid fa-people-roof"></i> Portal Wali Santri</span>
-      <h1>Pantau perkembangan<br>belajar ananda.</h1>
-      <p>Pilih kelas terlebih dahulu. Daftar nama santri akan muncul otomatis sesuai database kelas yang dipilih.</p>
-      <div class="arabic-quote">رَبِّ زِدْنِي عِلْمًا</div>
-      <small>“Ya Tuhanku, tambahkanlah ilmu kepadaku.”</small>
-    </div>
-    <div class="showcase-pattern">علم</div>
+    {% if daily_hadith %}
+    <article class="daily-hadith-card">
+      <span class="hadith-label">Hadis Harian</span>
+      <p class="hadith-arabic">{{ daily_hadith.arabic }}</p>
+      <p class="hadith-translation">“{{ daily_hadith.translation }}”</p>
+      <small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %}</small>
+    </article>
+    {% endif %}
   </div>
-
-  <div class="login-panel">
-    <div class="login-card guardian-entry-card">
-      <div class="login-mobile-brand">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo TPQ HMarisa">
-        <span><strong>Portal TPQ HMarisa</strong><small>Akses Wali Santri</small></span>
-      </div>
-      <div class="login-heading">
-        <span class="eyebrow">Assalamu'alaikum Ayah/Bunda</span>
-        <h2>Lihat Data Ananda</h2>
-        <p>Pilih kelas, lalu pilih nama ananda yang muncul otomatis dari database santri.</p>
-      </div>
-
-      <form method="post" action="{{ url_for('home') }}" class="form-grid login-form guardian-entry-form" id="guardianEntryForm">
-        <label>Kelas
-          <div class="input-with-icon select-with-icon">
-            <i class="fa-solid fa-school"></i>
-            <select name="class_name" id="guardianClassSelect" required autofocus>
-              <option value="">Pilih kelas santri</option>
-              {% for class_item in CLASSES %}
-                <option value="{{ class_item }}" {% if class_name == class_item %}selected{% endif %}>{{ class_item }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </label>
-
-        <label>Nama Santri
-          <div class="input-with-icon select-with-icon">
-            <i class="fa-regular fa-user"></i>
-            <select name="student_id" id="guardianStudentSelect" required disabled>
-              <option value="">Pilih kelas terlebih dahulu</option>
-            </select>
-          </div>
-          <small class="guardian-select-status" id="guardianStudentStatus">Nama akan muncul otomatis setelah kelas dipilih.</small>
-        </label>
-
-        <button class="btn btn-primary btn-block login-submit" id="guardianSubmitButton" type="submit" disabled>
-          <i class="fa-solid fa-arrow-right-to-bracket"></i> Buka Portal Ananda
-        </button>
+  <div class="guardian-form-side">
+    <div class="guardian-form-card">
+      <span class="eyebrow">Portal Wali Santri</span><h2>{% if portal_guardian_theme.enabled %}{{ portal_guardian_theme.entry_title }}{% else %}Buka Data Ananda{% endif %}</h2><p>{% if portal_guardian_theme.enabled %}{{ portal_guardian_theme.entry_subtitle }}{% else %}Pilih kelas terlebih dahulu, kemudian nama santri akan muncul otomatis.{% endif %}</p>
+      <form method="post" class="form-grid" id="guardian-entry-form">
+        <label>Kelas<select name="class_name" id="guardian-class" required><option value="">-- Pilih Kelas --</option>{% for c in classes or CLASSES %}<option value="{{ c }}" {% if class_name==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label>
+        <label>Nama Santri<select name="student_id" id="guardian-student" required disabled><option value="">Pilih kelas terlebih dahulu</option></select></label>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-folder-open"></i> Buka Data Ananda</button>
       </form>
-
-      <div class="guardian-help-box">
-        <i class="fa-solid fa-circle-info"></i>
-        <span><strong>Nama belum muncul?</strong> Pastikan data ananda sudah terdaftar pada kelas yang benar atau hubungi Admin TPQ HMarisa.</span>
-      </div>
-
-      <div class="admin-entry-divider"><span>khusus pengelola</span></div>
-      <a class="btn btn-admin-login btn-block" href="{{ url_for('admin_login') }}">
-        <i class="fa-solid fa-shield-halved"></i> Login Admin
-      </a>
+      <p class="form-help">Nama santri belum tersedia? Silakan menghubungi Admin {{ portal_identity.tpq_name }}.</p>
+      <section class="weekly-public-card">
+        <h3><i class="fa-solid fa-award"></i> Santri Terbaik Bulan Ini{% if monthly_period_label %} — {{ monthly_period_label }}{% endif %}</h3>
+        {% for c in classes or CLASSES %}
+          {% set winner = monthly_winners.get(c) if monthly_winners else none %}
+          <div class="winner-line"><span>{{ c }}</span><strong>{{ winner.student.public_name or winner.student.nickname or winner.student.name if winner else 'Belum ada hasil penilaian bulan ini' }}</strong></div>
+        {% endfor %}
+      </section>
+      <div class="admin-access"><span>Pengelola TPQ?</span><a href="{{ url_for('admin_login') }}">Login Admin</a></div>
     </div>
   </div>
 </section>
+<script type="application/json" id="guardian-student-data">{{ students_by_class|tojson }}</script>
 {% endblock %}
 {% block scripts %}
 <script>
 (() => {
-  const studentsByClass = {{ students_by_class|tojson }};
-  const classSelect = document.getElementById('guardianClassSelect');
-  const studentSelect = document.getElementById('guardianStudentSelect');
-  const submitButton = document.getElementById('guardianSubmitButton');
-  const status = document.getElementById('guardianStudentStatus');
-  const initialStudentId = {{ (student_id or 0)|tojson }};
-
-  function fillStudents() {
-    const className = classSelect.value;
-    const students = studentsByClass[className] || [];
-    studentSelect.innerHTML = '';
-
-    if (!className) {
-      studentSelect.disabled = true;
-      studentSelect.add(new Option('Pilih kelas terlebih dahulu', ''));
-      status.textContent = 'Nama akan muncul otomatis setelah kelas dipilih.';
-      submitButton.disabled = true;
-      return;
-    }
-
-    if (!students.length) {
-      studentSelect.disabled = true;
-      studentSelect.add(new Option('Belum ada santri di kelas ini', ''));
-      status.textContent = 'Belum ada data santri pada kelas yang dipilih.';
-      submitButton.disabled = true;
-      return;
-    }
-
-    const counts = students.reduce((result, student) => {
-      const key = student.name.toLocaleLowerCase('id-ID');
-      result[key] = (result[key] || 0) + 1;
-      return result;
-    }, {});
-
-    studentSelect.add(new Option('Pilih nama santri', ''));
-    students.forEach(student => {
-      const duplicate = counts[student.name.toLocaleLowerCase('id-ID')] > 1;
-      const label = duplicate ? `${student.name} — NIS ${student.nis}` : student.name;
-      const option = new Option(label, String(student.id));
-      if (Number(student.id) === Number(initialStudentId)) option.selected = true;
-      studentSelect.add(option);
-    });
-    studentSelect.disabled = false;
-    status.textContent = `${students.length} santri ditemukan pada kelas ${className}.`;
-    submitButton.disabled = !studentSelect.value;
+  const data = JSON.parse(document.getElementById('guardian-student-data').textContent || '{}');
+  const classSelect = document.getElementById('guardian-class');
+  const studentSelect = document.getElementById('guardian-student');
+  const selected = {{ student_id|default(0)|tojson }};
+  function updateStudents() {
+    const rows = data[classSelect.value] || [];
+    studentSelect.innerHTML = '<option value="">-- Pilih Nama Santri --</option>' + rows.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    studentSelect.disabled = !classSelect.value;
+    if (selected) studentSelect.value = String(selected);
   }
-
-  classSelect.addEventListener('change', fillStudents);
-  studentSelect.addEventListener('change', () => {
-    submitButton.disabled = !studentSelect.value;
-  });
-  fillStudents();
+  classSelect.addEventListener('change', updateStudents); updateStudents();
 })();
 </script>
 {% endblock %}

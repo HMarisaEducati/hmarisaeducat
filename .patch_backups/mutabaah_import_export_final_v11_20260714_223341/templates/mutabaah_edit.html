@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Edit Jurnal {{ student.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/daily_progress_patch.css') }}?v=20260715-9">{% endblock %}
+{% block content %}
+{% set active_tab = 'history' %}
+{% include '_progress_student_header.html' %}
+{% include '_journal_tabs.html' %}
+
+<section class="card journal-main-card">
+  <div class="card-head"><div><h2>Edit Jurnal Mutabaah</h2><p class="muted">Perbarui data jurnal tanpa menghapus riwayatnya.</p></div><a class="btn btn-outline btn-small" href="{{ url_for('mutabaah_detail', student_id=student.id, entry_index=entry_index, source=source) }}">Batal</a></div>
+  {% if not material_rows %}<div class="journal-info-banner"><i class="fa-solid fa-circle-info"></i><div><strong>Silabus baru belum tersedia</strong><p>Materi lama tetap tampil pada jurnal ini. Gunakan input manual sampai Silabus Bulanan baru diimpor.</p></div></div>{% endif %}
+
+  <form method="post" class="journal-form" id="journal-form"><input type="hidden" name="source" value="{{ source }}">
+    <div class="journal-form-section">
+      <div class="form-section-title"><span>1</span><div><strong>Data Pembelajaran</strong><small>Tanggal, bidang, dan materi jurnal.</small></div></div>
+      <div class="form-grid form-grid-3">
+        <label>Tanggal<input type="date" name="date" id="journal-date" value="{{ request.form.get('date', entry.date) }}" required></label>
+        <label>Bidang Pelajaran<select name="subject" id="journal-subject" required><option value="">Pilih bidang</option>{% for item in subjects %}<option value="{{ item }}" {% if request.form.get('subject', entry.subject) == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+        <label>Materi Pelajaran<select name="material" id="journal-material"><option value="">Materi Lainnya / Isi Manual</option></select><small class="field-help" id="material-help">Memuat materi Silabus...</small></label>
+        <label class="span-2">Materi Manual<input name="manual_material" id="manual-material" value="{{ request.form.get('manual_material', entry.material) }}" placeholder="Isi materi manual"></label>
+      </div>
+    </div>
+
+    <div class="journal-form-section">
+      <div class="form-section-title"><span>2</span><div><strong>Jenjang Tahsin</strong><small>Kolom yang tidak dipilih otomatis terkunci dan dikosongkan.</small></div></div>
+      <div class="form-grid form-grid-3">
+        {% set selected_level = request.form.get('tahsin_level', entry.tahsin_level) %}
+        <label>Jenjang Tahsin<select name="tahsin_level" id="tahsin-level" required><option value="">Pilih jenjang</option><option value="Tilawati/Iqro" {% if selected_level == 'Tilawati/Iqro' %}selected{% endif %}>Tilawati/Iqro</option><option value="Al-Qur'an" {% if selected_level == "Al-Qur'an" %}selected{% endif %}>Al-Qur'an</option></select></label>
+        <label>Tilawati/Iqro<input name="tilawati" id="tilawati-input" value="{{ request.form.get('tilawati', entry.tilawati) }}" placeholder="Jilid dan halaman"></label>
+        <label>Al-Qur'an<input name="alquran" id="alquran-input" value="{{ request.form.get('alquran', entry.alquran) }}" placeholder="Surat, ayat, atau halaman"></label>
+      </div>
+    </div>
+
+    <div class="journal-form-section">
+      <div class="form-section-title"><span>3</span><div><strong>Evaluasi Harian</strong><small>Catatan otomatis tetap dapat disunting.</small></div></div>
+      <div class="form-grid form-grid-3">
+        <label>Kehadiran<select name="attendance">{% for item in ['Hadir','Sakit','Izin','Tanpa Keterangan'] %}<option {% if request.form.get('attendance', entry.attendance) == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+        <label>Nilai Adab/Kedisiplinan<input type="number" name="adab_score" min="60" max="100" value="{{ request.form.get('adab_score', entry.adab_score or 80) }}"></label>
+        <label>Keterangan<select name="keterangan" id="journal-keterangan" required><option value="">Pilih keterangan</option>{% for item in ['Lanjut','Cukup','Ulangi'] %}<option value="{{ item }}" {% if request.form.get('keterangan', entry.keterangan) == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+        <label class="checkbox-line"><input type="checkbox" name="on_time" {% if (request.method == 'POST' and request.form.get('on_time')) or (request.method != 'POST' and entry.on_time) %}checked{% endif %}> Hadir tepat waktu</label>
+        <label class="span-2">Catatan Guru<textarea name="notes" id="journal-notes" rows="4">{{ request.form.get('notes', entry.notes) }}</textarea><small class="field-help">Memilih ulang Keterangan akan mengganti catatan dengan kalimat otomatis.</small></label>
+      </div>
+    </div>
+    <div class="journal-submit-bar"><a class="btn btn-outline" href="{{ url_for('mutabaah_detail', student_id=student.id, entry_index=entry_index, source=source) }}">Batal</a><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+  </form>
+</section>
+<script type="application/json" id="material-data">{{ material_rows|tojson }}</script>
+<script type="application/json" id="note-template-data">{{ (note_templates|default({}, true))|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const materials = JSON.parse(document.getElementById('material-data').textContent || '[]');
+  const notesMap = JSON.parse(document.getElementById('note-template-data').textContent || '{}');
+  const dateInput = document.getElementById('journal-date'), subjectInput = document.getElementById('journal-subject'), materialInput = document.getElementById('journal-material'), help = document.getElementById('material-help');
+  const tahsin = document.getElementById('tahsin-level'), tilawati = document.getElementById('tilawati-input'), alquran = document.getElementById('alquran-input'), ket = document.getElementById('journal-keterangan'), notes = document.getElementById('journal-notes');
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const currentMaterial = {{ request.form.get('material', entry.material)|tojson }};
+  function updateMaterials(){const d=dateInput.value?new Date(dateInput.value+'T00:00:00'):null;const rows=materials.filter(x=>d&&x.month===months[d.getMonth()]&&Number(x.year)===d.getFullYear()&&x.subject===subjectInput.value);materialInput.innerHTML='<option value="">Materi Lainnya / Isi Manual</option>'+rows.map(x=>`<option value="${x.topic.replace(/"/g,'&quot;')}">${x.topic}</option>`).join('');materialInput.disabled=!rows.length;help.textContent=rows.length?`${rows.length} materi ditemukan dari Silabus Bulanan.`:'Belum ada materi Silabus yang cocok; gunakan Materi Manual.';if(currentMaterial&&rows.some(x=>x.topic===currentMaterial))materialInput.value=currentMaterial;}
+  function lock(clear=true){const t=tahsin.value==='Tilawati/Iqro',q=tahsin.value==="Al-Qur'an";tilawati.disabled=!t;alquran.disabled=!q;tilawati.required=t;alquran.required=q;tilawati.classList.toggle('locked-input',!t);alquran.classList.toggle('locked-input',!q);if(clear){if(!t)tilawati.value='';if(!q)alquran.value='';}}
+  dateInput.addEventListener('change',updateMaterials);subjectInput.addEventListener('change',updateMaterials);tahsin.addEventListener('change',()=>lock(true));ket.addEventListener('change',()=>{if(notesMap[ket.value])notes.value=notesMap[ket.value]});updateMaterials();lock(false);
+})();
+</script>
+{% endblock %}

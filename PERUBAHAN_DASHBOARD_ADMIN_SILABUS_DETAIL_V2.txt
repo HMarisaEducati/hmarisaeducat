@@ -1,0 +1,10 @@
+PATCH DASHBOARD ADMIN V2 — DETAIL SILABUS BULANAN
+
+Perubahan:
+1. Tombol Tampilkan pada kartu Silabus Bulanan memuat data sesuai kelas, bulan, tahun ajaran aktif.
+2. Setelah data ditemukan, pratinjau detail besar terbuka otomatis.
+3. Tampilan detail memuat identitas kelas, bulan, tahun ajaran, guru, bidang pelajaran, materi pokok, target, rencana pekan 1–5, catatan, versi, dan sumber.
+4. Setiap data memiliki tombol Edit Silabus dan Unduh PDF.
+5. Tersedia tombol Tutup dan Buka Halaman Silabus lengkap.
+6. Pada HP, detail tampil penuh satu layar.
+7. Patch tidak mengubah database atau struktur Silabus Bulanan.

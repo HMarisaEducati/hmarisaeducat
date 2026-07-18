@@ -1,0 +1,14 @@
+<nav class="ps16-tabs" aria-label="Bagian Pengaturan Portal">
+  <a class="{{ 'active' if active_section == 'overview' else '' }}" href="{{ url_for('portal_settings_v16a') }}"><i class="fa-solid fa-grid-2"></i> Ringkasan</a>
+  <a class="{{ 'active' if active_section == 'profile' else '' }}" href="{{ url_for('portal_settings_profile_v16a') }}"><i class="fa-solid fa-school"></i> Profil</a>
+  <a class="{{ 'active' if active_section == 'academic' else '' }}" href="{{ url_for('portal_settings_academic_v16a') }}"><i class="fa-solid fa-calendar-days"></i> Tahun Ajaran</a>
+  <a class="{{ 'active' if active_section == 'assets' else '' }}" href="{{ url_for('portal_settings_assets_v16a') }}"><i class="fa-solid fa-images"></i> Aset</a>
+  <a class="{{ 'active' if active_section == 'admin_theme' else '' }}" href="{{ url_for('portal_settings_admin_theme_v16') }}"><i class="fa-solid fa-desktop"></i> Tampilan Admin</a>
+  <a class="{{ 'active' if active_section == 'guardian_theme' else '' }}" href="{{ url_for('portal_settings_guardian_theme_v16') }}"><i class="fa-solid fa-mobile-screen"></i> Tampilan Wali</a>
+  <a class="{{ 'active' if active_section == 'navigation' else '' }}" href="{{ url_for('portal_settings_navigation_v16') }}"><i class="fa-solid fa-bars"></i> Menu</a>
+  <a class="{{ 'active' if active_section == 'modules' else '' }}" href="{{ url_for('portal_settings_modules_v16') }}"><i class="fa-solid fa-toggle-on"></i> Modul</a>
+  <a class="{{ 'active' if active_section == 'eraport_design' else '' }}" href="{{ url_for('portal_settings_eraport_design_v16') }}"><i class="fa-solid fa-file-pen"></i> Desain Raport</a>
+  <a class="{{ 'active' if active_section == 'achievement_design' else '' }}" href="{{ url_for('portal_settings_achievement_design_v16') }}"><i class="fa-solid fa-award"></i> Prestasi Bulanan</a>
+  <a class="{{ 'active' if active_section in ['preview','integrated_preview'] else '' }}" href="{{ url_for('portal_settings_integrated_preview_v16') }}"><i class="fa-solid fa-eye"></i> Preview</a>
+  <a class="{{ 'active' if active_section in ['history','integrated_history'] else '' }}" href="{{ url_for('portal_settings_integrated_history_v16') }}"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</a>
+</nav>

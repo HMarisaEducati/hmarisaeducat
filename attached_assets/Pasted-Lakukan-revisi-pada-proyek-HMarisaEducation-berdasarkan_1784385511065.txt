@@ -1,0 +1,240 @@
+Lakukan revisi pada proyek HMarisaEducation berdasarkan daftar berikut. Analisis struktur proyek terlebih dahulu, kemudian lakukan perubahan tanpa menghapus fitur yang sudah ada.
+
+=========================
+A. PUSAT KENDALI PORTAL
+=========================
+
+1. Tambahkan tombol/menu "Kembali ke Portal Admin" pada halaman Pusat Kendali agar pengguna dapat kembali ke dashboard utama dengan mudah.
+
+2. Pindahkan menu "Kelola Menu Sidebar" ke dalam Pusat Kendali Portal sehingga seluruh pengaturan sistem berada di satu tempat.
+
+3. Tambahkan fitur "Layout Manager" di Pusat Kendali.
+
+Layout Manager harus dapat mengatur tata letak:
+- Portal Admin
+- Portal Guru
+- Portal Wali Santri
+
+Pengaturan meliputi:
+- Posisi widget
+- Urutan menu
+- Sidebar
+- Header
+- Footer
+- Dashboard
+- Card
+- Grid
+- Banner
+- Shortcut
+- Warna tema
+- Ikon
+- Komponen yang ditampilkan atau disembunyikan
+
+Semua perubahan disimpan tanpa mengubah kode.
+
+=========================
+B. KOMPONEN GLOBAL CMS
+=========================
+
+Masih terdapat beberapa halaman yang belum memiliki fitur standar.
+
+Semua halaman data harus menggunakan komponen global yang sama.
+
+Minimal tersedia:
+
+✓ Tambah
+✓ Edit
+✓ Hapus
+✓ Upload
+✓ Import
+✓ Export
+✓ Download Template
+✓ Download Lampiran
+✓ Preview File
+✓ Search
+✓ Filter
+✓ Refresh
+✓ Print
+✓ Pagination
+
+Komponen dibuat reusable sehingga modul baru otomatis dapat menggunakannya.
+
+=========================
+C. UPLOAD / IMPORT / EXPORT
+=========================
+
+Perbaiki sistem Upload, Import, Export, dan Download Template.
+
+Saat saya membuat menu atau submenu baru melalui CMS Builder, sistem harus dapat langsung membuat:
+
+- Upload PDF
+- Upload JPG
+- Upload JPEG
+- Upload PNG
+- Upload DOC
+- Upload DOCX
+- Upload XLS
+- Upload XLSX
+
+Kemudian otomatis membuat:
+
+- Import
+- Export
+- Download Template
+
+Template harus mengikuti struktur database halaman tersebut.
+
+Contoh:
+
+Database Santri
+↓
+Download Template Data Santri
+
+Database Guru
+↓
+Download Template Guru
+
+Inventaris
+↓
+Download Template Inventaris
+
+Dan seterusnya.
+
+=========================
+D. KELOLA MENU SIDEBAR
+=========================
+
+Perbaiki halaman Kelola Menu Sidebar.
+
+Ketika membuat Menu Baru atau Submenu Baru tampilkan form lengkap.
+
+Minimal terdapat kolom:
+
+- Nama Menu
+- Nama Submenu
+- Parent Menu
+- Ikon
+- URL
+- Deskripsi
+- Fungsi Menu
+- Tujuan Menu
+- Role yang dapat mengakses
+- Status
+- Urutan Menu
+
+Kemudian sistem harus otomatis membuat halaman sesuai konfigurasi tersebut.
+
+=========================
+E. SUBMENU
+=========================
+
+Saya TIDAK menginginkan submenu model dropdown (roll-down).
+
+Yang saya inginkan:
+
+Ketika membuka suatu menu, submenu tampil sebagai bagian dari halaman tersebut.
+
+Contoh:
+
+DATABASE SANTRI
+
+--------------------------------
+Data Santri
+Data Wali
+Pendaftaran Santri Baru
+Mutasi
+Alumni
+Import
+Export
+--------------------------------
+
+Bukan dropdown di sidebar.
+
+=========================
+F. PUSAT KENDALI BELUM LENGKAP
+=========================
+
+Masih banyak menu yang belum masuk ke Pusat Kendali.
+
+Tambahkan seluruh modul agar dapat dikelola dari Pusat Kendali.
+
+Contoh:
+
+- Hadits Harian
+- Silabus
+- Kurikulum
+- Jadwal
+- Pengumuman
+- Surat
+- Inventaris
+- Perizinan
+- Hafalan
+- Nilai
+- Keuangan
+- Pembayaran
+- Kalender
+- Backup
+- Pengaturan
+- Dan seluruh modul lain yang sudah ada.
+
+Semua harus dapat diatur dari Pusat Kendali.
+
+=========================
+G. CMS BUILDER
+=========================
+
+Tambahkan CMS Builder.
+
+Tujuan:
+
+Saya tidak perlu lagi meminta AI ketika ingin membuat modul baru.
+
+CMS Builder harus dapat membuat modul baru melalui form.
+
+Contoh:
+
+Nama Modul
+Parent Menu
+Ikon
+Role
+Deskripsi
+
+Kemudian pilih fitur yang diinginkan:
+
+☑ Tambah
+☑ Edit
+☑ Hapus
+☑ Upload
+☑ Import
+☑ Export
+☑ Download Template
+☑ Print
+☑ Search
+☑ Filter
+☑ Pagination
+
+Setelah menekan tombol Simpan, sistem otomatis membuat:
+
+- Halaman modul
+- Struktur database
+- Routing
+- Sidebar
+- Hak akses
+- CRUD
+- Upload
+- Import
+- Export
+- Download Template
+
+Tanpa perlu membuat kode secara manual.
+
+=========================
+H. KETENTUAN
+=========================
+
+1. Jangan menghapus fitur yang sudah ada.
+2. Jangan mengubah desain utama kecuali diperlukan.
+3. Gunakan komponen reusable.
+4. Hindari duplikasi kode.
+5. Semua perubahan harus terintegrasi dengan sistem role Admin, Guru, dan Wali Santri.
+6. Setelah selesai, jelaskan file yang diubah serta alasan setiap perubahan.

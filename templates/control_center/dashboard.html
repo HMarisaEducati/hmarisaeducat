@@ -1,0 +1,293 @@
+{% extends "control_center/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}<i class="fa-solid fa-chevron-right" style="font-size:.6rem"></i><span>Dashboard</span>{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <div class="cc-page-title"><i class="fa-solid fa-gauge-high" style="color:var(--cc-accent)"></i> Control Center Dashboard</div>
+    <div class="cc-page-subtitle">Pantau seluruh sistem TPQ HMarisa dalam satu tampilan — {{ now.strftime('%A, %d %B %Y') }}</div>
+  </div>
+  <div class="cc-page-actions">
+    <a href="{{ url_for('control_center_backup') }}" class="cc-btn cc-btn-secondary"><i class="fa-solid fa-box-archive"></i> Backup</a>
+    <a href="{{ url_for('control_center_users') }}" class="cc-btn cc-btn-primary"><i class="fa-solid fa-user-plus"></i> Tambah User</a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="cc-stat-grid">
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon green"><i class="fa-solid fa-users"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.total_santri }}</div>
+      <div class="cc-stat-label">Total Santri</div>
+      <div class="cc-stat-sub"><span class="up">{{ stats.active_santri }} aktif</span> · {{ stats.inactive_santri }} nonaktif</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon blue"><i class="fa-solid fa-chalkboard-user"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.total_guru }}</div>
+      <div class="cc-stat-label">Pengguna Staf</div>
+      <div class="cc-stat-sub">{{ stats.guru_count }} Guru · {{ stats.admin_count }} Admin</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon purple"><i class="fa-solid fa-users-between-lines"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.total_wali }}</div>
+      <div class="cc-stat-label">Wali Santri</div>
+      <div class="cc-stat-sub">Akun aktif di portal</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon orange"><i class="fa-solid fa-wallet"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.unpaid_bills }}</div>
+      <div class="cc-stat-label">Tagihan Belum Bayar</div>
+      <div class="cc-stat-sub">Total: Rp{{ '{:,}'.format(stats.total_unpaid_amount).replace(',','.') }}</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon teal"><i class="fa-solid fa-file-pen"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.raport_published }}</div>
+      <div class="cc-stat-label">E-Raport Diterbitkan</div>
+      <div class="cc-stat-sub">{{ stats.raport_draft }} masih draf</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon yellow"><i class="fa-solid fa-book-open"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.total_books }}</div>
+      <div class="cc-stat-label">Koleksi Perpustakaan</div>
+      <div class="cc-stat-sub">Buku aktif tersedia</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon red"><i class="fa-solid fa-scroll"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.activity_today }}</div>
+      <div class="cc-stat-label">Aktivitas Hari Ini</div>
+      <div class="cc-stat-sub">Log masuk sistem</div>
+    </div>
+  </div>
+
+  <div class="cc-stat-card">
+    <div class="cc-stat-icon pink"><i class="fa-solid fa-database"></i></div>
+    <div class="cc-stat-info">
+      <div class="cc-stat-value">{{ stats.db_size_mb }}</div>
+      <div class="cc-stat-label">Ukuran Database (MB)</div>
+      <div class="cc-stat-sub">SQLite aktif</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main grid -->
+<div class="cc-dashboard-grid">
+  <!-- Chart: Santri per kelas -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-chart-bar"></i> Santri per Kelas</div>
+      <span class="cc-badge cc-badge-green">Aktif</span>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-chart-wrapper">
+        <canvas id="chartSantriKelas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-bolt"></i> Aksi Cepat</div>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-shortcuts">
+        <a href="{{ url_for('students') }}" class="cc-shortcut"><i class="fa-solid fa-users"></i> Database Santri</a>
+        <a href="{{ url_for('control_center_users') }}" class="cc-shortcut"><i class="fa-solid fa-users-gear"></i> Kelola Pengguna</a>
+        <a href="{{ url_for('finance') }}" class="cc-shortcut"><i class="fa-solid fa-wallet"></i> Keuangan</a>
+        <a href="{{ url_for('eraport') }}" class="cc-shortcut"><i class="fa-solid fa-file-pen"></i> E-Raport</a>
+        <a href="{{ url_for('curriculum') }}" class="cc-shortcut"><i class="fa-solid fa-table-list"></i> Silabus</a>
+        <a href="{{ url_for('daily_progress') }}" class="cc-shortcut"><i class="fa-solid fa-book-open-reader"></i> Prestasi</a>
+        <a href="{{ url_for('library') }}" class="cc-shortcut"><i class="fa-solid fa-book-open"></i> Perpustakaan</a>
+        <a href="{{ url_for('control_center_database') }}" class="cc-shortcut"><i class="fa-solid fa-database"></i> Database Manager</a>
+        <a href="{{ url_for('control_center_settings') }}" class="cc-shortcut"><i class="fa-solid fa-sliders"></i> Pengaturan</a>
+        <a href="{{ url_for('control_center_backup') }}" class="cc-shortcut"><i class="fa-solid fa-box-archive"></i> Backup</a>
+        <a href="{{ url_for('hadith_manager') }}" class="cc-shortcut"><i class="fa-solid fa-quote-right"></i> Hadis Harian</a>
+        <a href="{{ url_for('portal_control_dashboard_v17') }}" class="cc-shortcut"><i class="fa-solid fa-gears"></i> Pusat Kendali Portal</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Second grid -->
+<div class="cc-dashboard-grid">
+  <!-- Activity Log -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas Terbaru</div>
+      <a href="{{ url_for('control_center_activity_log') }}" class="cc-btn cc-btn-ghost cc-btn-sm">Lihat semua</a>
+    </div>
+    <div class="cc-card-body" style="padding-top:8px;padding-bottom:8px;">
+      <div class="cc-activity-feed">
+        {% if recent_activities %}
+          {% for act in recent_activities %}
+          <div class="cc-activity-item">
+            <div class="cc-activity-dot {{ act.action_type }}">
+              <i class="fa-solid {{ act.icon }}"></i>
+            </div>
+            <div class="cc-activity-body">
+              <div class="cc-activity-action">{{ act.action }}</div>
+              <div class="cc-activity-detail">{{ act.detail or '—' }}</div>
+              <div class="cc-activity-meta">
+                <i class="fa-solid fa-user" style="font-size:.65rem"></i> {{ act.username or 'sistem' }}
+                {% if act.ip_address %} · {{ act.ip_address }}{% endif %}
+                · {{ act.created_at.strftime('%d/%m/%Y %H:%M') if act.created_at else '' }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="cc-empty" style="padding:30px">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <p>Belum ada aktivitas tercatat.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- System Info -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-circle-info"></i> Informasi Sistem</div>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-sysinfo">
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Python</span><span class="cc-sysinfo-val">{{ sys_info.python }}</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Flask</span><span class="cc-sysinfo-val">{{ sys_info.flask }}</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Database</span><span class="cc-sysinfo-val">SQLite</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Ukuran DB</span><span class="cc-sysinfo-val">{{ stats.db_size_mb }} MB</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Total Tabel</span><span class="cc-sysinfo-val">{{ sys_info.total_tables }}</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Total Record</span><span class="cc-sysinfo-val">{{ sys_info.total_rows }}</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Uptime</span><span class="cc-sysinfo-val">{{ sys_info.uptime }}</span></div>
+        <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Server Time</span><span class="cc-sysinfo-val">{{ now.strftime('%H:%M WIB') }}</span></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div style="font-size:.78rem;font-weight:600;color:var(--cc-text-muted);margin-bottom:8px">Distribusi Role</div>
+        {% for role_name, count in role_distribution.items() %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span class="cc-badge {{ 'role-' + role_name }}">{{ role_labels.get(role_name, role_name) }}</span>
+          <span style="font-size:.8rem;font-weight:600;color:var(--cc-text)">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Finance chart -->
+<div class="cc-dashboard-grid-3">
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-chart-pie"></i> Status Pembayaran</div>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-chart-wrapper" style="height:180px">
+        <canvas id="chartPaymentStatus"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-chart-line"></i> E-Raport Status</div>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-chart-wrapper" style="height:180px">
+        <canvas id="chartRaportStatus"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-user-shield"></i> User Terbaru</div>
+    </div>
+    <div class="cc-card-body" style="padding-top:8px;padding-bottom:8px;">
+      {% for u in recent_users %}
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--cc-border)">
+        <div class="cc-avatar" style="width:30px;height:30px;font-size:.72rem">{{ u.full_name[:1]|upper }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.full_name }}</div>
+          <div style="font-size:.7rem;color:var(--cc-text-muted)">{{ u.role_label }}</div>
+        </div>
+        <span class="cc-badge {% if u.is_active %}cc-badge-green{% else %}cc-badge-red{% endif %}">
+          {{ 'Aktif' if u.is_active else 'Off' }}
+        </span>
+      </div>
+      {% else %}
+      <div class="cc-empty" style="padding:20px"><p>Belum ada user.</p></div>
+      {% endfor %}
+      <div style="margin-top:12px;text-align:center">
+        <a href="{{ url_for('control_center_users') }}" class="cc-btn cc-btn-ghost cc-btn-sm">Kelola semua pengguna</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const isDark = document.documentElement.dataset.ccTheme === 'dark';
+  const GREEN = '#059669'; const BLUE = '#3b82f6'; const ORANGE = '#f59e0b';
+  const RED = '#ef4444'; const PURPLE = '#7c3aed';
+
+  // Santri per kelas
+  ccRenderChart('chartSantriKelas', 'bar',
+    {{ class_labels | tojson }},
+    [{
+      label: 'Santri Aktif',
+      data: {{ class_counts | tojson }},
+      backgroundColor: [GREEN, BLUE, PURPLE],
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  );
+
+  // Payment status pie
+  ccRenderChart('chartPaymentStatus', 'doughnut',
+    ['Lunas', 'Belum Bayar', 'Dibebaskan'],
+    [{
+      data: {{ payment_status_data | tojson }},
+      backgroundColor: [GREEN, RED, ORANGE],
+      borderWidth: 2,
+      borderColor: isDark ? '#1e293b' : '#ffffff'
+    }],
+    { plugins: { legend: { position: 'bottom' } } }
+  );
+
+  // Raport status
+  ccRenderChart('chartRaportStatus', 'doughnut',
+    ['Diterbitkan', 'Draf', 'Selesai'],
+    [{
+      data: {{ raport_status_data | tojson }},
+      backgroundColor: [GREEN, ORANGE, BLUE],
+      borderWidth: 2,
+      borderColor: isDark ? '#1e293b' : '#ffffff'
+    }],
+    { plugins: { legend: { position: 'bottom' } } }
+  );
+});
+</script>
+{% endblock %}

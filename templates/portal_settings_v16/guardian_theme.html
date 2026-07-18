@@ -1,0 +1,25 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card ps16x-form" method="post" enctype="multipart/form-data" data-dirty-form data-theme-form="guardian">
+  <div class="ps16-section-head"><div><h3>Tampilan Portal Wali Santri</h3><p>Portal Wali memiliki tema, banner, teks sambutan, dan gambar sendiri tanpa mengubah Portal Admin.</p></div><label class="ps16x-switch"><input type="checkbox" name="enabled" {% if draft_payload.enabled %}checked{% endif %}><span></span> Aktifkan tema dinamis</label></div>
+  <div class="ps16x-preset-grid" data-theme-presets><button type="button" data-preset="current">Hijau Resmi</button><button type="button" data-preset="green-gold">Hijau–Emas</button><button type="button" data-preset="minimal">Minimalis</button><button type="button" data-preset="child-friendly">Ceria Anak</button></div>
+  <input type="hidden" name="preset" value="{{ draft_payload.preset }}" data-preset-input>
+  <div class="ps16-form-grid">
+    {% for key,label in [('primary','Warna Utama'),('secondary','Warna Sekunder'),('accent','Warna Aksen'),('page_bg','Latar Halaman'),('surface','Warna Kartu'),('text','Warna Teks')] %}<label><span>{{ label }}</span><div class="ps16x-color"><input type="color" name="{{ key }}" value="{{ draft_payload[key] }}"><code>{{ draft_payload[key] }}</code></div></label>{% endfor %}
+    <label><span>Ukuran Font</span><select name="font_scale"><option value="small" {% if draft_payload.font_scale=='small' %}selected{% endif %}>Kecil</option><option value="normal" {% if draft_payload.font_scale=='normal' %}selected{% endif %}>Normal</option><option value="large" {% if draft_payload.font_scale=='large' %}selected{% endif %}>Besar</option></select></label>
+    <label><span>Radius Kartu</span><select name="card_radius"><option value="compact" {% if draft_payload.card_radius=='compact' %}selected{% endif %}>Tegas</option><option value="current" {% if draft_payload.card_radius=='current' %}selected{% endif %}>Saat Ini</option><option value="soft" {% if draft_payload.card_radius=='soft' %}selected{% endif %}>Lebih Lembut</option></select></label>
+    <label><span>Kepadatan</span><select name="density"><option value="compact" {% if draft_payload.density=='compact' %}selected{% endif %}>Ringkas</option><option value="comfortable" {% if draft_payload.density=='comfortable' %}selected{% endif %}>Nyaman</option><option value="spacious" {% if draft_payload.density=='spacious' %}selected{% endif %}>Lega</option></select></label>
+    <label><span>Gaya Sidebar</span><select name="sidebar_style"><option value="solid" {% if draft_payload.sidebar_style=='solid' %}selected{% endif %}>Solid</option><option value="gradient" {% if draft_payload.sidebar_style=='gradient' %}selected{% endif %}>Gradasi</option><option value="soft" {% if draft_payload.sidebar_style=='soft' %}selected{% endif %}>Lembut</option></select></label>
+    <label><span>Judul Pilih Santri</span><input type="text" name="entry_title" value="{{ draft_payload.entry_title }}"></label>
+    <label><span>Petunjuk Pilih Santri</span><textarea name="entry_subtitle" rows="3">{{ draft_payload.entry_subtitle }}</textarea></label>
+    <label><span>Judul Sambutan Wali</span><input type="text" name="welcome_title" value="{{ draft_payload.welcome_title }}"></label>
+    <label><span>Teks Sambutan Wali</span><textarea name="welcome_text" rows="3">{{ draft_payload.welcome_text }}</textarea></label>
+    <label class="ps16-span-2"><span>Teks Footer Wali</span><input type="text" name="footer_text" value="{{ draft_payload.footer_text }}"></label>
+  </div>
+  <div class="ps16x-upload-grid">
+    <article><h4>Banner Dashboard Wali</h4><div class="ps16x-image-preview">{% if draft_banner_url %}<img src="{{ draft_banner_url }}" data-image-preview="banner_image">{% else %}<span data-empty-preview>Belum menggunakan gambar</span><img hidden data-image-preview="banner_image">{% endif %}</div><input type="file" name="banner_image" accept="image/png,image/jpeg,image/webp" data-image-input="banner_image"><label class="ps16-check"><input type="checkbox" name="reset_banner_image"> Hapus gambar draft</label></article>
+    <article><h4>Gambar Halaman Pilih Santri</h4><div class="ps16x-image-preview">{% if draft_entry_url %}<img src="{{ draft_entry_url }}" data-image-preview="entry_image">{% else %}<span data-empty-preview>Belum menggunakan gambar</span><img hidden data-image-preview="entry_image">{% endif %}</div><input type="file" name="entry_image" accept="image/png,image/jpeg,image/webp" data-image-input="entry_image"><label class="ps16-check"><input type="checkbox" name="reset_entry_image"> Hapus gambar draft</label></article>
+  </div>
+  {% include "portal_settings_v16/_section_actions.html" %}
+</form>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import page_toolbar, empty_state %}
+{% block title %}Kelola Menu Sidebar — {{ portal_identity.tpq_name|default('TPQ HMarisa') }}{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar_menu.css') }}?v=20260718-1">
+{% endblock %}
+
+{% block content %}
+
+{{ page_toolbar(
+  title="Kelola Menu Sidebar",
+  subtitle="Atur navigasi, ikon, urutan, dan hak akses tanpa mengubah kode",
+  actions=[
+    {"label": "Tambah Menu Baru", "url": url_for('sidebar_menu_add'), "icon": "fa-plus", "class": "btn-primary"},
+    {"label": "CMS Builder", "url": url_for('cms_builder_index'), "icon": "fa-cube", "class": "btn-outline"}
+  ]
+) }}
+
+{# Info banner #}
+<div style="background:#f0fdf4;border:1px solid #a7f3d0;border-radius:10px;padding:.75rem 1rem;font-size:.82rem;color:#065f46;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:.6rem">
+  <i class="fa-solid fa-circle-info" style="margin-top:.1rem;flex-shrink:0"></i>
+  <div>
+    <strong>Tentang submenu:</strong>
+    Submenu tidak lagi tampil sebagai dropdown di sidebar.
+    Saat pengguna membuka menu utama, submenu akan muncul sebagai <strong>tab horizontal</strong> di dalam halaman.
+    Anda juga bisa membuat halaman modul otomatis lewat
+    <a href="{{ url_for('cms_builder_index') }}" style="color:#059669;font-weight:600">CMS Builder</a>.
+  </div>
+</div>
+
+{% if top_menus %}
+<div class="sm-tree">
+  {% for menu in top_menus %}
+  <div class="sm-row {% if not menu.is_active %}inactive{% endif %}">
+    <div class="sm-row-inner">
+      <span class="sm-icon-preview"><i class="fa-solid {{ menu.icon }}"></i></span>
+      <div class="sm-meta">
+        <strong>
+          {{ menu.label }}
+          {% if menu.is_system %}<span class="sm-badge-system">Sistem</span>{% endif %}
+          {% if not menu.is_active %}<span class="sm-badge-system sm-badge-inactive">Nonaktif</span>{% endif %}
+          {% if menu.children|length > 0 %}
+          <span class="sm-badge-system" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe">
+            {{ menu.children|length }} submenu
+          </span>
+          {% endif %}
+        </strong>
+        <small>
+          {% if menu.endpoint %}<code>{{ menu.endpoint }}</code>
+          {% elif menu.url %}<code>{{ menu.url }}</code>
+          {% else %}<em>Hub / Parent</em>{% endif %}
+          &middot; Urutan: {{ menu.sort_order }}
+          {% if menu.description %}&middot; {{ menu.description }}{% endif %}
+        </small>
+        <div class="sm-roles-pills">
+          {% for r in menu.roles_list() %}
+          <span class="sm-role-pill {{ r }}">{{ r }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="sm-actions">
+        <form method="post" action="{{ url_for('sidebar_menu_move_up', menu_id=menu.id) }}" style="display:contents">
+          <button class="sm-btn" type="submit" title="Naik"><i class="fa-solid fa-chevron-up"></i></button>
+        </form>
+        <form method="post" action="{{ url_for('sidebar_menu_move_down', menu_id=menu.id) }}" style="display:contents">
+          <button class="sm-btn" type="submit" title="Turun"><i class="fa-solid fa-chevron-down"></i></button>
+        </form>
+        <a class="sm-btn" href="{{ url_for('sidebar_menu_edit', menu_id=menu.id) }}" title="Edit">
+          <i class="fa-solid fa-pen"></i>
+        </a>
+        <form method="post" action="{{ url_for('sidebar_menu_toggle', menu_id=menu.id) }}" style="display:contents">
+          <button class="sm-btn {{ 'toggle-on' if menu.is_active else 'toggle-off' }}" type="submit"
+                  title="{{ 'Nonaktifkan' if menu.is_active else 'Aktifkan' }}">
+            <i class="fa-solid {{ 'fa-eye' if menu.is_active else 'fa-eye-slash' }}"></i>
+          </button>
+        </form>
+        {% if not menu.is_system %}
+        <form method="post" action="{{ url_for('sidebar_menu_delete', menu_id=menu.id) }}"
+              onsubmit="return confirm('Hapus menu \'{{ menu.label }}\'? Semua submenu juga ikut terhapus.')">
+          <button class="sm-btn danger" type="submit" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Submenu list (children) #}
+    {% set sorted_children = menu.children|sort(attribute='sort_order') %}
+    {% if sorted_children %}
+    <div class="sm-children-list">
+      {% for child in sorted_children %}
+      <div class="sm-row is-child {% if not child.is_active %}inactive{% endif %}">
+        <div class="sm-row-inner">
+          <span class="sm-icon-preview" style="font-size:.75rem"><i class="fa-solid {{ child.icon }}"></i></span>
+          <div class="sm-meta">
+            <strong>
+              {{ child.label }}
+              {% if not child.is_active %}<span class="sm-badge-system sm-badge-inactive">Nonaktif</span>{% endif %}
+            </strong>
+            <small>
+              {% if child.endpoint %}<code>{{ child.endpoint }}</code>
+              {% elif child.url %}<code>{{ child.url }}</code>
+              {% else %}<em>—</em>{% endif %}
+              &middot; Urutan: {{ child.sort_order }}
+            </small>
+            <div class="sm-roles-pills">
+              {% for r in child.roles_list() %}<span class="sm-role-pill {{ r }}">{{ r }}</span>{% endfor %}
+            </div>
+          </div>
+          <div class="sm-actions">
+            <form method="post" action="{{ url_for('sidebar_menu_move_up', menu_id=child.id) }}" style="display:contents">
+              <button class="sm-btn" type="submit" title="Naik"><i class="fa-solid fa-chevron-up"></i></button>
+            </form>
+            <form method="post" action="{{ url_for('sidebar_menu_move_down', menu_id=child.id) }}" style="display:contents">
+              <button class="sm-btn" type="submit" title="Turun"><i class="fa-solid fa-chevron-down"></i></button>
+            </form>
+            <a class="sm-btn" href="{{ url_for('sidebar_menu_edit', menu_id=child.id) }}" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <form method="post" action="{{ url_for('sidebar_menu_toggle', menu_id=child.id) }}" style="display:contents">
+              <button class="sm-btn {{ 'toggle-on' if child.is_active else 'toggle-off' }}" type="submit"
+                      title="{{ 'Nonaktifkan' if child.is_active else 'Aktifkan' }}">
+                <i class="fa-solid {{ 'fa-eye' if child.is_active else 'fa-eye-slash' }}"></i>
+              </button>
+            </form>
+            {% if not child.is_system %}
+            <form method="post" action="{{ url_for('sidebar_menu_delete', menu_id=child.id) }}"
+                  onsubmit="return confirm('Hapus submenu \'{{ child.label }}\'?')">
+              <button class="sm-btn danger" type="submit" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Tambah submenu di bawah parent ini #}
+    <div style="padding:.5rem .85rem .6rem 2.8rem">
+      <a href="{{ url_for('sidebar_menu_add') }}?parent_id={{ menu.id }}"
+         style="font-size:.75rem;color:var(--primary-color,#075f46);display:inline-flex;align-items:center;gap:.3rem;text-decoration:none">
+        <i class="fa-solid fa-plus"></i> Tambah submenu di sini
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div style="margin-top:1rem;font-size:.75rem;color:var(--text-secondary);display:flex;gap:1rem;flex-wrap:wrap">
+  <span><span class="sm-badge-system">Sistem</span> Tidak bisa dihapus</span>
+  <span><span class="sm-badge-system sm-badge-inactive">Nonaktif</span> Tersembunyi dari sidebar</span>
+  <span><span class="sm-badge-system" style="background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe">N submenu</span> Parent menu — tampil sebagai hub/tab</span>
+</div>
+
+{% else %}
+{{ empty_state(
+  icon='fa-list-check',
+  title='Belum ada menu',
+  message='Klik "Tambah Menu Baru" untuk membuat menu sidebar pertama.',
+  action_url=url_for('sidebar_menu_add'),
+  action_label='Tambah Menu Pertama'
+) }}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% endblock %}

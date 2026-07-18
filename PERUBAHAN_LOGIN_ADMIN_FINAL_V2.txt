@@ -1,0 +1,10 @@
+PATCH LOGIN ADMIN FINAL V2 — TPQ HMarisa
+
+Perubahan:
+1. Panel kiri Login Admin menggunakan struktur yang sama dengan Portal Wali Santri.
+2. Logo menggunakan file resmi yang sama: static/img/logo_portal_cropped.png.
+3. Ukuran, frame, padding, dan posisi logo mengikuti guardian_entry.css yang sama.
+4. Kartu Hadis Harian menggunakan komponen yang sama dengan Portal Wali.
+5. Hadis memakai objek daily_hadith dari Bank Hadis Admin, sehingga Portal Wali, Login Admin, dan Dashboard menampilkan hadis yang sama pada tanggal yang sama.
+6. Form login, opsi "Ingat saya", dan proses autentikasi tidak diubah.
+7. Tidak membawa database, uploads, poster, E-Raport, atau app.py.

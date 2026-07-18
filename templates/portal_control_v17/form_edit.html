@@ -1,0 +1,30 @@
+{% extends "portal_control_v17/layout.html" %}
+{% block pc17_title %}{{ 'Edit Formulir' if row else 'Tambah Formulir' }}{% endblock %}
+{% block pc17_subtitle %}Atur kolom, validasi, target portal, kuota, dan workflow aman.{% endblock %}
+{% block pc17_content %}
+<form method="post" class="pc17-builder-form" data-form-builder>
+  <section class="card pc17-card pc17-form-grid">
+    <label>Judul<input name="title" required value="{{ row.title if row else '' }}" data-slug-source></label><label>Slug<input name="slug" required value="{{ row.slug if row else '' }}" data-slug-target></label>
+    <label class="span-2">Deskripsi<textarea name="description" rows="3">{{ row.description if row else '' }}</textarea></label>
+    <label>Target Portal<select name="target_scope">{% for scope in scopes %}<option value="{{ scope }}" {% if row and row.target_scope==scope %}selected{% endif %}>{{ scope|title }}</option>{% endfor %}</select></label>
+    <label>Label Menu<input name="menu_label" value="{{ row.menu_label if row else '' }}"></label><label>Ikon<select name="menu_icon">{% for key,value in icons.items() %}<option value="{{ value }}" {% if row and row.menu_icon==value %}selected{% endif %}>{{ key|replace('-',' ')|title }}</option>{% endfor %}</select></label>
+    <label>Urutan<input type="number" name="sort_order" value="{{ row.sort_order if row else 100 }}"></label><label class="pc17-check"><input type="checkbox" name="show_in_menu" {% if row and row.show_in_menu %}checked{% endif %}> Tampilkan di menu</label>
+    <fieldset><legend>Peran yang boleh melihat</legend><div class="pc17-check-grid">{% for role in roles %}<label><input type="checkbox" name="roles" value="{{ role }}" {% if row and role in row.roles() %}checked{% endif %}> {{ role|replace('_',' ')|title }}</label>{% endfor %}</div></fieldset>
+  </section>
+  <section class="card pc17-card">
+    <div class="card-head"><div><h2>Kolom Formulir</h2><p class="muted">Nama teknis otomatis aman dan dapat diedit.</p></div><button class="btn btn-primary" type="button" data-add-form-field><i class="fa-solid fa-plus"></i> Tambah Kolom</button></div>
+    <div class="pc17-builder-list" data-form-fields></div><input type="hidden" name="fields_json" value='{{ fields|tojson }}' data-form-fields-json>
+  </section>
+  <section class="card pc17-card pc17-form-grid"><h2 class="span-2">Setelah formulir dikirim</h2>
+    <label>Judul Berhasil<input name="success_title" value="{{ settings.success_title|default('Data berhasil dikirim') }}"></label><label>Kuota (0 = tanpa batas)<input type="number" min="0" name="quota" value="{{ settings.quota|default(0) }}"></label>
+    <label class="span-2">Pesan Berhasil<textarea name="success_message" rows="3">{{ settings.success_message|default('Data akan diperiksa oleh admin.') }}</textarea></label>
+    <input type="hidden" name="preset" value="{{ settings.preset|default('custom') }}">
+    <label class="pc17-check"><input type="checkbox" name="accepting" {% if settings.accepting|default(true) %}checked{% endif %}> Form menerima data</label>
+    <label class="pc17-check"><input type="checkbox" name="workflow_reference" {% if workflow.reference_number|default(true) %}checked{% endif %}> Buat nomor otomatis</label>
+    <label class="pc17-check"><input type="checkbox" name="workflow_notification" {% if workflow.admin_notification|default(true) %}checked{% endif %}> Masuk antrean admin</label>
+    <label class="pc17-check"><input type="checkbox" name="workflow_whatsapp" {% if workflow.whatsapp_confirmation %}checked{% endif %}> Tawarkan konfirmasi WhatsApp</label>
+  </section>
+  <div class="pc17-sticky-actions"><a class="btn btn-ghost" href="{{ url_for('portal_control_forms_v17') }}">Batal</a><button class="btn btn-primary" type="submit">Simpan Draft</button>{% if row %}<a class="btn btn-outline" href="{{ url_for('portal_control_form_preview_v17', form_id=row.id) }}">Preview</a>{% endif %}</div>
+</form>
+<template data-form-field-template><article class="pc17-builder-row" data-builder-row><div class="pc17-row-head"><strong>Kolom</strong><div><button type="button" data-move-up>↑</button><button type="button" data-move-down>↓</button><button type="button" data-remove-row>×</button></div></div><div class="pc17-form-grid"><label>Label<input data-field="label"></label><label>Nama Teknis<input data-field="name"></label><label>Jenis<select data-field="type">{% for value in field_types %}<option value="{{ value }}">{{ value|title }}</option>{% endfor %}</select></label><label class="pc17-check"><input type="checkbox" data-field="required"> Wajib</label><label class="span-2">Pilihan (satu per baris)<textarea rows="3" data-field="options"></textarea></label><label class="span-2">Petunjuk<input data-field="help"></label></div></article></template>
+{% endblock %}

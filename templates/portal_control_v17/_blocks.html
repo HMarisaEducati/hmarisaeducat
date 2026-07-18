@@ -1,0 +1,13 @@
+<div class="pc17-rendered-page">
+{% for block in blocks %}
+  {% if block.type=='heading' %}<header class="pc17-block heading {{ block.style }}"><span class="eyebrow">{{ page.title }}</span><h1>{{ block.title }}</h1>{% if block.body %}<p>{{ block.body }}</p>{% endif %}</header>
+  {% elif block.type in ['text','announcement'] %}<section class="pc17-block card {{ block.style }}"><h2>{{ block.title }}</h2><div class="pc17-rich-text">{{ block.body }}</div>{% if block.link_url %}<a class="btn btn-outline" href="{{ block.link_url }}">{{ block.link_label or 'Buka' }}</a>{% endif %}</section>
+  {% elif block.type=='banner' %}<section class="pc17-block pc17-banner {{ block.style }}" {% if block.image %}style="--pc17-bg:url('{{ portal_v17_media_url(block.image) }}')"{% endif %}><div><h2>{{ block.title }}</h2><p>{{ block.body }}</p>{% if block.link_url %}<a class="btn btn-primary" href="{{ block.link_url }}">{{ block.link_label or 'Selengkapnya' }}</a>{% endif %}</div></section>
+  {% elif block.type=='image' and block.image %}<figure class="pc17-block pc17-image"><img src="{{ portal_v17_media_url(block.image) }}" alt="{{ block.title }}"><figcaption><strong>{{ block.title }}</strong><p>{{ block.body }}</p></figcaption></figure>
+  {% elif block.type=='button' %}<div class="pc17-block pc17-button-block"><a class="btn btn-primary" href="{{ block.link_url or '#' }}">{{ block.link_label or block.title or 'Buka' }}</a></div>
+  {% elif block.type in ['cards','list'] %}<section class="pc17-block card {{ block.style }}"><h2>{{ block.title }}</h2><div class="{{ 'pc17-card-list' if block.type=='cards' else 'pc17-simple-list' }}">{% for line in block.body.split('\n') if line.strip() %}<article><i class="fa-solid fa-circle-check"></i><span>{{ line }}</span></article>{% endfor %}</div></section>
+  {% elif block.type=='contact' %}<section class="pc17-block card pc17-contact {{ block.style }}"><i class="fa-brands fa-whatsapp"></i><div><h2>{{ block.title or 'Hubungi Admin' }}</h2><p>{{ block.body }}</p></div>{% if block.link_url %}<a class="btn btn-primary" href="{{ block.link_url }}">{{ block.link_label or 'Hubungi' }}</a>{% endif %}</section>
+  {% elif block.type=='form' %}{% set embedded=form_map.get(block.form_slug) %}<section class="pc17-block card"><h2>{{ block.title or (embedded.title if embedded else 'Formulir') }}</h2><p>{{ block.body or (embedded.description if embedded else '') }}</p>{% if embedded %}<a class="btn btn-primary" href="{{ url_for('portal_form_view_v17', slug=embedded.slug) }}">Buka Formulir</a>{% else %}<p class="empty">Formulir belum dipilih.</p>{% endif %}</section>
+  {% endif %}
+{% else %}<div class="empty-state"><i class="fa-solid fa-cubes"></i><p>Belum ada blok pada halaman ini.</p></div>{% endfor %}
+</div>

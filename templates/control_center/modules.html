@@ -1,0 +1,279 @@
+{% extends "control_center/base.html" %}
+{% block title %}Semua Modul{% endblock %}
+
+{% block breadcrumb %}
+<span class="cc-bc-sep">/</span>
+<span>Semua Modul</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <h1 class="cc-page-title"><i class="fa-solid fa-grip"></i> Hub Integrasi Modul</h1>
+    <p class="cc-page-sub">Akses cepat ke seluruh modul Portal TPQ HMarisa dari satu tempat</p>
+  </div>
+</div>
+
+<!-- Module Groups -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem">
+
+  <!-- Data Santri -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">
+          <i class="fa-solid fa-child-reaching"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Data Santri</div>
+          <div class="cc-module-meta">{{ stats.total_santri }} santri terdaftar · {{ stats.active_santri }} aktif</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('control_center_santri') }}" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-eye"></i> Lihat di Control Center
+        </a>
+        <a href="{{ url_for('students') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-database"></i> Database Santri
+        </a>
+        <a href="{{ url_for('students') }}?tab=add" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-plus"></i> Tambah Santri Baru
+        </a>
+        <a href="/students/export.csv?download=1" class="cc-module-link">
+          <i class="fa-solid fa-file-csv"></i> Export Data CSV
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keuangan -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#10b981,#34d399)">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Keuangan &amp; Iuran</div>
+          <div class="cc-module-meta">{{ stats.unpaid_bills }} tagihan belum dibayar</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('finance') }}" target="_blank" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Modul Keuangan
+        </a>
+        <a href="{{ url_for('finance_administration') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Kelola Tagihan
+        </a>
+        <a href="{{ url_for('finance_payments') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembayaran
+        </a>
+        <a href="{{ url_for('finance_reports') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-chart-bar"></i> Laporan Keuangan
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- E-Raport -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">E-Raport</div>
+          <div class="cc-module-meta">{{ stats.raport_published }} diterbitkan · {{ stats.raport_draft }} draf</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('eraport') }}" target="_blank" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Modul E-Raport
+        </a>
+        <a href="{{ url_for('eraport_bulk') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-layer-group"></i> E-Raport Massal
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Silabus & Kurikulum -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)">
+          <i class="fa-solid fa-table-list"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Silabus &amp; Kurikulum</div>
+          <div class="cc-module-meta">Rencana pembelajaran per kelas</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('curriculum') }}" target="_blank" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Modul Silabus
+        </a>
+        <a href="{{ url_for('curriculum_database') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-database"></i> Database Silabus
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prestasi & Progress -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#ec4899,#f472b6)">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Prestasi &amp; Hafalan</div>
+          <div class="cc-module-meta">Progress belajar santri harian</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('daily_progress') }}" target="_blank" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Modul Prestasi
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Perpustakaan -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#14b8a6,#2dd4bf)">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Perpustakaan Digital</div>
+          <div class="cc-module-meta">{{ stats.total_books }} buku tersedia</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('library') }}" target="_blank" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Perpustakaan
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konten & Portal -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#f97316,#fb923c)">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Konten &amp; Pengumuman</div>
+          <div class="cc-module-meta">CMS halaman &amp; pengumuman portal</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('control_center_content') }}" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-eye"></i> Kelola Konten
+        </a>
+        <a href="{{ url_for('portal_control_dashboard_v17') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-gears"></i> Pusat Kendali Portal
+        </a>
+        <a href="{{ url_for('portal_control_pages_v17') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-file-code"></i> Kelola Halaman
+        </a>
+        <a href="{{ url_for('portal_control_content_v17') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-bullhorn"></i> Kelola Pengumuman
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pengaturan -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#6366f1,#818cf8)">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Pengaturan &amp; Sistem</div>
+          <div class="cc-module-meta">Konfigurasi identitas &amp; tampilan website</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="{{ url_for('control_center_settings') }}" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-sliders"></i> Pengaturan Website
+        </a>
+        <a href="{{ url_for('control_center_database') }}" class="cc-module-link">
+          <i class="fa-solid fa-database"></i> Database Manager
+        </a>
+        <a href="{{ url_for('control_center_backup') }}" class="cc-module-link">
+          <i class="fa-solid fa-box-archive"></i> Backup &amp; Restore
+        </a>
+        <a href="{{ url_for('control_center_users') }}" class="cc-module-link">
+          <i class="fa-solid fa-users-gear"></i> Manajemen Pengguna
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Laporan & Export -->
+  <div class="cc-card cc-module-card">
+    <div class="cc-card-body">
+      <div class="cc-module-header">
+        <div class="cc-module-icon" style="background:linear-gradient(135deg,#dc2626,#ef4444)">
+          <i class="fa-solid fa-chart-bar"></i>
+        </div>
+        <div>
+          <div class="cc-module-title">Laporan &amp; Export</div>
+          <div class="cc-module-meta">Export data dalam berbagai format</div>
+        </div>
+      </div>
+      <div class="cc-module-links">
+        <a href="/students/export.csv?download=1" class="cc-module-link cc-module-link-primary">
+          <i class="fa-solid fa-file-csv"></i> Export Santri (CSV)
+        </a>
+        <a href="{{ url_for('export_students_pdf') }}" target="_blank" class="cc-module-link">
+          <i class="fa-solid fa-file-pdf"></i> Export Santri (PDF)
+        </a>
+        <a href="{{ url_for('control_center_db_export_all') }}" class="cc-module-link">
+          <i class="fa-solid fa-file-zipper"></i> Export Semua DB (ZIP)
+        </a>
+        <a href="{{ url_for('control_center_activity_log') }}?export=csv" class="cc-module-link">
+          <i class="fa-solid fa-scroll"></i> Export Log Aktivitas
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quick Stats Summary -->
+<div class="cc-card" style="margin-top:2rem">
+  <div class="cc-card-header"><h2 class="cc-section-title"><i class="fa-solid fa-chart-bar"></i> Ringkasan Status Sistem</h2></div>
+  <div class="cc-card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem">
+      <div class="cc-info-block">
+        <div class="cc-info-label">Database</div>
+        <div class="cc-info-value">{{ stats.db_size_mb }} MB</div>
+      </div>
+      <div class="cc-info-block">
+        <div class="cc-info-label">Aktivitas Hari Ini</div>
+        <div class="cc-info-value">{{ stats.activity_today }} aksi</div>
+      </div>
+      <div class="cc-info-block">
+        <div class="cc-info-label">Tagihan Tertunggak</div>
+        <div class="cc-info-value" style="color:{% if stats.unpaid_bills > 0 %}#f59e0b{% else %}#10b981{% endif %}">
+          {{ stats.unpaid_bills }} tagihan
+        </div>
+      </div>
+      <div class="cc-info-block">
+        <div class="cc-info-label">E-Raport Terbit</div>
+        <div class="cc-info-value">{{ stats.raport_published }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

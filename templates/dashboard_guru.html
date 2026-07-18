@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Pusat Kendali Guru — {{ portal_identity.tpq_name|default('TPQ HMarisa') }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_admin_patch.css') }}?v=20260714-2">{% endblock %}
+{% block content %}
+
+{# ── Hero kelas ── #}
+<div class="pk-class-hero">
+  <div class="pk-class-hero-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+  <div class="pk-class-hero-text">
+    <span class="eyebrow">Pusat Kendali Guru</span>
+    <h2>Selamat datang, {{ current_user.full_name }}</h2>
+    <p>
+      {% if current_user.assigned_class %}
+        Kelas yang diampu: <strong style="color:#fff">{{ current_user.assigned_class }}</strong>
+        {% if class_students %} · {{ class_students|length }} santri aktif{% endif %}
+      {% else %}
+        Belum ada kelas yang ditugaskan. Hubungi admin untuk pengaturan.
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+{# ── Pusat Kendali Guru — menu fitur ── #}
+<section class="pk-section">
+  <span class="pk-section-label">Menu Utama</span>
+  <div class="pk-grid">
+    <a class="pk-card" href="{{ url_for('curriculum') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon amber"><i class="fa-solid fa-calendar-week"></i></span>
+      <div><h3>Jadwal Mengajar</h3><p>Silabus bulanan dan rencana materi</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('students') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon green"><i class="fa-solid fa-users"></i></span>
+      <div><h3>Daftar Santri Kelas</h3><p>Lihat data santri di kelas Anda</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('daily_progress') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon teal"><i class="fa-solid fa-clipboard-check"></i></span>
+      <div><h3>Absensi & Prestasi</h3><p>Catat kehadiran dan mutabaah harian</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('eraport') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon blue"><i class="fa-solid fa-file-pen"></i></span>
+      <div><h3>Input Nilai</h3><p>Isi dan kelola nilai E-Raport santri</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('daily_progress') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon purple"><i class="fa-solid fa-star-and-crescent"></i></span>
+      <div><h3>Input Hafalan</h3><p>Rekam progress hafalan Juz 30</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('daily_progress') }}{% if current_user.assigned_class %}?class_name={{ current_user.assigned_class|urlencode }}{% endif %}">
+      <span class="pk-card-icon rose"><i class="fa-solid fa-book-open-reader"></i></span>
+      <div><h3>Catatan Perkembangan</h3><p>Jurnal mutabaah dan catatan harian</p></div>
+    </a>
+    <a class="pk-card" href="{{ url_for('library') }}">
+      <span class="pk-card-icon amber"><i class="fa-solid fa-book-open"></i></span>
+      <div><h3>Perpustakaan Digital</h3><p>Buku dan materi pembelajaran</p></div>
+    </a>
+    {% if finance_teacher_allowed|default(false) %}
+    <a class="pk-card" href="{{ url_for('finance_teacher_status_v15e') }}">
+      <span class="pk-card-icon slate"><i class="fa-solid fa-wallet"></i></span>
+      <div><h3>Status Iuran Kelas</h3><p>Pantau status pembayaran santri</p></div>
+    </a>
+    {% endif %}
+  </div>
+</section>
+
+<hr class="pk-divider">
+
+<div class="dashboard-two-col">
+  {# ── Daftar santri di kelas ── #}
+  <section class="card">
+    <div class="card-head">
+      <div><h2><i class="fa-solid fa-users"></i> Santri Kelas {{ current_user.assigned_class or '—' }}</h2><p class="muted">{{ class_students|length }} santri aktif</p></div>
+      {% if current_user.assigned_class %}
+      <a href="{{ url_for('students') }}?class_name={{ current_user.assigned_class|urlencode }}">Lihat semua <i class="fa-solid fa-arrow-right"></i></a>
+      {% endif %}
+    </div>
+    {% if class_students %}
+    <div class="pk-student-list">
+      {% for s in class_students[:8] %}
+      <a class="pk-student-row" href="{{ url_for('daily_progress') }}?student_id={{ s.id }}">
+        <span class="pk-student-avatar">{{ s.name[:1]|upper }}</span>
+        <div>
+          <strong>{{ s.name }}</strong>
+          <small>NIS {{ s.nis }}</small>
+        </div>
+        <i class="fa-solid fa-chevron-right pk-arrow"></i>
+      </a>
+      {% endfor %}
+      {% if class_students|length > 8 %}
+      <a class="pk-student-row" href="{{ url_for('students') }}?class_name={{ current_user.assigned_class|urlencode }}" style="justify-content:center;color:#075f46;font-weight:700;font-size:13px">
+        <i class="fa-solid fa-ellipsis"></i>
+        <div><strong>Lihat {{ class_students|length - 8 }} santri lainnya</strong></div>
+        <i class="fa-solid fa-arrow-right pk-arrow"></i>
+      </a>
+      {% endif %}
+    </div>
+    {% elif current_user.assigned_class %}
+    <div class="empty-state compact"><i class="fa-solid fa-users-slash"></i><p>Belum ada santri aktif di kelas ini.</p></div>
+    {% else %}
+    <div class="empty-state compact"><i class="fa-solid fa-triangle-exclamation"></i><p>Kelas belum ditugaskan. Hubungi admin.</p></div>
+    {% endif %}
+  </section>
+
+  {# ── Hadis Harian ── #}
+  <section class="card dashboard-green-card hadith-dashboard-card">
+    <div class="card-head"><h2><i class="fa-solid fa-quote-right"></i> Hadis Harian</h2></div>
+    {% if daily_hadith %}
+    <p class="hadith-arabic dashboard-arabic">{{ daily_hadith.arabic }}</p>
+    <p class="hadith-translation">"{{ daily_hadith.translation }}"</p>
+    <small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %} · {{ daily_hadith.theme }}</small>
+    {% else %}
+    <p class="empty green-empty">Bank hadis belum tersedia.</p>
+    {% endif %}
+  </section>
+</div>
+
+{# ── Silabus Bulanan ── #}
+<section class="card" id="dashboard-syllabus">
+  <div class="card-head">
+    <div>
+      <h2>Silabus Bulanan</h2>
+      {% if primary_year %}<p class="muted">Tahun Ajaran {{ primary_year.name }} · {{ primary_year.semester }}</p>{% endif %}
+    </div>
+    <a href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month) }}">Buka Silabus <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+  <form method="get" action="{{ url_for('dashboard') }}#dashboard-syllabus" class="search-filter-form dashboard-syllabus-form">
+    <label>Kelas
+      <select name="syllabus_class" required>
+        <option value="">Pilih kelas</option>
+        {% for c in CLASSES %}
+          {% if not current_user.assigned_class or c == current_user.assigned_class %}
+          <option value="{{ c }}" {% if curriculum_class==c %}selected{% endif %}>{{ c }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </label>
+    <label>Bulan
+      <select name="syllabus_month" required>
+        {% for m in MONTHS %}<option value="{{ m }}" {% if curriculum_month==m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-display"></i> Tampilkan</button>
+  </form>
+  {% if curriculum_rows %}
+  <div class="syllabus-result-summary">
+    <div><span class="summary-icon"><i class="fa-solid fa-table-list"></i></span><span><strong>{{ curriculum_rows|length }} data silabus ditemukan</strong><small>{{ curriculum_class }} · {{ curriculum_month }} {{ curriculum_rows[0].year }}</small></span></div>
+    <button class="btn btn-outline" type="button" data-open-syllabus-detail><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Lihat Detail</button>
+  </div>
+  {% elif syllabus_filtered %}
+  <div class="empty-state compact"><i class="fa-solid fa-table-list"></i><p>Belum ada silabus untuk kelas <strong>{{ curriculum_class }}</strong> bulan <strong>{{ curriculum_month }}</strong>.</p></div>
+  {% else %}
+  <p class="empty">Pilih kelas dan bulan, kemudian tekan Tampilkan.</p>
+  {% endif %}
+</section>
+
+{# Syllabus detail modal (reuse existing) #}
+{% if curriculum_rows %}
+<div class="syllabus-detail-overlay" data-syllabus-detail data-auto-open="{{ '1' if syllabus_filtered else '0' }}" aria-hidden="true">
+  <section class="syllabus-detail-modal" role="dialog" aria-modal="true" aria-labelledby="syllabus-detail-title-g">
+    <header class="syllabus-detail-header">
+      <div><span class="eyebrow">Detail Silabus Bulanan</span><h2 id="syllabus-detail-title-g">{{ curriculum_class }} · {{ curriculum_month }} {{ curriculum_rows[0].year }}</h2></div>
+      <button type="button" class="syllabus-close" data-close-syllabus-detail aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="syllabus-detail-scroll">
+      <div class="syllabus-detail-list">
+        {% for row in curriculum_rows %}
+        <article class="syllabus-subject-card">
+          <div class="syllabus-subject-head"><div><span class="subject-number">{{ loop.index }}</span><span><small>Bidang Pelajaran</small><h3>{{ row.subject }}</h3></span></div></div>
+          <div class="syllabus-topic-box"><small>Materi Pokok</small><strong>{{ row.topic }}</strong></div>
+          <section class="syllabus-week-section"><h4><i class="fa-solid fa-calendar-week"></i> Rencana Pekan 1–5</h4>
+            <div class="syllabus-week-grid">
+              {% for plan in [row.week1, row.week2, row.week3, row.week4, row.week5] %}
+              <div class="week-plan-card"><span>Pekan {{ loop.index }}</span><p>{{ plan or 'Belum diisi' }}</p></div>
+              {% endfor %}
+            </div>
+          </section>
+          <div class="syllabus-card-actions"><a class="btn btn-primary" href="{{ url_for('document_preview', document_type='curriculum-single', row_id=row.id) }}"><i class="fa-solid fa-file-pdf"></i> Preview PDF</a></div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    <footer class="syllabus-detail-footer">
+      <button type="button" class="btn btn-outline" data-close-syllabus-detail><i class="fa-solid fa-xmark"></i> Tutup</button>
+      <a class="btn btn-primary" href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month) }}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Halaman Silabus</a>
+    </footer>
+  </section>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+(() => {
+  const overlay = document.querySelector('[data-syllabus-detail]');
+  if (!overlay) return;
+  const open = () => { overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open'); };
+  const close = () => { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden','true'); document.body.classList.remove('modal-open'); };
+  document.querySelectorAll('[data-open-syllabus-detail]').forEach(b => b.addEventListener('click', open));
+  overlay.querySelectorAll('[data-close-syllabus-detail]').forEach(b => b.addEventListener('click', close));
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  if (overlay.dataset.autoOpen === '1') open();
+})();
+</script>
+{% endblock %}

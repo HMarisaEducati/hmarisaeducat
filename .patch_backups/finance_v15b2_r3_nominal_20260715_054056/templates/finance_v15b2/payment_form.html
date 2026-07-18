@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Catat Pembayaran{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/finance_v15b.css') }}?v=20260715-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/finance_administration_v15b2.css') }}?v=20260715-1">{% endblock %}
+{% block content %}
+<div class="finance-v15b-page finance-admin-v15b2-page" data-payment-page>
+  <div class="finance-page-heading"><div><span class="eyebrow">{{ bill.bill_number }}</span><h1>Catat Pembayaran</h1><p>{{ student.name if student else 'Santri tidak ditemukan' }} · {{ charge_type.name if charge_type else 'Tagihan' }} {{ bill.period_label }} {{ bill.period_year }}</p></div><a class="btn btn-outline" href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='payments') }}"><i class="fa-solid fa-arrow-left"></i> Kembali</a></div>
+  {% include "finance_v15b/_tabs.html" %}
+
+  <div class="finance-payment-summary-grid">
+    <article><span>Nominal Tagihan</span><strong>{{ bill.amount|rupiah }}</strong></article><article><span>Sudah Dibayar</span><strong>{{ bill.paid_amount|rupiah }}</strong></article><article><span>Sisa Tagihan</span><strong>{{ bill.remaining_amount|rupiah }}</strong></article><article><span>Status</span><strong>{{ bill.status }}</strong></article>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="finance-panel finance-form narrow" data-payment-form data-remaining="{{ bill.remaining_amount }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}"><input type="hidden" name="bill_version" value="{{ bill.version }}">
+    <div class="finance-form-grid two">
+      <label>Tanggal Pembayaran<input type="date" name="payment_date" value="{{ request.form.get('payment_date', today) }}" required></label>
+      <label>Nominal Dibayar<input type="number" name="amount" min="1" max="2000000000" step="1000" value="{{ request.form.get('amount', bill.remaining_amount) }}" required data-payment-amount></label>
+      <label>Metode Pembayaran<select name="method" required data-payment-method><option value="Tunai" {% if request.form.get('method','Tunai') == 'Tunai' %}selected{% endif %}>Tunai</option><option value="Transfer" {% if request.form.get('method') == 'Transfer' %}selected{% endif %}>Transfer</option><option value="Lainnya" {% if request.form.get('method') == 'Lainnya' %}selected{% endif %}>Lainnya</option></select></label>
+      <label data-payment-channel-wrap>Rekening Tujuan<select name="payment_channel_id"><option value="">Pilih rekening</option>{% for channel in channels %}<option value="{{ channel.id }}" {% if request.form.get('payment_channel_id')|string == channel.id|string %}selected{% endif %}>{{ channel.label or channel.bank_name }} · {{ channel.account_number }} · {{ channel.account_holder }}</option>{% endfor %}</select></label>
+      <label>Nama Admin/Penerima<input name="receiver_name" value="{{ request.form.get('receiver_name', current_user.full_name) }}" required></label>
+      <label>Bukti Transfer <small>(opsional, maks. 5 MB)</small><input type="file" name="proof" accept=".png,.jpg,.jpeg,.webp,.pdf"></label>
+    </div>
+    <label>Catatan<textarea name="notes" rows="3">{{ request.form.get('notes','') }}</textarea></label>
+    <label class="finance-check-line finance-overpayment-check" data-overpayment-wrap hidden><input type="checkbox" name="allow_overpayment" value="1"> <span>Izinkan pembayaran melebihi sisa tagihan setelah diperiksa admin.</span></label>
+    <div class="finance-form-actions"><button class="btn btn-primary" type="button" data-preview-payment><i class="fa-solid fa-eye"></i> Preview Pembayaran</button><a class="btn btn-ghost" href="{{ url_for('finance_bill_detail', bill_id=bill.id, view='payments') }}">Batal</a></div>
+    <noscript><button class="btn btn-primary" type="submit">Simpan Pembayaran</button></noscript>
+  </form>
+
+  <dialog class="finance-payment-preview-dialog" data-payment-preview-dialog>
+    <form method="dialog" class="finance-preview-dialog-card">
+      <div class="finance-preview-dialog-head"><div><span class="eyebrow">Konfirmasi</span><h2>Preview Pembayaran</h2></div><button value="cancel" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+      <dl><div><dt>Nama Santri</dt><dd>{{ student.name if student else 'Belum diisi' }}</dd></div><div><dt>Tagihan</dt><dd>{{ charge_type.name if charge_type else 'Tagihan' }} · {{ bill.period_label }} {{ bill.period_year }}</dd></div><div><dt>Nominal Pembayaran</dt><dd data-preview-amount>Rp0</dd></div><div><dt>Sisa Setelah Pembayaran</dt><dd data-preview-remaining>Rp0</dd></div><div><dt>Status Setelah Pembayaran</dt><dd data-preview-status>Belum Lunas</dd></div><div><dt>Metode</dt><dd data-preview-method>Tunai</dd></div><div><dt>Tanggal</dt><dd data-preview-date>Belum diisi</dd></div><div><dt>Admin/Penerima</dt><dd data-preview-receiver>Belum diisi</dd></div></dl>
+      <div class="finance-warning" data-preview-overpayment hidden><strong><i class="fa-solid fa-triangle-exclamation"></i> Pembayaran melebihi sisa tagihan.</strong><span>Pastikan kotak izin pembayaran lebih sudah dicentang.</span></div>
+      <div class="finance-form-actions"><button value="cancel" class="btn btn-outline">Kembali Edit</button><button value="default" class="btn btn-primary" type="button" data-confirm-payment><i class="fa-solid fa-floppy-disk"></i> Simpan Pembayaran</button></div>
+    </form>
+  </dialog>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/finance_v15b.js') }}?v=20260715-1"></script><script src="{{ url_for('static', filename='js/finance_administration_v15b2.js') }}?v=20260715-1"></script>{% endblock %}

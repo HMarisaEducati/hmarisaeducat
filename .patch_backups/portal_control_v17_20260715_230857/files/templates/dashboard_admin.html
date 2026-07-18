@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Dasbor Admin{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_admin_patch.css') }}?v=20260714-2">{% endblock %}
+{% block content %}
+<div class="page-heading"><div><span class="eyebrow">Admin · Ringkasan Portal</span><h1>Dasbor TPQ HMarisa</h1><p>Ringkasan data, hadis harian, silabus, dan santri terbaik bulanan.</p></div><a class="btn btn-outline" href="{{ url_for('dashboard', refresh_monthly=1) }}"><i class="fa-solid fa-rotate"></i> Hitung Ulang Bulanan</a></div>
+<div class="stat-grid">
+  <article class="stat-card"><i class="fa-solid fa-users"></i><div><strong>{{ stats.students }}</strong><span>Santri Aktif</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-wallet"></i><div><strong>{{ stats.unpaid }}</strong><span>Tagihan Belum Lunas</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-hourglass-half"></i><div><strong>{{ stats.pending_bills }}</strong><span>Menunggu Verifikasi</span></div></article>
+  <article class="stat-card"><i class="fa-solid fa-book"></i><div><strong>{{ stats.pending_books }}</strong><span>Akses Buku Menunggu</span></div></article>
+</div>
+
+<div class="dashboard-two-col dashboard-green-pair">
+  <section class="card dashboard-green-card hadith-dashboard-card">
+    <div class="card-head"><h2><i class="fa-solid fa-quote-right"></i> Hadis Harian</h2>{% if not current_user.is_teacher %}<a href="{{ url_for('hadith_manager') }}">Kelola Hadis</a>{% endif %}</div>
+    {% if daily_hadith %}<p class="hadith-arabic dashboard-arabic">{{ daily_hadith.arabic }}</p><p class="hadith-translation">“{{ daily_hadith.translation }}”</p><small>{{ daily_hadith.source }}{% if daily_hadith.number %} No. {{ daily_hadith.number }}{% endif %} · {{ daily_hadith.theme }}</small>{% else %}<p class="empty green-empty">Bank hadis belum tersedia.</p>{% endif %}
+  </section>
+  <section class="card dashboard-green-card winners-dashboard-card">
+    <div class="card-head"><h2><i class="fa-solid fa-award"></i> Santri Terbaik Bulan Ini</h2><span class="green-soft-label">{{ monthly_period_label or 'Belum tersedia' }}</span></div>
+    <div class="winner-dashboard-list">
+      {% for winner in monthly_winners %}
+      <article><span class="winner-icon"><i class="fa-solid fa-medal"></i></span><div><small>{{ winner.class_name }}</small><strong>{{ winner.student.public_name or winner.student.nickname or winner.student.name }}</strong><p>{{ winner.reason }}</p></div><span class="score-badge">{{ '%.1f'|format(winner.score) }}</span></article>
+      {% else %}<p class="empty green-empty">Belum ada hasil penilaian bulanan.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+
+{% if poster_notice %}
+<section class="monthly-admin-notice" role="status">
+  <span class="notice-icon"><i class="fa-solid fa-bell"></i></span>
+  <div><strong>Pemberitahuan Admin</strong><p>{{ poster_notice }}</p></div>
+</section>
+{% endif %}
+
+<section class="card poster-dashboard" id="poster-santri-terbaik">
+  <div class="card-head"><div><h2>Poster Santri Terbaik Bulanan</h2><p class="muted">Dibuat otomatis pada hari terakhir bulan pukul 17.00 WIB dan dibagikan manual melalui WhatsApp.</p></div>{% if latest_poster %}<span class="badge">{{ latest_poster.status }}</span>{% endif %}</div>
+  {% if latest_poster %}
+  <div class="poster-dashboard-layout">
+    <a class="poster-dashboard-preview" href="{{ url_for('poster_file', filename=latest_poster.filename) }}" target="_blank" aria-label="Lihat poster ukuran penuh">
+      <img src="{{ url_for('poster_file', filename=latest_poster.filename) }}" alt="Poster Santri Terbaik Bulan Ini">
+    </a>
+    <div class="poster-download-panel">
+      <div><strong>Poster bulan {{ latest_poster.period_start.strftime('%m/%Y') }} siap diperiksa</strong><p>Periode {{ latest_poster.period_start|tanggal_id }} – {{ latest_poster.period_end|tanggal_id }}</p><small>{{ latest_poster.filename }}</small><p class="poster-preview-help">Klik gambar untuk melihat ukuran penuh. Poster dapat dibagikan malam ini atau besok.</p></div>
+      <div class="button-row">
+        <a class="btn btn-primary" href="{{ url_for('document_preview', document_type='poster', filename=latest_poster.filename) }}"><i class="fa-solid fa-download"></i> Preview & Unduh Poster</a>
+        <a class="btn btn-outline" target="_blank" href="https://wa.me/?text={{ ('Assalamu’alaikum. Berikut Poster Santri Terbaik Bulan ' ~ (latest_poster.period_start.strftime('%m/%Y')) ~ ' TPQ HMarisa. Silakan diperiksa sebelum dipublikasikan.')|urlencode }}"><i class="fa-brands fa-whatsapp"></i> Buka WhatsApp</a>
+        <a class="btn btn-gold" href="{{ url_for('dashboard', refresh_monthly=1) }}#poster-santri-terbaik"><i class="fa-solid fa-wand-magic-sparkles"></i> Hitung Ulang & Buat Ulang</a>
+        {% if latest_poster.status != 'Sudah Dipublikasikan' %}
+        <form method="post" action="{{ url_for('mark_poster_published', poster_id=latest_poster.id) }}"><button class="btn btn-outline" type="submit"><i class="fa-solid fa-check"></i> Tandai Sudah Dipublikasikan</button></form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}<div class="empty-state compact"><i class="fa-solid fa-image"></i><p>Poster belum dibuat. Tekan “Hitung Ulang Bulanan”.</p></div>{% endif %}
+</section>
+
+<section class="card" id="dashboard-syllabus">
+  <div class="card-head">
+    <div>
+      <h2>Silabus Bulanan</h2>
+      {% if primary_year %}<p class="muted">Tahun Ajaran {{ primary_year.name }} · {{ primary_year.semester }}</p>{% endif %}
+    </div>
+    <a href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month, year=(primary_year.start_date.year if primary_year and primary_year.start_date else current_year)) }}">Buka Silabus</a>
+  </div>
+  <form method="get" action="{{ url_for('dashboard') }}#dashboard-syllabus" class="search-filter-form dashboard-syllabus-form">
+    <label>Kelas
+      <select name="syllabus_class" required>
+        <option value="">Pilih kelas</option>
+        {% for c in CLASSES %}<option value="{{ c }}" {% if curriculum_class==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Bulan
+      <select name="syllabus_month" required>
+        {% for m in MONTHS %}<option value="{{ m }}" {% if curriculum_month==m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-display"></i> Tampilkan</button>
+  </form>
+
+  {% if curriculum_rows %}
+  <div class="syllabus-result-summary">
+    <div>
+      <span class="summary-icon"><i class="fa-solid fa-table-list"></i></span>
+      <span><strong>{{ curriculum_rows|length }} data Silabus Bulanan ditemukan</strong><small>{{ curriculum_class }} · {{ curriculum_month }} {{ curriculum_rows[0].year }}{% if primary_year %} · {{ primary_year.name }}{% endif %}</small></span>
+    </div>
+    <button class="btn btn-outline" type="button" data-open-syllabus-detail><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Lihat Detail Besar</button>
+  </div>
+  {% elif syllabus_filtered %}
+  <div class="empty-state compact">
+    <i class="fa-solid fa-table-list"></i>
+    <p>Belum ada Silabus Bulanan untuk kelas <strong>{{ curriculum_class }}</strong> pada bulan <strong>{{ curriculum_month }}</strong>.</p>
+    <a class="btn btn-outline" href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month) }}">Tambah Silabus Bulanan</a>
+  </div>
+  {% else %}
+  <p class="empty">Pilih kelas dan bulan, kemudian tekan Tampilkan.</p>
+  {% endif %}
+</section>
+
+{% if curriculum_rows %}
+<div class="syllabus-detail-overlay" data-syllabus-detail data-auto-open="{{ '1' if syllabus_filtered else '0' }}" aria-hidden="true">
+  <section class="syllabus-detail-modal" role="dialog" aria-modal="true" aria-labelledby="syllabus-detail-title">
+    <header class="syllabus-detail-header">
+      <div>
+        <span class="eyebrow">Detail Silabus Bulanan</span>
+        <h2 id="syllabus-detail-title">{{ curriculum_class }} · {{ curriculum_month }} {{ curriculum_rows[0].year }}</h2>
+        <p>Seluruh bidang pelajaran dan rencana materi pada bulan yang dipilih.</p>
+      </div>
+      <button type="button" class="syllabus-close" data-close-syllabus-detail aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+
+    <div class="syllabus-identity-grid">
+      <div><small>Kelas</small><strong>{{ curriculum_class }}</strong></div>
+      <div><small>Bulan</small><strong>{{ curriculum_month }} {{ curriculum_rows[0].year }}</strong></div>
+      <div><small>Tahun Ajaran</small><strong>{{ primary_year.name if primary_year else curriculum_rows[0].academic_year }}</strong></div>
+      <div><small>Guru/Wali Kelas</small><strong>{{ TEACHERS.get(curriculum_class, '-') }}</strong></div>
+    </div>
+
+    <div class="syllabus-detail-scroll">
+      <div class="syllabus-detail-list">
+        {% for row in curriculum_rows %}
+        <article class="syllabus-subject-card">
+          <div class="syllabus-subject-head">
+            <div>
+              <span class="subject-number">{{ loop.index }}</span>
+              <span><small>Bidang Pelajaran</small><h3>{{ row.subject }}</h3></span>
+            </div>
+            <div class="syllabus-badges"><span>V{{ row.version }}</span><span>{{ row.source_type or 'Input Manual' }}</span></div>
+          </div>
+
+          <div class="syllabus-topic-box"><small>Materi Pokok</small><strong>{{ row.topic }}</strong></div>
+
+          <div class="syllabus-content-grid">
+            <section>
+              <h4><i class="fa-solid fa-bullseye"></i> Target Pembelajaran</h4>
+              <p>{{ row.learning_target or 'Belum diisi.' }}</p>
+            </section>
+            <section>
+              <h4><i class="fa-solid fa-note-sticky"></i> Catatan Guru</h4>
+              <p>{{ row.notes or 'Tidak ada catatan.' }}</p>
+            </section>
+          </div>
+
+          <section class="syllabus-week-section">
+            <h4><i class="fa-solid fa-calendar-week"></i> Rencana Materi Pekan 1–5</h4>
+            <div class="syllabus-week-grid">
+              {% for plan in [row.week1, row.week2, row.week3, row.week4, row.week5] %}
+              <div class="week-plan-card"><span>Pekan {{ loop.index }}</span><p>{{ plan or 'Belum diisi' }}</p></div>
+              {% endfor %}
+            </div>
+          </section>
+
+          <div class="syllabus-card-actions">
+            <a class="btn btn-outline" href="{{ url_for('edit_curriculum', row_id=row.id) }}"><i class="fa-solid fa-pen-to-square"></i> Edit Silabus</a>
+            <a class="btn btn-primary" href="{{ url_for('document_preview', document_type='curriculum-single', row_id=row.id) }}"><i class="fa-solid fa-file-pdf"></i> Preview PDF</a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+
+    <footer class="syllabus-detail-footer">
+      <button type="button" class="btn btn-outline" data-close-syllabus-detail><i class="fa-solid fa-xmark"></i> Tutup</button>
+      <a class="btn btn-primary" href="{{ url_for('curriculum', class_name=curriculum_class, month=curriculum_month, year=curriculum_rows[0].year) }}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Halaman Silabus</a>
+    </footer>
+  </section>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(() => {
+  const overlay = document.querySelector('[data-syllabus-detail]');
+  if (!overlay) return;
+  const openButtons = document.querySelectorAll('[data-open-syllabus-detail]');
+  const closeButtons = overlay.querySelectorAll('[data-close-syllabus-detail]');
+  const open = () => {
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  };
+  const close = () => {
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  };
+  openButtons.forEach(btn => btn.addEventListener('click', open));
+  closeButtons.forEach(btn => btn.addEventListener('click', close));
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  if (overlay.dataset.autoOpen === '1') open();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "portal_settings_v16a/layout.html" %}
+{% block settings_content %}
+<form class="ps16-form-card ps16x-form" method="post" data-dirty-form>
+  <div class="ps16-section-head"><div><h3>Menu & Navigasi</h3><p>Ubah nama, ikon, urutan, dan visibilitas. Route resmi tetap dikunci sehingga perubahan menu tidak membuka akses data baru.</p></div><label class="ps16x-switch"><input type="checkbox" name="enabled" {% if draft_payload.enabled %}checked{% endif %}><span></span> Aktifkan menu dinamis</label></div>
+  {% for scope,title in [('admin','Portal Admin'),('guardian','Portal Wali')] %}
+  <section class="ps16x-menu-section"><h4>{{ title }}</h4><div class="ps16x-menu-table"><div class="ps16x-menu-head"><span>Menu</span><span>Nama Tampil</span><span>Ikon</span><span>Urutan</span><span>Tampil</span></div>
+    {% set defaults = admin_defaults if scope=='admin' else guardian_defaults %}
+    {% for key,default in defaults.items() %}{% set row=draft_payload[scope][key] %}
+    <div class="ps16x-menu-row"><strong>{{ default.label }}</strong><input type="text" name="{{ scope }}_{{ key }}_label" value="{{ row.label }}" maxlength="50"><select name="{{ scope }}_{{ key }}_icon">{% for icon_label,icon_class in icon_options.items() %}<option value="{{ icon_class }}" {% if row.icon==icon_class %}selected{% endif %}>{{ icon_label|replace('-',' ')|title }}</option>{% endfor %}</select><input type="number" name="{{ scope }}_{{ key }}_order" value="{{ row.order }}" min="1" max="999"><label class="ps16x-checkbox"><input type="checkbox" name="{{ scope }}_{{ key }}_visible" {% if row.visible %}checked{% endif %} {% if key=='settings' %}disabled{% endif %}><span>{{ 'Wajib' if key=='settings' else 'Ya' }}</span></label></div>
+    {% endfor %}
+  </div></section>
+  {% endfor %}
+  {% include "portal_settings_v16/_section_actions.html" %}
+</form>
+{% endblock %}

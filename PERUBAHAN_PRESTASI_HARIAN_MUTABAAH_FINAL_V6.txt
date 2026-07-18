@@ -1,0 +1,44 @@
+PATCH PORTAL TPQ HMARISA — PRESTASI HARIAN & MUTABAAH FINAL V6
+Tanggal: 15 Juli 2026
+
+Patch kumulatif ini memuat seluruh perbaikan Silabus/Preview V5 dan revisi final halaman Prestasi Harian.
+
+PERUBAHAN PRESTASI HARIAN
+1. Database santri tidak muncul saat halaman Prestasi Harian pertama dibuka.
+2. Santri baru tampil setelah kelas dipilih dan hasil hanya sesuai kelas/status tersebut.
+3. Tombol utama diubah menjadi “Kelola Mutabaah”.
+
+TIGA HALAMAN MUTABAAH
+1. Tambah Jurnal
+2. Riwayat Jurnal
+3. Tracker Hafalan
+Ketiganya merupakan halaman terpisah agar halaman tidak memanjang berlebihan.
+
+TAMBAH/EDIT JURNAL
+1. Materi lama dari CurriculumBank tidak dipakai lagi.
+2. Materi hanya muncul dari Silabus Bulanan aktif dengan source_type “Import Excel”.
+3. Materi difilter otomatis berdasarkan kelas santri, tanggal/bulan/tahun, dan bidang pelajaran.
+4. Jika belum ada silabus baru, guru dapat memakai Materi Manual.
+5. Dropdown Jenjang Tahsin: Tilawati/Iqro atau Al-Qur'an.
+6. Kolom Tilawati/Iqro dan Al-Qur'an saling mengunci; kolom nonaktif dikosongkan sebelum disimpan.
+7. Dropdown Keterangan: Lanjut, Cukup, Ulangi.
+8. Catatan Guru terisi otomatis tanpa kata sholih/sholihah dan tetap dapat diedit manual.
+
+RIWAYAT JURNAL
+1. Halaman tersendiri dengan filter bulan, tahun, bidang, kehadiran, dan kata kunci.
+2. Pilihan 10, 25, 50, atau 100 data per halaman.
+3. Tombol Lihat, Edit, dan Hapus/arsip.
+4. Tampilan tabel desktop dan kartu mobile.
+
+TRACKER HAFALAN
+1. Halaman khusus daftar 37 surat Juz 30.
+2. Status sederhana: Belum Mulai, Proses, Selesai.
+3. Ringkasan jumlah status dan progres selesai/37.
+4. Menyimpan tanggal mulai, tanggal selesai, nilai/kelancaran opsional, dan catatan melalui riwayat HafalanRecord.
+5. Tombol Mulai Hafalan, Tandai Selesai, Update Progres, dan Edit Catatan.
+
+KOMPATIBILITAS DATA
+- Tidak menambah atau mengubah kolom database.
+- Jurnal lama tetap terbaca dan diberi nilai default secara aman.
+- Route lama /academics/<id> tetap dipakai sebagai halaman Tambah Jurnal.
+- Route hafalan lama tetap dipertahankan agar tautan lama tidak rusak.

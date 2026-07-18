@@ -1,0 +1,16 @@
+<div class="page-heading progress-page-heading">
+  <div>
+    <span class="eyebrow">Admin · Prestasi Harian</span>
+    <h1>{{ student.name }}</h1>
+    <p>NIS {{ student.nis }} · {{ student.class_name }} · {{ raport.academic_year }} · Wali Kelas {{ TEACHERS.get(student.class_name, 'Belum diisi') }}</p>
+  </div>
+  <a class="btn btn-outline" href="{{ return_url }}">
+    <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
+  </a>
+</div>
+<div class="identity-strip progress-identity-strip">
+  <span><small>Nama Tampilan</small><strong>{{ student.public_name or student.nickname or student.name }}</strong></span>
+  <span><small>Status Santri</small><strong>{{ 'Aktif' if student.is_active else 'Nonaktif' }}</strong></span>
+  <span><small>Total Jurnal</small><strong>{{ total_journals }}</strong></span>
+  <span><small>Hafalan Selesai</small><strong>{{ hafalan_done }}/37</strong></span>
+</div>
