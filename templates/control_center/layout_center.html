@@ -1,0 +1,71 @@
+{% extends "control_center/base.html" %}
+{% block title %}Pusat Kendali Layout{% endblock %}
+
+{% block breadcrumb %}
+<span class="cc-bc-sep">/</span>
+<span>Pusat Kendali Layout</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <h1 class="cc-page-title"><i class="fa-solid fa-palette"></i> Pusat Kendali Layout</h1>
+    <p class="cc-page-sub">Fondasi manajemen layout portal yang dijalankan dari Control Center tanpa mengubah skema database.</p>
+  </div>
+</div>
+
+<div class="cc-dashboard-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));">
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-sitemap"></i> Portal Admin</div>
+      <span class="cc-badge cc-badge-green">Siap</span>
+    </div>
+    <div class="cc-card-body">
+      <p style="margin:0 0 1rem;color:var(--cc-text-muted)">Kelola layout tampilan admin dan komponen navigasi yang saat ini masih dikelola melalui konfigurasi portal yang sudah ada.</p>
+      <a href="{{ url_for('portal_settings_admin_theme_v16') }}" target="_blank" class="cc-btn cc-btn-primary"><i class="fa-solid fa-paintbrush"></i> Kelola Layout</a>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-chalkboard-user"></i> Portal Guru</div>
+      <span class="cc-badge cc-badge-blue">Siap</span>
+    </div>
+    <div class="cc-card-body">
+      <p style="margin:0 0 1rem;color:var(--cc-text-muted)">Fokus pada tata letak dashboard guru, bagian utama, serta blok navigasi yang dipakai pada portal guru.</p>
+      <a href="{{ url_for('portal_settings_navigation_v16') }}" target="_blank" class="cc-btn cc-btn-primary"><i class="fa-solid fa-paintbrush"></i> Kelola Layout</a>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fa-solid fa-users-between-lines"></i> Portal Wali Santri</div>
+      <span class="cc-badge cc-badge-purple">Siap</span>
+    </div>
+    <div class="cc-card-body">
+      <p style="margin:0 0 1rem;color:var(--cc-text-muted)">Tata letak portal wali santri dapat dipantau dan diatur dari konfigurasi tampilan yang sudah ada.</p>
+      <a href="{{ url_for('portal_settings_guardian_theme_v16') }}" target="_blank" class="cc-btn cc-btn-primary"><i class="fa-solid fa-paintbrush"></i> Kelola Layout</a>
+    </div>
+  </div>
+</div>
+
+<div class="cc-card" style="margin-top:1.5rem;">
+  <div class="cc-card-header">
+    <div class="cc-card-title"><i class="fa-solid fa-circle-info"></i> Status Konfigurasi</div>
+  </div>
+  <div class="cc-card-body">
+    <div class="cc-sysinfo">
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Sumber data</span><span class="cc-sysinfo-val">{{ layout_status.source }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Nama TPQ</span><span class="cc-sysinfo-val">{{ layout_status.tpq_name or '—' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Deskripsi singkat</span><span class="cc-sysinfo-val">{{ layout_status.short_description or '—' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Tema admin</span><span class="cc-sysinfo-val">{{ 'Aktif' if layout_status.admin_theme_enabled else 'Belum aktif' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Tema wali</span><span class="cc-sysinfo-val">{{ 'Aktif' if layout_status.guardian_theme_enabled else 'Belum aktif' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Navigasi portal</span><span class="cc-sysinfo-val">{{ 'Aktif' if layout_status.navigation_enabled else 'Belum aktif' }} · Admin {{ layout_status.admin_nav_items }} item · Wali {{ layout_status.guardian_nav_items }} item</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Visibilitas modul</span><span class="cc-sysinfo-val">{{ 'Aktif' if layout_status.module_visibility_enabled else 'Belum aktif' }} · {{ layout_status.module_visibility_count }} modul aktif</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Identitas akademik</span><span class="cc-sysinfo-val">{{ layout_status.identity_year or '—' }} · {{ layout_status.identity_semester or '—' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Warna utama</span><span class="cc-sysinfo-val">{{ layout_status.primary_color or '—' }}</span></div>
+      <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Warna sekunder</span><span class="cc-sysinfo-val">{{ layout_status.secondary_color or '—' }}</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

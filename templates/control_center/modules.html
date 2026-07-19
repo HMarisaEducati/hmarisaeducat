@@ -204,13 +204,19 @@
       </div>
       <div class="cc-module-links">
         <a href="{{ url_for('control_center_settings') }}" class="cc-module-link cc-module-link-primary">
-          <i class="fa-solid fa-sliders"></i> Pengaturan Website
+          <i class="fa-solid fa-sliders"></i> Pengaturan Portal
         </a>
         <a href="{{ url_for('control_center_database') }}" class="cc-module-link">
           <i class="fa-solid fa-database"></i> Database Manager
         </a>
+        <a href="{{ url_for('control_center_layout_center') }}" class="cc-module-link">
+          <i class="fa-solid fa-palette"></i> Pusat Kendali Layout
+        </a>
         <a href="{{ url_for('control_center_backup') }}" class="cc-module-link">
           <i class="fa-solid fa-box-archive"></i> Backup &amp; Restore
+        </a>
+        <a href="{{ url_for('sidebar_menu_admin') }}" class="cc-module-link">
+          <i class="fa-solid fa-list-check"></i> Kelola Menu Sidebar
         </a>
         <a href="{{ url_for('control_center_users') }}" class="cc-module-link">
           <i class="fa-solid fa-users-gear"></i> Manajemen Pengguna

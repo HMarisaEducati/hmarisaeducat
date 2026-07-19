@@ -10,10 +10,13 @@ Akses: hanya superadmin (role == 'admin_utama')
 
 import csv
 import io
+import json
 import os
 import platform
 import shutil
 import sys
+import uuid
+from copy import deepcopy
 from datetime import datetime, date, timedelta
 from functools import wraps
 
@@ -26,6 +29,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import inspect, text
 from sqlalchemy import or_ as sa_or
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
 
 # ── Start time for uptime calc ──────────────────────────────────────────────
 _CC_START_TIME = datetime.utcnow()
@@ -329,9 +333,338 @@ def install_control_center_v1(app, db, app_globals):
     CLASSES = app_globals.get("CLASSES", ["Ar Rahman", "Ar Rahim", "Al-Bayyan"])
 
     def _backup_dir():
-        d = os.path.join(app.root_path, "backups", "cc_backups")
+        d = os.path.join(app.root_path, "backups", "database")
         os.makedirs(d, exist_ok=True)
         return d
+
+    def _make_backup_filename():
+        now = datetime.now()
+        base = f"HMARISA_DB_Backup_{now:%Y-%m-%d}_{now:%H-%M}.sqlite"
+        candidate = base
+        counter = 1
+        while os.path.exists(os.path.join(_backup_dir(), candidate)):
+            candidate = f"HMARISA_DB_Backup_{now:%Y-%m-%d}_{now:%H-%M}_{counter}.sqlite"
+            counter += 1
+        return candidate
+
+    def _get_database_backup_summary():
+        db_path = _get_db_path()
+        backup_dir = _backup_dir()
+        db_name = os.path.basename(db_path) if db_path else "database.sqlite"
+        db_size_bytes = os.path.getsize(db_path) if db_path and os.path.exists(db_path) else 0
+        db_size_label = f"{db_size_bytes / (1024 * 1024):.2f} MB" if db_size_bytes else "0 MB"
+
+        latest_record = CCBackupRecord.query.order_by(CCBackupRecord.created_at.desc()).first()
+        backup_files = []
+        for name in sorted(os.listdir(backup_dir)):
+            if name.lower().endswith((".sqlite", ".db", ".sqlite3")):
+                path = os.path.join(backup_dir, name)
+                if os.path.isfile(path):
+                    backup_files.append({
+                        "filename": name,
+                        "size_bytes": os.path.getsize(path),
+                        "created_at": datetime.fromtimestamp(os.path.getmtime(path)),
+                    })
+
+        if latest_record:
+            last_backup_time = latest_record.created_at.strftime("%d/%m/%Y %H:%M")
+        elif backup_files:
+            last_backup_time = backup_files[-1]["created_at"].strftime("%d/%m/%Y %H:%M")
+        else:
+            last_backup_time = "Belum ada backup"
+
+        return {
+            "db_name": db_name,
+            "db_size_label": db_size_label,
+            "last_backup_time": last_backup_time,
+            "backup_count": len(backup_files),
+            "backup_dir": backup_dir,
+        }
+
+    def _portal_experience_models():
+        extension = app.extensions.get("portal_settings_v16_integrated") or {}
+        models = extension.get("models") or {}
+        return {
+            "version": models.get("version"),
+            "state": models.get("state"),
+            "audit": models.get("audit"),
+        }
+
+    def _default_admin_layout_payload():
+        return {
+            "enabled": False,
+            "preset": "current",
+            "primary": "#075F46",
+            "secondary": "#0B7657",
+            "accent": "#D2A62C",
+            "page_bg": "#F4F8F6",
+            "surface": "#FFFFFF",
+            "text": "#17212B",
+            "font_scale": "normal",
+            "card_radius": "current",
+            "density": "comfortable",
+            "sidebar_style": "solid",
+            "header_style": "clean",
+            "dashboard_title": "Dasbor Administrasi TPQ",
+            "dashboard_subtitle": "Pantau operasional TPQ HMarisa dalam satu tempat.",
+            "login_title": "Login Admin",
+            "login_subtitle": "Masukkan username dan kata sandi administrator untuk membuka panel pengelolaan.",
+            "header_image_path": "",
+            "login_image_path": "",
+        }
+
+    def _default_module_visibility_payload():
+        return {
+            "enabled": False,
+            "admin_show_date": True,
+            "admin_show_stats": True,
+            "admin_show_hadith": True,
+            "admin_show_monthly_winners": True,
+            "admin_show_monthly_poster": True,
+            "admin_show_syllabus": True,
+        }
+
+    def _ensure_portal_experience_section(section: str, default_payload: dict):
+        models = _portal_experience_models()
+        version_model = models.get("version")
+        state_model = models.get("state")
+        if not version_model or not state_model:
+            return None, None, None
+
+        state = db.session.get(state_model, section)
+        if state and state.active_version_id and state.draft_version_id:
+            active = db.session.get(version_model, state.active_version_id)
+            draft = db.session.get(version_model, state.draft_version_id)
+            if active and draft:
+                return state, active, draft
+
+        maximum = (
+            db.session.query(db.func.max(version_model.version_no))
+            .filter(version_model.section == section)
+            .scalar() or 0
+        )
+        active = version_model(
+            section=section,
+            version_no=maximum + 1,
+            status="published",
+            payload_json=json.dumps(default_payload, ensure_ascii=False),
+            published_at=datetime.utcnow(),
+        )
+        db.session.add(active)
+        db.session.flush()
+
+        draft = version_model(
+            section=section,
+            version_no=maximum + 2,
+            status="draft",
+            payload_json=json.dumps(default_payload, ensure_ascii=False),
+        )
+        db.session.add(draft)
+        db.session.flush()
+
+        state = state_model(section=section, active_version_id=active.id, draft_version_id=draft.id)
+        db.session.add(state)
+        db.session.commit()
+        return state, active, draft
+
+    def _portal_payload_from_version(version, section: str, default_payload: dict):
+        base = deepcopy(default_payload)
+        if version is None:
+            return base
+        payload_json = getattr(version, "payload_json", "{}") or "{}"
+        try:
+            parsed = json.loads(payload_json)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            parsed = {}
+        if isinstance(parsed, dict):
+            base.update(parsed)
+        return base
+
+    def _get_portal_experience_payload(section: str, draft: bool, default_payload: dict):
+        _, active, draft_row = _ensure_portal_experience_section(section, default_payload)
+        return _portal_payload_from_version(draft_row if draft else active, section, default_payload)
+
+    def _save_portal_experience_draft(section: str, payload: dict, default_payload: dict, action: str = "Simpan Draft"):
+        _, _, draft = _ensure_portal_experience_section(section, default_payload)
+        before = _portal_payload_from_version(draft, section, default_payload)
+        draft.payload_json = json.dumps(payload, ensure_ascii=False)
+        draft.updated_by = current_user.id
+
+        models = _portal_experience_models()
+        audit_model = models.get("audit")
+        if audit_model:
+            db.session.add(audit_model(
+                section=section,
+                action=action,
+                version_id=draft.id,
+                user_id=getattr(current_user, "id", None),
+                user_name=getattr(current_user, "full_name", "Sistem") or "Sistem",
+                before_json=json.dumps(before, ensure_ascii=False),
+                after_json=json.dumps(payload, ensure_ascii=False),
+                reason="",
+                ip_address=(request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip())[:80],
+                user_agent=(request.headers.get("User-Agent") or "")[:255],
+            ))
+        db.session.commit()
+        return draft
+
+    def _publish_portal_experience_section(section: str, default_payload: dict):
+        models = _portal_experience_models()
+        version_model = models.get("version")
+        state_model = models.get("state")
+        audit_model = models.get("audit")
+        if not version_model or not state_model:
+            return None
+
+        state, active, draft = _ensure_portal_experience_section(section, default_payload)
+        if not state or not active or not draft:
+            return None
+
+        before = _portal_payload_from_version(active, section, default_payload)
+        after = _portal_payload_from_version(draft, section, default_payload)
+        active.status = "archived"
+        draft.status = "published"
+        draft.published_at = datetime.utcnow()
+        draft.published_by = current_user.id
+
+        maximum = (
+            db.session.query(db.func.max(version_model.version_no))
+            .filter(version_model.section == section)
+            .scalar() or draft.version_no
+        )
+        next_draft = version_model(
+            section=section,
+            version_no=maximum + 1,
+            status="draft",
+            payload_json=json.dumps(after, ensure_ascii=False),
+            created_by=current_user.id,
+            updated_by=current_user.id,
+        )
+        db.session.add(next_draft)
+        db.session.flush()
+
+        state.active_version_id = draft.id
+        state.draft_version_id = next_draft.id
+
+        if audit_model:
+            db.session.add(audit_model(
+                section=section,
+                action="Terbitkan",
+                version_id=draft.id,
+                user_id=getattr(current_user, "id", None),
+                user_name=getattr(current_user, "full_name", "Sistem") or "Sistem",
+                before_json=json.dumps(before, ensure_ascii=False),
+                after_json=json.dumps(after, ensure_ascii=False),
+                reason="",
+                ip_address=(request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip())[:80],
+                user_agent=(request.headers.get("User-Agent") or "")[:255],
+            ))
+        db.session.commit()
+        return draft
+
+    def _portal_experience_image_url(filename: str) -> str:
+        if not filename:
+            return ""
+        upload_root = Path(app.root_path) / "uploads"
+        asset_dir = upload_root / "portal_settings_v16"
+        path = asset_dir / Path(filename).name
+        if path.exists():
+            return url_for("portal_experience_asset_v16", filename=Path(filename).name)
+        return ""
+
+    def _save_portal_experience_image(upload, kind: str) -> str:
+        if not upload or not upload.filename:
+            return ""
+        upload_root = Path(app.root_path) / "uploads"
+        asset_dir = upload_root / "portal_settings_v16"
+        asset_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = secure_filename(upload.filename)
+        ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else ""
+        if ext not in {"png", "jpg", "jpeg", "webp"}:
+            raise ValueError("Format gambar tidak valid.")
+        filename = f"{kind}_{uuid.uuid4().hex[:10]}.{ext}"
+        destination = asset_dir / filename
+        upload.save(destination)
+        return filename
+
+    def _coerce_hex(value: str, fallback: str) -> str:
+        value = (value or "").strip()
+        if value.startswith("#") and len(value) == 7:
+            return value.upper()
+        return fallback
+
+    def _get_layout_center_status():
+        """Read existing portal layout configuration without changing schema."""
+        status = {
+            "admin_theme_enabled": False,
+            "guardian_theme_enabled": False,
+            "navigation_enabled": False,
+            "module_visibility_enabled": False,
+            "admin_nav_items": 0,
+            "guardian_nav_items": 0,
+            "module_visibility_count": 0,
+            "tpq_name": get_setting("tpq_name") or "",
+            "short_description": get_setting("short_description") or "",
+            "primary_color": get_setting("primary_color") or "",
+            "secondary_color": get_setting("secondary_color") or "",
+            "identity_year": "",
+            "identity_semester": "",
+            "source": "Data portal settings dan portal experience yang sudah ada",
+        }
+
+        portal_settings_integrated = app.extensions.get("portal_settings_v16_integrated")
+        if portal_settings_integrated:
+            try:
+                get_active_payload = portal_settings_integrated.get("get_active_payload")
+                if callable(get_active_payload):
+                    admin_theme = get_active_payload("admin_theme") or {}
+                    guardian_theme = get_active_payload("guardian_theme") or {}
+                    navigation = get_active_payload("navigation") or {}
+                    module_visibility = get_active_payload("module_visibility") or {}
+
+                    status["admin_theme_enabled"] = bool(admin_theme.get("enabled"))
+                    status["guardian_theme_enabled"] = bool(guardian_theme.get("enabled"))
+                    status["navigation_enabled"] = bool(navigation.get("enabled"))
+                    status["module_visibility_enabled"] = bool(module_visibility.get("enabled"))
+
+                    def _count_menu_items(payload):
+                        if not isinstance(payload, dict):
+                            return 0
+                        for key in ("items", "menu", "links"):
+                            value = payload.get(key)
+                            if isinstance(value, list):
+                                return len(value)
+                            if isinstance(value, dict):
+                                return len(value)
+                        count = 0
+                        for key, value in payload.items():
+                            if isinstance(value, (list, dict)) and key not in {"enabled", "label", "title", "description"}:
+                                count += 1
+                        return count
+
+                    status["admin_nav_items"] = _count_menu_items(navigation.get("admin", {}))
+                    status["guardian_nav_items"] = _count_menu_items(navigation.get("guardian", {}))
+                    status["module_visibility_count"] = sum(
+                        1 for key, value in module_visibility.items()
+                        if key != "enabled" and isinstance(value, bool) and value
+                    )
+            except Exception:
+                pass
+
+        portal_settings_v16a = app.extensions.get("portal_settings_v16a")
+        if portal_settings_v16a:
+            try:
+                get_active = portal_settings_v16a.get("get_active")
+                if callable(get_active):
+                    active_row = get_active()
+                    if active_row:
+                        status["tpq_name"] = getattr(active_row, "tpq_name", "") or status["tpq_name"]
+                        status["identity_year"] = getattr(active_row, "academic_year", "") or ""
+                        status["identity_semester"] = getattr(active_row, "semester", "") or ""
+            except Exception:
+                pass
+
+        return status
 
     # ── DASHBOARD ────────────────────────────────────────────────────────
     def _render_cc(template, **kwargs):
@@ -433,6 +766,89 @@ def install_control_center_v1(app, db, app_globals):
             sys_info=sys_info,
             now=datetime.now(),
             unread_notifications_count=0,
+        )
+
+    @app.route("/control-center/layout-center")
+    @superadmin_required_cc
+    def control_center_layout_center():
+        layout_status = _get_layout_center_status()
+        return _render_cc("control_center/layout_center.html", layout_status=layout_status)
+
+    @app.route("/control-center/layout-center/admin", methods=["GET", "POST"])
+    @superadmin_required_cc
+    def control_center_layout_admin():
+        defaults_admin = _default_admin_layout_payload()
+        defaults_module = _default_module_visibility_payload()
+
+        if request.method == "POST":
+            try:
+                admin_payload = deepcopy(_get_portal_experience_payload("admin_theme", True, defaults_admin))
+                admin_payload.update({
+                    "enabled": request.form.get("admin_enabled") in {"1", "on", "true", "yes"},
+                    "preset": (request.form.get("preset", admin_payload.get("preset", "current")) or "current").strip()[:30],
+                    "primary": _coerce_hex(request.form.get("primary", ""), admin_payload.get("primary", defaults_admin["primary"])),
+                    "secondary": _coerce_hex(request.form.get("secondary", ""), admin_payload.get("secondary", defaults_admin["secondary"])),
+                    "accent": _coerce_hex(request.form.get("accent", ""), admin_payload.get("accent", defaults_admin["accent"])),
+                    "page_bg": _coerce_hex(request.form.get("page_bg", ""), admin_payload.get("page_bg", defaults_admin["page_bg"])),
+                    "surface": _coerce_hex(request.form.get("surface", ""), admin_payload.get("surface", defaults_admin["surface"])),
+                    "text": _coerce_hex(request.form.get("text", ""), admin_payload.get("text", defaults_admin["text"])),
+                    "font_scale": (request.form.get("font_scale") or admin_payload.get("font_scale", "normal")).strip()[:20],
+                    "card_radius": (request.form.get("card_radius") or admin_payload.get("card_radius", "current")).strip()[:20],
+                    "density": (request.form.get("density") or admin_payload.get("density", "comfortable")).strip()[:20],
+                    "sidebar_style": (request.form.get("sidebar_style") or admin_payload.get("sidebar_style", "solid")).strip()[:20],
+                    "header_style": (request.form.get("header_style") or admin_payload.get("header_style", "clean")).strip()[:20],
+                    "dashboard_title": (request.form.get("dashboard_title") or admin_payload.get("dashboard_title", defaults_admin["dashboard_title"])).strip()[:120],
+                    "dashboard_subtitle": (request.form.get("dashboard_subtitle") or admin_payload.get("dashboard_subtitle", defaults_admin["dashboard_subtitle"])).strip()[:240],
+                    "login_title": (request.form.get("login_title") or admin_payload.get("login_title", defaults_admin["login_title"])).strip()[:100],
+                    "login_subtitle": (request.form.get("login_subtitle") or admin_payload.get("login_subtitle", defaults_admin["login_subtitle"])).strip()[:260],
+                })
+                if request.form.get("reset_header_image") == "1":
+                    admin_payload["header_image_path"] = ""
+                upload_header = request.files.get("header_image")
+                if upload_header and upload_header.filename:
+                    admin_payload["header_image_path"] = _save_portal_experience_image(upload_header, "header_image")
+                if request.form.get("reset_login_image") == "1":
+                    admin_payload["login_image_path"] = ""
+                upload_login = request.files.get("login_image")
+                if upload_login and upload_login.filename:
+                    admin_payload["login_image_path"] = _save_portal_experience_image(upload_login, "login_image")
+
+                module_payload = deepcopy(_get_portal_experience_payload("module_visibility", True, defaults_module))
+                module_payload.update({"enabled": request.form.get("module_enabled") in {"1", "on", "true", "yes"}})
+                for key in [
+                    "admin_show_date", "admin_show_stats", "admin_show_hadith",
+                    "admin_show_monthly_winners", "admin_show_monthly_poster", "admin_show_syllabus"
+                ]:
+                    module_payload[key] = request.form.get(key) in {"1", "on", "true", "yes"}
+
+                _save_portal_experience_draft("admin_theme", admin_payload, defaults_admin, action="Simpan Draft Tampilan Admin")
+                _save_portal_experience_draft("module_visibility", module_payload, defaults_module, action="Simpan Draft Bagian Dashboard")
+
+                if request.form.get("action") == "publish":
+                    _publish_portal_experience_section("admin_theme", defaults_admin)
+                    _publish_portal_experience_section("module_visibility", defaults_module)
+                    flash("Draft tampilan Portal Admin berhasil diterbitkan.", "success")
+                else:
+                    flash("Draft tampilan Portal Admin berhasil disimpan.", "success")
+            except Exception as exc:
+                db.session.rollback()
+                flash(f"Gagal menyimpan layout portal admin: {exc}", "danger")
+            return redirect(url_for("control_center_layout_admin"))
+
+        admin_payload = _get_portal_experience_payload("admin_theme", True, defaults_admin)
+        module_payload = _get_portal_experience_payload("module_visibility", True, defaults_module)
+        active_admin = _get_portal_experience_payload("admin_theme", False, defaults_admin)
+        active_module = _get_portal_experience_payload("module_visibility", False, defaults_module)
+
+        return _render_cc(
+            "control_center/layout_admin.html",
+            admin_payload=admin_payload,
+            module_payload=module_payload,
+            active_admin=active_admin,
+            active_module=active_module,
+            draft_header_url=_portal_experience_image_url(admin_payload.get("header_image_path", "")),
+            draft_login_url=_portal_experience_image_url(admin_payload.get("login_image_path", "")),
+            current_logo_url=(getattr(current_user, "is_admin", False) and app.extensions.get("portal_settings_v16a", {}).get("get_active") and getattr(app.extensions["portal_settings_v16a"]["get_active"](), "logo_path", "")) or "",
         )
 
     # ── USERS ────────────────────────────────────────────────────────────
@@ -812,33 +1228,33 @@ def install_control_center_v1(app, db, app_globals):
     @app.route("/control-center/backup")
     @superadmin_required_cc
     def control_center_backup():
-        records = CCBackupRecord.query.order_by(CCBackupRecord.created_at.desc()).limit(20).all()
-
-        # Build history with readable info
+        records = CCBackupRecord.query.order_by(CCBackupRecord.created_at.desc()).limit(50).all()
         backup_history = []
         bdir = _backup_dir()
         for rec in records:
             fpath = os.path.join(bdir, rec.filename)
             exists = os.path.exists(fpath)
             backup_history.append({
-                "filename":   rec.filename,
+                "filename": rec.filename,
                 "created_at": rec.created_at.strftime("%d/%m/%Y %H:%M"),
-                "size":       rec.size,
+                "size": rec.size,
                 "created_by": rec.created_by,
-                "exists":     exists,
+                "exists": exists,
             })
 
+        summary = _get_database_backup_summary()
         last_backup_info = None
         if records:
             last_backup_info = {
                 "created_at": records[0].created_at.strftime("%d/%m/%Y %H:%M"),
-                "size":       records[0].size,
+                "size": records[0].size,
             }
 
         return render_template(
             "control_center/backup.html",
             backup_history=backup_history,
             last_backup_info=last_backup_info,
+            backup_summary=summary,
             now=datetime.now(),
             unread_notifications_count=0,
         )
@@ -852,9 +1268,9 @@ def install_control_center_v1(app, db, app_globals):
             return redirect(url_for("control_center_backup"))
 
         try:
-            ts       = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"tpq_backup_{ts}.db"
-            dest     = os.path.join(_backup_dir(), filename)
+            backup_dir = _backup_dir()
+            filename = _make_backup_filename()
+            dest = os.path.join(backup_dir, filename)
             shutil.copy2(db_path, dest)
             size_bytes = os.path.getsize(dest)
 
@@ -888,6 +1304,24 @@ def install_control_center_v1(app, db, app_globals):
             return redirect(url_for("control_center_backup"))
         cc_log(f"Unduh backup: {rec.filename}", "", "other")
         return send_file(fpath, as_attachment=True, download_name=rec.filename)
+
+    @app.route("/control-center/backup/delete/<filename>", methods=["POST"])
+    @superadmin_required_cc
+    def control_center_backup_delete(filename):
+        try:
+            rec = CCBackupRecord.query.filter_by(filename=filename).first()
+            fpath = os.path.join(_backup_dir(), filename)
+            if rec:
+                db.session.delete(rec)
+            if os.path.exists(fpath):
+                os.remove(fpath)
+            db.session.commit()
+            cc_log(f"Hapus backup: {filename}", "", "delete")
+            flash("Backup berhasil dihapus.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Gagal menghapus backup: {e}", "danger")
+        return redirect(url_for("control_center_backup"))
 
     @app.route("/control-center/backup/download/<filename>")
     @superadmin_required_cc

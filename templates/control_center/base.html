@@ -30,10 +30,12 @@
     </div>
 
     {# ── Kembali ke Portal Admin ── #}
+    {% if current_user.is_superadmin %}
     <a href="{{ url_for('dashboard') }}" class="cc-back-to-portal">
       <i class="fa-solid fa-arrow-left"></i>
       <span>Kembali ke Portal Admin</span>
     </a>
+    {% endif %}
 
     <div class="cc-sidebar-user">
       <div class="cc-user-avatar">{{ current_user.full_name[:1]|upper }}</div>
@@ -44,6 +46,30 @@
     </div>
 
     <nav class="cc-nav">
+      {% if current_user.is_superadmin %}
+      <div class="cc-nav-section">
+        <span class="cc-nav-label">Navigasi Control Center</span>
+        <a href="{{ url_for('control_center_dashboard') }}" class="cc-nav-item {% if request.endpoint == 'control_center_dashboard' %}active{% endif %}">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('control_center_backup') }}" class="cc-nav-item {% if request.endpoint == 'control_center_backup' %}active{% endif %}">
+          <i class="fa-solid fa-box-archive"></i><span>Backup &amp; Restore</span>
+        </a>
+        <a href="{{ url_for('control_center_database') }}" class="cc-nav-item {% if 'control_center_db' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-database"></i><span>Database Manager</span>
+        </a>
+        <a href="{{ url_for('sidebar_menu_admin') }}" class="cc-nav-item {% if 'sidebar_menu' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-list-check"></i><span>Kelola Menu Sidebar</span>
+        </a>
+        <a href="{{ url_for('control_center_settings') }}" class="cc-nav-item {% if request.endpoint == 'control_center_settings' %}active{% endif %}">
+          <i class="fa-solid fa-sliders"></i><span>Pengaturan Portal</span>
+        </a>
+        <a href="{{ url_for('control_center_layout_center') }}" class="cc-nav-item {% if request.endpoint == 'control_center_layout_center' %}active{% endif %}">
+          <i class="fa-solid fa-palette"></i><span>Pusat Kendali Layout</span>
+        </a>
+      </div>
+      {% endif %}
+
       <div class="cc-nav-section">
         <span class="cc-nav-label">Utama</span>
         <a href="{{ url_for('control_center_dashboard') }}" class="cc-nav-item {% if request.endpoint == 'control_center_dashboard' %}active{% endif %}">
@@ -84,7 +110,10 @@
       <div class="cc-nav-section">
         <span class="cc-nav-label">Sistem</span>
         <a href="{{ url_for('control_center_settings') }}" class="cc-nav-item {% if request.endpoint == 'control_center_settings' %}active{% endif %}">
-          <i class="fa-solid fa-sliders"></i><span>Pengaturan Website</span>
+          <i class="fa-solid fa-sliders"></i><span>Pengaturan Portal</span>
+        </a>
+        <a href="{{ url_for('control_center_layout_center') }}" class="cc-nav-item {% if request.endpoint == 'control_center_layout_center' %}active{% endif %}">
+          <i class="fa-solid fa-palette"></i><span>Pusat Kendali Layout</span>
         </a>
         <a href="{{ url_for('control_center_database') }}" class="cc-nav-item {% if 'control_center_db' in request.endpoint %}active{% endif %}">
           <i class="fa-solid fa-database"></i><span>Database Manager</span>
