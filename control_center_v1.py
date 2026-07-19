@@ -19,6 +19,7 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, date, timedelta
 from functools import wraps
+from pathlib import Path
 
 import flask
 from flask import (
@@ -409,8 +410,33 @@ def install_control_center_v1(app, db, app_globals):
             "dashboard_subtitle": "Pantau operasional TPQ HMarisa dalam satu tempat.",
             "login_title": "Login Admin",
             "login_subtitle": "Masukkan username dan kata sandi administrator untuk membuka panel pengelolaan.",
+            "welcome_text": "Selamat datang di Pusat Kendali. Pantau semua aktivitas administrasi portal dari sini.",
             "header_image_path": "",
             "login_image_path": "",
+        }
+
+    def _default_guardian_layout_payload():
+        return {
+            "enabled": False,
+            "preset": "current",
+            "primary": "#075F46",
+            "secondary": "#0B7657",
+            "accent": "#D2A62C",
+            "page_bg": "#F4F8F6",
+            "surface": "#FFFFFF",
+            "text": "#17212B",
+            "font_scale": "normal",
+            "card_radius": "current",
+            "density": "comfortable",
+            "sidebar_style": "solid",
+            "header_style": "clean",
+            "entry_title": "Buka Data Ananda",
+            "entry_subtitle": "Pilih kelas terlebih dahulu, kemudian nama santri akan muncul otomatis.",
+            "welcome_title": "Assalamu'alaikum, Ayah/Bunda",
+            "welcome_text": "Pantau mutabaah, hafalan, tagihan, dan buku digital ananda dengan mudah.",
+            "footer_text": "Portal Pendidikan Al-Qur'an",
+            "banner_image_path": "",
+            "entry_image_path": "",
         }
 
     def _default_module_visibility_payload():
@@ -422,6 +448,31 @@ def install_control_center_v1(app, db, app_globals):
             "admin_show_monthly_winners": True,
             "admin_show_monthly_poster": True,
             "admin_show_syllabus": True,
+            "guardian_show_date": True,
+            "guardian_show_stats": True,
+            "guardian_show_mutabaah": True,
+            "guardian_show_hafalan": True,
+            "guardian_show_finance": True,
+            "guardian_show_access_note": True,
+            "guardian_show_monthly_winner_entry": True,
+            "admin_card_date_order": 10,
+            "admin_card_stats_order": 20,
+            "admin_card_hadith_order": 30,
+            "admin_card_monthly_winners_order": 40,
+            "admin_card_monthly_poster_order": 50,
+            "admin_card_syllabus_order": 60,
+            "guardian_show_teaching_schedule": True,
+            "guardian_show_class_list": True,
+            "guardian_show_grade_input": True,
+            "guardian_show_attendance": True,
+            "guardian_show_announcements": True,
+            "guardian_show_materials": True,
+            "guardian_card_schedule_order": 10,
+            "guardian_card_class_list_order": 20,
+            "guardian_card_grades_order": 30,
+            "guardian_card_attendance_order": 40,
+            "guardian_card_announcements_order": 50,
+            "guardian_card_material_order": 60,
         }
 
     def _ensure_portal_experience_section(section: str, default_payload: dict):
@@ -587,6 +638,69 @@ def install_control_center_v1(app, db, app_globals):
         upload.save(destination)
         return filename
 
+    def _portal_settings_asset_url(path: str, kind: str) -> str:
+        if not path:
+            defaults = {
+                "logo": "img/logo_portal_cropped.png",
+                "favicon": "img/logo_portal_cropped.png",
+            }
+            return url_for("static", filename=defaults.get(kind, "img/logo_portal_cropped.png"))
+        if path.startswith("img/") or path.startswith("/"):
+            return url_for("static", filename=path.lstrip("/"))
+        return url_for("portal_settings_asset_v16a", filename=Path(path).name)
+
+    def _get_portal_identity_details():
+        portal_settings_v16a = app.extensions.get("portal_settings_v16a")
+        if not portal_settings_v16a:
+            return {
+                "tpq_name": "",
+                "short_description": "",
+                "academic_year": "",
+                "semester": "",
+                "logo_url": "",
+                "favicon_url": "",
+            }
+        get_active = portal_settings_v16a.get("get_active")
+        if not callable(get_active):
+            return {
+                "tpq_name": "",
+                "short_description": "",
+                "academic_year": "",
+                "semester": "",
+                "logo_url": "",
+                "favicon_url": "",
+            }
+        try:
+            active = get_active()
+            if not active:
+                return {
+                    "tpq_name": "",
+                    "short_description": "",
+                    "academic_year": "",
+                    "semester": "",
+                    "logo_url": "",
+                    "favicon_url": "",
+                }
+            logo_path = getattr(active, "logo_path", "") or ""
+            favicon_path = getattr(active, "favicon_path", "") or ""
+            return {
+                "tpq_name": getattr(active, "tpq_name", "") or "",
+                "short_description": getattr(active, "short_description", "") or "",
+                "academic_year": getattr(active, "academic_year", "") or "",
+                "semester": getattr(active, "semester", "") or "",
+                "logo_url": _portal_settings_asset_url(logo_path, "logo"),
+                "favicon_url": _portal_settings_asset_url(favicon_path, "favicon"),
+            }
+        except Exception:
+            return {
+                "tpq_name": "",
+                "short_description": "",
+                "academic_year": "",
+                "semester": "",
+                "logo_url": "",
+                "favicon_url": "",
+            }
+
     def _coerce_hex(value: str, fallback: str) -> str:
         value = (value or "").strip()
         if value.startswith("#") and len(value) == 7:
@@ -603,6 +717,11 @@ def install_control_center_v1(app, db, app_globals):
             "admin_nav_items": 0,
             "guardian_nav_items": 0,
             "module_visibility_count": 0,
+            "portal_identity_enabled": False,
+            "portal_identity_tpq_name": "",
+            "portal_identity_short_description": "",
+            "portal_identity_year": "",
+            "portal_identity_semester": "",
             "tpq_name": get_setting("tpq_name") or "",
             "short_description": get_setting("short_description") or "",
             "primary_color": get_setting("primary_color") or "",
@@ -658,9 +777,14 @@ def install_control_center_v1(app, db, app_globals):
                 if callable(get_active):
                     active_row = get_active()
                     if active_row:
-                        status["tpq_name"] = getattr(active_row, "tpq_name", "") or status["tpq_name"]
-                        status["identity_year"] = getattr(active_row, "academic_year", "") or ""
-                        status["identity_semester"] = getattr(active_row, "semester", "") or ""
+                        status["portal_identity_enabled"] = True
+                        status["portal_identity_tpq_name"] = getattr(active_row, "tpq_name", "") or status["portal_identity_tpq_name"]
+                        status["portal_identity_short_description"] = getattr(active_row, "short_description", "") or status["portal_identity_short_description"]
+                        status["portal_identity_year"] = getattr(active_row, "academic_year", "") or ""
+                        status["portal_identity_semester"] = getattr(active_row, "semester", "") or ""
+                        status["tpq_name"] = status["portal_identity_tpq_name"] or status["tpq_name"]
+                        status["identity_year"] = status["portal_identity_year"] or status["identity_year"]
+                        status["identity_semester"] = status["portal_identity_semester"] or status["identity_semester"]
             except Exception:
                 pass
 
@@ -774,6 +898,11 @@ def install_control_center_v1(app, db, app_globals):
         layout_status = _get_layout_center_status()
         return _render_cc("control_center/layout_center.html", layout_status=layout_status)
 
+    @app.route("/control-center/menu-builder")
+    @superadmin_required_cc
+    def control_center_menu_builder():
+        return redirect(url_for("sidebar_menu_admin"))
+
     @app.route("/control-center/layout-center/admin", methods=["GET", "POST"])
     @superadmin_required_cc
     def control_center_layout_admin():
@@ -784,7 +913,7 @@ def install_control_center_v1(app, db, app_globals):
             try:
                 admin_payload = deepcopy(_get_portal_experience_payload("admin_theme", True, defaults_admin))
                 admin_payload.update({
-                    "enabled": request.form.get("admin_enabled") in {"1", "on", "true", "yes"},
+                    "enabled": request.form.get("enabled") in {"1", "on", "true", "yes"},
                     "preset": (request.form.get("preset", admin_payload.get("preset", "current")) or "current").strip()[:30],
                     "primary": _coerce_hex(request.form.get("primary", ""), admin_payload.get("primary", defaults_admin["primary"])),
                     "secondary": _coerce_hex(request.form.get("secondary", ""), admin_payload.get("secondary", defaults_admin["secondary"])),
@@ -801,6 +930,7 @@ def install_control_center_v1(app, db, app_globals):
                     "dashboard_subtitle": (request.form.get("dashboard_subtitle") or admin_payload.get("dashboard_subtitle", defaults_admin["dashboard_subtitle"])).strip()[:240],
                     "login_title": (request.form.get("login_title") or admin_payload.get("login_title", defaults_admin["login_title"])).strip()[:100],
                     "login_subtitle": (request.form.get("login_subtitle") or admin_payload.get("login_subtitle", defaults_admin["login_subtitle"])).strip()[:260],
+                    "welcome_text": (request.form.get("welcome_text") or admin_payload.get("welcome_text", defaults_admin["welcome_text"])).strip()[:260],
                 })
                 if request.form.get("reset_header_image") == "1":
                     admin_payload["header_image_path"] = ""
@@ -814,12 +944,23 @@ def install_control_center_v1(app, db, app_globals):
                     admin_payload["login_image_path"] = _save_portal_experience_image(upload_login, "login_image")
 
                 module_payload = deepcopy(_get_portal_experience_payload("module_visibility", True, defaults_module))
-                module_payload.update({"enabled": request.form.get("module_enabled") in {"1", "on", "true", "yes"}})
                 for key in [
                     "admin_show_date", "admin_show_stats", "admin_show_hadith",
-                    "admin_show_monthly_winners", "admin_show_monthly_poster", "admin_show_syllabus"
+                    "admin_show_monthly_winners", "admin_show_monthly_poster", "admin_show_syllabus",
                 ]:
                     module_payload[key] = request.form.get(key) in {"1", "on", "true", "yes"}
+                for order_key in [
+                    "admin_card_date_order", "admin_card_stats_order", "admin_card_hadith_order",
+                    "admin_card_monthly_winners_order", "admin_card_monthly_poster_order", "admin_card_syllabus_order",
+                ]:
+                    try:
+                        module_payload[order_key] = max(0, min(999, int(request.form.get(order_key, module_payload.get(order_key, defaults_module[order_key])))))
+                    except (TypeError, ValueError):
+                        module_payload[order_key] = module_payload.get(order_key, defaults_module[order_key])
+                module_payload["enabled"] = any(module_payload.get(key) for key in [
+                    "admin_show_date", "admin_show_stats", "admin_show_hadith",
+                    "admin_show_monthly_winners", "admin_show_monthly_poster", "admin_show_syllabus",
+                ])
 
                 _save_portal_experience_draft("admin_theme", admin_payload, defaults_admin, action="Simpan Draft Tampilan Admin")
                 _save_portal_experience_draft("module_visibility", module_payload, defaults_module, action="Simpan Draft Bagian Dashboard")
@@ -839,6 +980,13 @@ def install_control_center_v1(app, db, app_globals):
         module_payload = _get_portal_experience_payload("module_visibility", True, defaults_module)
         active_admin = _get_portal_experience_payload("admin_theme", False, defaults_admin)
         active_module = _get_portal_experience_payload("module_visibility", False, defaults_module)
+        portal_identity = _get_portal_identity_details()
+        preview_url = None
+        if app.extensions.get("portal_settings_v16_integrated"):
+            try:
+                preview_url = url_for("portal_settings_integrated_preview_v16", section="admin_theme")
+            except Exception:
+                preview_url = None
 
         return _render_cc(
             "control_center/layout_admin.html",
@@ -848,7 +996,217 @@ def install_control_center_v1(app, db, app_globals):
             active_module=active_module,
             draft_header_url=_portal_experience_image_url(admin_payload.get("header_image_path", "")),
             draft_login_url=_portal_experience_image_url(admin_payload.get("login_image_path", "")),
-            current_logo_url=(getattr(current_user, "is_admin", False) and app.extensions.get("portal_settings_v16a", {}).get("get_active") and getattr(app.extensions["portal_settings_v16a"]["get_active"](), "logo_path", "")) or "",
+            portal_identity=portal_identity,
+            current_logo_url=portal_identity.get("logo_url", ""),
+            current_favicon_url=portal_identity.get("favicon_url", ""),
+            preview_url=preview_url,
+        )
+
+    @app.route("/control-center/layout-center/guru", methods=["GET", "POST"])
+    @superadmin_required_cc
+    def control_center_layout_guru():
+        defaults_guardian = _default_guardian_layout_payload()
+        defaults_module = _default_module_visibility_payload()
+
+        if request.method == "POST":
+            try:
+                guardian_payload = deepcopy(_get_portal_experience_payload("guru_theme", True, defaults_guardian))
+                guardian_payload.update({
+                    "enabled": request.form.get("enabled") in {"1", "on", "true", "yes"},
+                    "preset": (request.form.get("preset", guardian_payload.get("preset", "current")) or "current").strip()[:30],
+                    "primary": _coerce_hex(request.form.get("primary", ""), guardian_payload.get("primary", defaults_guardian["primary"])),
+                    "secondary": _coerce_hex(request.form.get("secondary", ""), guardian_payload.get("secondary", defaults_guardian["secondary"])),
+                    "accent": _coerce_hex(request.form.get("accent", ""), guardian_payload.get("accent", defaults_guardian["accent"])),
+                    "page_bg": _coerce_hex(request.form.get("page_bg", ""), guardian_payload.get("page_bg", defaults_guardian["page_bg"])),
+                    "surface": _coerce_hex(request.form.get("surface", ""), guardian_payload.get("surface", defaults_guardian["surface"])),
+                    "text": _coerce_hex(request.form.get("text", ""), guardian_payload.get("text", defaults_guardian["text"])),
+                    "font_scale": (request.form.get("font_scale") or guardian_payload.get("font_scale", "normal")).strip()[:20],
+                    "card_radius": (request.form.get("card_radius") or guardian_payload.get("card_radius", "current")).strip()[:20],
+                    "density": (request.form.get("density") or guardian_payload.get("density", "comfortable")).strip()[:20],
+                    "sidebar_style": (request.form.get("sidebar_style") or guardian_payload.get("sidebar_style", "solid")).strip()[:20],
+                    "header_style": (request.form.get("header_style") or guardian_payload.get("header_style", "clean")).strip()[:20],
+                    "entry_title": (request.form.get("entry_title") or guardian_payload.get("entry_title", defaults_guardian["entry_title"])) .strip()[:120],
+                    "entry_subtitle": (request.form.get("entry_subtitle") or guardian_payload.get("entry_subtitle", defaults_guardian["entry_subtitle"])) .strip()[:240],
+                    "welcome_title": (request.form.get("welcome_title") or guardian_payload.get("welcome_title", defaults_guardian["welcome_title"])) .strip()[:120],
+                    "welcome_text": (request.form.get("welcome_text") or guardian_payload.get("welcome_text", defaults_guardian["welcome_text"])) .strip()[:260],
+                    "footer_text": (request.form.get("footer_text") or guardian_payload.get("footer_text", defaults_guardian["footer_text"])) .strip()[:160],
+                })
+                if request.form.get("reset_banner_image") == "1":
+                    guardian_payload["banner_image_path"] = ""
+                upload_banner = request.files.get("banner_image")
+                if upload_banner and upload_banner.filename:
+                    guardian_payload["banner_image_path"] = _save_portal_experience_image(upload_banner, "banner_image")
+                if request.form.get("reset_entry_image") == "1":
+                    guardian_payload["entry_image_path"] = ""
+                upload_entry = request.files.get("entry_image")
+                if upload_entry and upload_entry.filename:
+                    guardian_payload["entry_image_path"] = _save_portal_experience_image(upload_entry, "entry_image")
+
+                module_payload = deepcopy(_get_portal_experience_payload("guru_module_visibility", True, defaults_module))
+                for key in [
+                    "guardian_show_teaching_schedule", "guardian_show_class_list", "guardian_show_grade_input",
+                    "guardian_show_attendance", "guardian_show_announcements", "guardian_show_materials",
+                ]:
+                    module_payload[key] = request.form.get(key) in {"1", "on", "true", "yes"}
+                for order_key in [
+                    "guardian_card_schedule_order", "guardian_card_class_list_order", "guardian_card_grades_order",
+                    "guardian_card_attendance_order", "guardian_card_announcements_order", "guardian_card_material_order",
+                ]:
+                    try:
+                        module_payload[order_key] = max(0, min(999, int(request.form.get(order_key, module_payload.get(order_key, defaults_module[order_key])))))
+                    except (TypeError, ValueError):
+                        module_payload[order_key] = module_payload.get(order_key, defaults_module[order_key])
+                module_payload["enabled"] = any(module_payload.get(key) for key in [
+                    "guardian_show_teaching_schedule", "guardian_show_class_list", "guardian_show_grade_input",
+                    "guardian_show_attendance", "guardian_show_announcements", "guardian_show_materials",
+                ])
+
+                _save_portal_experience_draft("guru_theme", guardian_payload, defaults_guardian, action="Simpan Draft Tampilan Guru")
+                _save_portal_experience_draft("guru_module_visibility", module_payload, defaults_module, action="Simpan Draft Bagian Dashboard Guru")
+
+                if request.form.get("action") == "publish":
+                    _publish_portal_experience_section("guru_theme", defaults_guardian)
+                    _publish_portal_experience_section("guru_module_visibility", defaults_module)
+                    flash("Draft tampilan Portal Guru berhasil diterbitkan.", "success")
+                else:
+                    flash("Draft tampilan Portal Guru berhasil disimpan.", "success")
+            except Exception as exc:
+                db.session.rollback()
+                flash(f"Gagal menyimpan layout portal guru: {exc}", "danger")
+            return redirect(url_for("control_center_layout_guru"))
+
+        guardian_payload = _get_portal_experience_payload("guru_theme", True, defaults_guardian)
+        module_payload = _get_portal_experience_payload("guru_module_visibility", True, defaults_module)
+        active_guardian = _get_portal_experience_payload("guru_theme", False, defaults_guardian)
+        active_module = _get_portal_experience_payload("guru_module_visibility", False, defaults_module)
+        portal_identity = _get_portal_identity_details()
+        preview_url = None
+        if app.extensions.get("portal_settings_v16_integrated"):
+            try:
+                preview_url = url_for("portal_settings_integrated_preview_v16", section="guru_theme")
+            except Exception:
+                preview_url = None
+
+        return _render_cc(
+            "control_center/layout_guru.html",
+            guardian_payload=guardian_payload,
+            module_payload=module_payload,
+            active_guardian=active_guardian,
+            active_module=active_module,
+            draft_banner_url=_portal_experience_image_url(guardian_payload.get("banner_image_path", "")),
+            draft_entry_url=_portal_experience_image_url(guardian_payload.get("entry_image_path", "")),
+            portal_identity=portal_identity,
+            current_logo_url=portal_identity.get("logo_url", ""),
+            current_favicon_url=portal_identity.get("favicon_url", ""),
+            preview_url=preview_url,
+        )
+
+    @app.route("/control-center/layout-center/wali", methods=["GET", "POST"])
+    @superadmin_required_cc
+    def control_center_layout_wali():
+        defaults_guardian = _default_guardian_layout_payload()
+        defaults_module = _default_module_visibility_payload()
+
+        if request.method == "POST":
+            try:
+                guardian_payload = deepcopy(_get_portal_experience_payload("guardian_theme", True, defaults_guardian))
+                guardian_payload.update({
+                    "enabled": request.form.get("enabled") in {"1", "on", "true", "yes"},
+                    "preset": (request.form.get("preset", guardian_payload.get("preset", "current")) or "current").strip()[:30],
+                    "primary": _coerce_hex(request.form.get("primary", ""), guardian_payload.get("primary", defaults_guardian["primary"])),
+                    "secondary": _coerce_hex(request.form.get("secondary", ""), guardian_payload.get("secondary", defaults_guardian["secondary"])),
+                    "accent": _coerce_hex(request.form.get("accent", ""), guardian_payload.get("accent", defaults_guardian["accent"])),
+                    "page_bg": _coerce_hex(request.form.get("page_bg", ""), guardian_payload.get("page_bg", defaults_guardian["page_bg"])),
+                    "surface": _coerce_hex(request.form.get("surface", ""), guardian_payload.get("surface", defaults_guardian["surface"])),
+                    "text": _coerce_hex(request.form.get("text", ""), guardian_payload.get("text", defaults_guardian["text"])),
+                    "font_scale": (request.form.get("font_scale") or guardian_payload.get("font_scale", "normal")).strip()[:20],
+                    "card_radius": (request.form.get("card_radius") or guardian_payload.get("card_radius", "current")).strip()[:20],
+                    "density": (request.form.get("density") or guardian_payload.get("density", "comfortable")).strip()[:20],
+                    "sidebar_style": (request.form.get("sidebar_style") or guardian_payload.get("sidebar_style", "solid")).strip()[:20],
+                    "header_style": (request.form.get("header_style") or guardian_payload.get("header_style", "clean")).strip()[:20],
+                    "entry_title": (request.form.get("entry_title") or guardian_payload.get("entry_title", defaults_guardian["entry_title"])) .strip()[:120],
+                    "entry_subtitle": (request.form.get("entry_subtitle") or guardian_payload.get("entry_subtitle", defaults_guardian["entry_subtitle"])) .strip()[:240],
+                    "welcome_title": (request.form.get("welcome_title") or guardian_payload.get("welcome_title", defaults_guardian["welcome_title"])) .strip()[:120],
+                    "welcome_text": (request.form.get("welcome_text") or guardian_payload.get("welcome_text", defaults_guardian["welcome_text"])) .strip()[:260],
+                    "footer_text": (request.form.get("footer_text") or guardian_payload.get("footer_text", defaults_guardian["footer_text"])) .strip()[:160],
+                })
+                if request.form.get("reset_banner_image") == "1":
+                    guardian_payload["banner_image_path"] = ""
+                upload_banner = request.files.get("banner_image")
+                if upload_banner and upload_banner.filename:
+                    guardian_payload["banner_image_path"] = _save_portal_experience_image(upload_banner, "banner_image")
+                if request.form.get("reset_entry_image") == "1":
+                    guardian_payload["entry_image_path"] = ""
+                upload_entry = request.files.get("entry_image")
+                if upload_entry and upload_entry.filename:
+                    guardian_payload["entry_image_path"] = _save_portal_experience_image(upload_entry, "entry_image")
+
+                module_payload = deepcopy(_get_portal_experience_payload("module_visibility", True, defaults_module))
+                for key in [
+                    "guardian_show_date", "guardian_show_stats", "guardian_show_mutabaah",
+                    "guardian_show_hafalan", "guardian_show_finance", "guardian_show_access_note",
+                    "guardian_show_monthly_winner_entry",
+                ]:
+                    module_payload[key] = request.form.get(key) in {"1", "on", "true", "yes"}
+                for order_key in [
+                    "guardian_card_date_order", "guardian_card_stats_order", "guardian_card_mutabaah_order",
+                    "guardian_card_hafalan_order", "guardian_card_finance_order", "guardian_card_access_note_order",
+                    "guardian_card_monthly_winner_entry_order",
+                ]:
+                    try:
+                        module_payload[order_key] = max(0, min(999, int(request.form.get(order_key, module_payload.get(order_key, defaults_module[order_key])))))
+                    except (TypeError, ValueError):
+                        module_payload[order_key] = module_payload.get(order_key, defaults_module[order_key])
+                module_payload["enabled"] = any(
+                    module_payload.get(key) for key in [
+                        "admin_show_date", "admin_show_stats", "admin_show_hadith",
+                        "admin_show_monthly_winners", "admin_show_monthly_poster", "admin_show_syllabus",
+                        "guardian_show_date", "guardian_show_stats", "guardian_show_mutabaah",
+                        "guardian_show_hafalan", "guardian_show_finance", "guardian_show_access_note",
+                        "guardian_show_monthly_winner_entry",
+                        "guardian_show_teaching_schedule", "guardian_show_class_list", "guardian_show_grade_input",
+                        "guardian_show_attendance", "guardian_show_announcements", "guardian_show_materials",
+                    ]
+                )
+
+                _save_portal_experience_draft("guardian_theme", guardian_payload, defaults_guardian, action="Simpan Draft Tampilan Wali")
+                _save_portal_experience_draft("module_visibility", module_payload, defaults_module, action="Simpan Draft Bagian Dashboard Wali")
+
+                if request.form.get("action") == "publish":
+                    _publish_portal_experience_section("guardian_theme", defaults_guardian)
+                    _publish_portal_experience_section("module_visibility", defaults_module)
+                    flash("Draft tampilan Portal Wali berhasil diterbitkan.", "success")
+                else:
+                    flash("Draft tampilan Portal Wali berhasil disimpan.", "success")
+            except Exception as exc:
+                db.session.rollback()
+                flash(f"Gagal menyimpan layout portal wali: {exc}", "danger")
+            return redirect(url_for("control_center_layout_wali"))
+
+        guardian_payload = _get_portal_experience_payload("guardian_theme", True, defaults_guardian)
+        module_payload = _get_portal_experience_payload("module_visibility", True, defaults_module)
+        active_guardian = _get_portal_experience_payload("guardian_theme", False, defaults_guardian)
+        active_module = _get_portal_experience_payload("module_visibility", False, defaults_module)
+        portal_identity = _get_portal_identity_details()
+        preview_url = None
+        if app.extensions.get("portal_settings_v16_integrated"):
+            try:
+                preview_url = url_for("portal_settings_integrated_preview_v16", section="guardian_theme")
+            except Exception:
+                preview_url = None
+
+        return _render_cc(
+            "control_center/layout_wali.html",
+            guardian_payload=guardian_payload,
+            module_payload=module_payload,
+            active_guardian=active_guardian,
+            active_module=active_module,
+            draft_banner_url=_portal_experience_image_url(guardian_payload.get("banner_image_path", "")),
+            draft_entry_url=_portal_experience_image_url(guardian_payload.get("entry_image_path", "")),
+            portal_identity=portal_identity,
+            current_logo_url=portal_identity.get("logo_url", ""),
+            current_favicon_url=portal_identity.get("favicon_url", ""),
+            preview_url=preview_url,
         )
 
     # ── USERS ────────────────────────────────────────────────────────────

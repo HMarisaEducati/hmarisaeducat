@@ -58,8 +58,8 @@
         <a href="{{ url_for('control_center_database') }}" class="cc-nav-item {% if 'control_center_db' in request.endpoint %}active{% endif %}">
           <i class="fa-solid fa-database"></i><span>Database Manager</span>
         </a>
-        <a href="{{ url_for('sidebar_menu_admin') }}" class="cc-nav-item {% if 'sidebar_menu' in request.endpoint %}active{% endif %}">
-          <i class="fa-solid fa-list-check"></i><span>Kelola Menu Sidebar</span>
+        <a href="{{ url_for('control_center_menu_builder') }}" class="cc-nav-item {% if request.endpoint == 'control_center_menu_builder' or 'sidebar_menu' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-list-check"></i><span>Menu Builder</span>
         </a>
         <a href="{{ url_for('control_center_settings') }}" class="cc-nav-item {% if request.endpoint == 'control_center_settings' %}active{% endif %}">
           <i class="fa-solid fa-sliders"></i><span>Pengaturan Portal</span>

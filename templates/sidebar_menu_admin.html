@@ -7,9 +7,19 @@
 
 {% block content %}
 
+{% set role_labels = {
+  'admin_utama': 'Admin Utama',
+  'admin': 'Admin',
+  'bendahara': 'Bendahara',
+  'guru': 'Guru',
+  'guardian': 'Wali Santri'
+} %}
+
 {{ page_toolbar(
   title="Kelola Menu Sidebar",
   subtitle="Atur navigasi, ikon, urutan, dan hak akses tanpa mengubah kode",
+  back_url=url_for('control_center_layout_center'),
+  back_label='Pusat Kendali Layout',
   actions=[
     {"label": "Tambah Menu Baru", "url": url_for('sidebar_menu_add'), "icon": "fa-plus", "class": "btn-primary"},
     {"label": "CMS Builder", "url": url_for('cms_builder_index'), "icon": "fa-cube", "class": "btn-outline"}
@@ -25,6 +35,14 @@
     Saat pengguna membuka menu utama, submenu akan muncul sebagai <strong>tab horizontal</strong> di dalam halaman.
     Anda juga bisa membuat halaman modul otomatis lewat
     <a href="{{ url_for('cms_builder_index') }}" style="color:#059669;font-weight:600">CMS Builder</a>.
+  </div>
+</div>
+
+<div style="background:#f8fafc;border:1px solid #c7d2fe;border-radius:10px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.85rem;color:#1e3a8a;display:flex;align-items:flex-start;gap:.6rem">
+  <i class="fa-solid fa-users" style="margin-top:.1rem;flex-shrink:0"></i>
+  <div>
+    <strong>Target akses menu:</strong>
+    Perhatikan peran menu saat membuat atau mengubah entri. Menu Builder menampilkan target peran untuk <strong>Admin Utama</strong>, <strong>Admin</strong>, <strong>Bendahara</strong>, <strong>Guru</strong>, dan <strong>Wali Santri</strong>.
   </div>
 </div>
 
@@ -54,7 +72,7 @@
         </small>
         <div class="sm-roles-pills">
           {% for r in menu.roles_list() %}
-          <span class="sm-role-pill {{ r }}">{{ r }}</span>
+          <span class="sm-role-pill {{ r }}">{{ role_labels.get(r, r) }}</span>
           {% endfor %}
         </div>
       </div>
@@ -103,7 +121,7 @@
               &middot; Urutan: {{ child.sort_order }}
             </small>
             <div class="sm-roles-pills">
-              {% for r in child.roles_list() %}<span class="sm-role-pill {{ r }}">{{ r }}</span>{% endfor %}
+              {% for r in child.roles_list() %}<span class="sm-role-pill {{ r }}">{{ role_labels.get(r, r) }}</span>{% endfor %}
             </div>
           </div>
           <div class="sm-actions">

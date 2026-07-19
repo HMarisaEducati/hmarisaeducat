@@ -28,8 +28,10 @@ except ImportError:  # pragma: no cover
 SECTIONS = (
     "admin_theme",
     "guardian_theme",
+    "guru_theme",
     "navigation",
     "module_visibility",
+    "guru_module_visibility",
     "eraport_design",
     "achievement_design",
 )
@@ -118,6 +120,28 @@ DEFAULT_PAYLOADS: dict[str, dict[str, Any]] = {
         "banner_image_path": "",
         "entry_image_path": "",
     },
+    "guru_theme": {
+        "enabled": False,
+        "preset": "current",
+        "primary": "#075F46",
+        "secondary": "#0B7657",
+        "accent": "#D2A62C",
+        "page_bg": "#F4F8F6",
+        "surface": "#FFFFFF",
+        "text": "#17212B",
+        "font_scale": "normal",
+        "card_radius": "current",
+        "density": "comfortable",
+        "sidebar_style": "solid",
+        "header_style": "clean",
+        "entry_title": "Buka Data Ananda",
+        "entry_subtitle": "Pilih kelas terlebih dahulu, kemudian nama santri akan muncul otomatis.",
+        "welcome_title": "Assalamu'alaikum, Ayah/Bunda",
+        "welcome_text": "Pantau mutabaah, hafalan, tagihan, dan buku digital ananda dengan mudah.",
+        "footer_text": "Portal Pendidikan Al-Qur'an",
+        "banner_image_path": "",
+        "entry_image_path": "",
+    },
     "navigation": {
         "enabled": False,
         "admin": deepcopy(ADMIN_MENU_DEFAULTS),
@@ -138,6 +162,21 @@ DEFAULT_PAYLOADS: dict[str, dict[str, Any]] = {
         "guardian_show_finance": True,
         "guardian_show_access_note": True,
         "guardian_show_monthly_winner_entry": True,
+    },
+    "guru_module_visibility": {
+        "enabled": False,
+        "guardian_show_teaching_schedule": True,
+        "guardian_show_class_list": True,
+        "guardian_show_grade_input": True,
+        "guardian_show_attendance": True,
+        "guardian_show_announcements": True,
+        "guardian_show_materials": True,
+        "guardian_card_schedule_order": 10,
+        "guardian_card_class_list_order": 20,
+        "guardian_card_grades_order": 30,
+        "guardian_card_attendance_order": 40,
+        "guardian_card_announcements_order": 50,
+        "guardian_card_material_order": 60,
     },
     "eraport_design": {
         "enabled": False,
@@ -635,8 +674,8 @@ def install_portal_settings_v16_integrated(app, db, namespace: dict[str, Any]):
             audits=audits,
             selected_section=selected,
             section_names={
-                "admin_theme": "Tampilan Admin", "guardian_theme": "Tampilan Wali",
-                "navigation": "Menu & Navigasi", "module_visibility": "Pengaturan Modul",
+                "admin_theme": "Tampilan Admin", "guardian_theme": "Tampilan Wali", "guru_theme": "Tampilan Guru",
+                "navigation": "Menu & Navigasi", "module_visibility": "Pengaturan Modul", "guru_module_visibility": "Visibilitas Dashboard Guru",
                 "eraport_design": "Desain E-Raport", "achievement_design": "Prestasi Bulanan",
             },
             format_wib=lambda value: "Belum tersedia" if value is None else (value + timedelta(hours=7)).strftime("%d-%m-%Y %H:%M WIB"),
@@ -701,10 +740,15 @@ def install_portal_settings_v16_integrated(app, db, namespace: dict[str, Any]):
                 (current_user.is_authenticated and getattr(current_user, "is_admin", False))
                 or endpoint in {"admin_login", "login"}
             )
+            theme_key = "admin_theme"
+            if not admin_scope and current_user.is_authenticated and getattr(current_user, "is_teacher", False):
+                theme_key = "guru_theme"
+            elif not admin_scope:
+                theme_key = "guardian_theme"
             scope = "admin" if admin_scope else "guardian"
-            theme = sections["admin_theme" if admin_scope else "guardian_theme"]
+            theme = sections[theme_key]
             nav = sections["navigation"]
-            modules = sections["module_visibility"]
+            modules = sections["guru_module_visibility"] if theme_key == "guru_theme" else sections["module_visibility"]
             theme_with_assets = dict(theme)
             for key in ("header_image_path", "login_image_path", "banner_image_path", "entry_image_path"):
                 theme_with_assets[key.replace("_path", "_url")] = _asset_url(theme.get(key, ""))
@@ -744,20 +788,29 @@ def install_portal_settings_v16_integrated(app, db, namespace: dict[str, Any]):
         except Exception:
             db.session.rollback()
             app.logger.exception("Gagal memuat Pengaturan Portal V16 Terpadu; fallback digunakan")
+            scope = "admin" if current_user.is_authenticated and getattr(current_user, "is_admin", False) else "guardian"
+            current_theme = _default("admin_theme")
+            module_visibility = _default("module_visibility")
+            if scope == "guardian":
+                if getattr(current_user, "is_teacher", False):
+                    current_theme = _default("guru_theme")
+                    module_visibility = _default("guru_module_visibility")
+                else:
+                    current_theme = _default("guardian_theme")
             return {
                 "portal_experience": deepcopy(DEFAULT_PAYLOADS),
-                "portal_current_theme": _default("admin_theme"),
+                "portal_current_theme": current_theme,
                 "portal_admin_theme": _default("admin_theme"),
                 "portal_guardian_theme": _default("guardian_theme"),
                 "portal_navigation": _default("navigation"),
                 "portal_nav_admin": deepcopy(ADMIN_MENU_DEFAULTS),
                 "portal_nav_guardian": deepcopy(GUARDIAN_MENU_DEFAULTS),
-                "portal_module_visibility": _default("module_visibility"),
+                "portal_module_visibility": module_visibility,
                 "portal_eraport_design": _default("eraport_design"),
                 "portal_achievement_design": _default("achievement_design"),
-                "portal_experience_scope": "admin",
+                "portal_experience_scope": scope,
                 "portal_experience_body_classes": "portal-experience-v16 portal-theme-disabled",
-                "portal_experience_client": {"scope": "admin", "theme": _default("admin_theme"), "navigation": ADMIN_MENU_DEFAULTS, "navigation_enabled": False},
+                "portal_experience_client": {"scope": scope, "theme": current_theme, "navigation": ADMIN_MENU_DEFAULTS if scope == "admin" else GUARDIAN_MENU_DEFAULTS, "navigation_enabled": False},
             }
 
     app.extensions["portal_settings_v16_integrated"] = {

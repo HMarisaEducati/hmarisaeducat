@@ -1,0 +1,282 @@
+{% extends "control_center/base.html" %}
+{% block title %}Pengaturan Tampilan Portal Admin{% endblock %}
+
+{% block breadcrumb %}
+<span class="cc-bc-sep">/</span>
+<a href="{{ url_for('control_center_layout_center') }}">Pusat Kendali Layout</a>
+<span class="cc-bc-sep">/</span>
+<span>Portal Admin</span>
+{% endblock %}
+
+{% block content %}
+<div class="cc-page-header">
+  <div>
+    <h1 class="cc-page-title"><i class="fa-solid fa-desktop"></i> Pengaturan Tampilan Portal Admin</h1>
+    <p class="cc-page-sub">Atur tema, judul dashboard, banner, logo, dan visibilitas dashboard menggunakan mekanisme draft/publish yang sudah ada.</p>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  <div class="cc-form-grid" style="grid-template-columns:1fr 320px; gap:1.5rem;">
+    <div>
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <div class="cc-card-title"><i class="fa-solid fa-palette"></i> Tema & Warna</div>
+        </div>
+        <div class="cc-card-body">
+          <label class="cc-field">
+            <span class="cc-label">Aktifkan Tema Dinamis</span>
+            <input type="checkbox" name="enabled" value="1" {% if admin_payload.enabled %}checked{% endif %}>
+          </label>
+          <label class="cc-field">
+            <span class="cc-label">Preset Tema</span>
+            <select name="preset" class="cc-input">
+              <option value="current" {% if admin_payload.preset == 'current' %}selected{% endif %}>Saat Ini</option>
+              <option value="green-gold" {% if admin_payload.preset == 'green-gold' %}selected{% endif %}>Hijau–Emas</option>
+              <option value="minimal" {% if admin_payload.preset == 'minimal' %}selected{% endif %}>Minimalis</option>
+              <option value="child-friendly" {% if admin_payload.preset == 'child-friendly' %}selected{% endif %}>Ceria Edukatif</option>
+            </select>
+          </label>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Warna Utama</span>
+              <input type="color" name="primary" value="{{ admin_payload.primary }}" class="cc-input">
+              <code>{{ admin_payload.primary }}</code>
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Warna Sekunder</span>
+              <input type="color" name="secondary" value="{{ admin_payload.secondary }}" class="cc-input">
+              <code>{{ admin_payload.secondary }}</code>
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Warna Aksen</span>
+              <input type="color" name="accent" value="{{ admin_payload.accent }}" class="cc-input">
+              <code>{{ admin_payload.accent }}</code>
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Warna Latar</span>
+              <input type="color" name="page_bg" value="{{ admin_payload.page_bg }}" class="cc-input">
+              <code>{{ admin_payload.page_bg }}</code>
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Warna Kartu</span>
+              <input type="color" name="surface" value="{{ admin_payload.surface }}" class="cc-input">
+              <code>{{ admin_payload.surface }}</code>
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Warna Teks</span>
+              <input type="color" name="text" value="{{ admin_payload.text }}" class="cc-input">
+              <code>{{ admin_payload.text }}</code>
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Ukuran Font</span>
+              <select name="font_scale" class="cc-input">
+                <option value="small" {% if admin_payload.font_scale == 'small' %}selected{% endif %}>Kecil</option>
+                <option value="normal" {% if admin_payload.font_scale == 'normal' %}selected{% endif %}>Normal</option>
+                <option value="large" {% if admin_payload.font_scale == 'large' %}selected{% endif %}>Besar</option>
+              </select>
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Radius Kartu</span>
+              <select name="card_radius" class="cc-input">
+                <option value="compact" {% if admin_payload.card_radius == 'compact' %}selected{% endif %}>Tegas</option>
+                <option value="current" {% if admin_payload.card_radius == 'current' %}selected{% endif %}>Saat Ini</option>
+                <option value="soft" {% if admin_payload.card_radius == 'soft' %}selected{% endif %}>Lembut</option>
+              </select>
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Kepadatan</span>
+              <select name="density" class="cc-input">
+                <option value="comfortable" {% if admin_payload.density == 'comfortable' %}selected{% endif %}>Nyaman</option>
+                <option value="compact" {% if admin_payload.density == 'compact' %}selected{% endif %}>Ringkas</option>
+                <option value="spacious" {% if admin_payload.density == 'spacious' %}selected{% endif %}>Lega</option>
+              </select>
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Gaya Sidebar</span>
+              <select name="sidebar_style" class="cc-input">
+                <option value="solid" {% if admin_payload.sidebar_style == 'solid' %}selected{% endif %}>Solid</option>
+                <option value="gradient" {% if admin_payload.sidebar_style == 'gradient' %}selected{% endif %}>Gradasi</option>
+                <option value="soft" {% if admin_payload.sidebar_style == 'soft' %}selected{% endif %}>Lembut</option>
+              </select>
+            </label>
+          </div>
+          <label class="cc-field">
+            <span class="cc-label">Gaya Header</span>
+            <select name="header_style" class="cc-input">
+              <option value="clean" {% if admin_payload.header_style == 'clean' %}selected{% endif %}>Bersih</option>
+              <option value="banner" {% if admin_payload.header_style == 'banner' %}selected{% endif %}>Banner</option>
+              <option value="minimal" {% if admin_payload.header_style == 'minimal' %}selected{% endif %}>Minimal</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <div class="cc-card-title"><i class="fa-solid fa-file-lines"></i> Teks & Identitas</div>
+        </div>
+        <div class="cc-card-body">
+          <label class="cc-field">
+            <span class="cc-label">Judul Dashboard</span>
+            <input type="text" name="dashboard_title" value="{{ admin_payload.dashboard_title }}" class="cc-input" maxlength="120">
+          </label>
+          <label class="cc-field">
+            <span class="cc-label">Subjudul Dashboard</span>
+            <input type="text" name="dashboard_subtitle" value="{{ admin_payload.dashboard_subtitle }}" class="cc-input" maxlength="240">
+          </label>
+          <label class="cc-field">
+            <span class="cc-label">Judul Login Admin</span>
+            <input type="text" name="login_title" value="{{ admin_payload.login_title }}" class="cc-input" maxlength="100">
+          </label>
+          <label class="cc-field">
+            <span class="cc-label">Teks Login Admin</span>
+            <textarea name="login_subtitle" class="cc-input" rows="4">{{ admin_payload.login_subtitle }}</textarea>
+          </label>
+          <label class="cc-field">
+            <span class="cc-label">Pesan Sambutan Dashboard</span>
+            <textarea name="welcome_text" class="cc-input" rows="4">{{ admin_payload.welcome_text }}</textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <div class="cc-card-title"><i class="fa-solid fa-eye"></i> Visibilitas Dashboard</div>
+        </div>
+        <div class="cc-card-body">
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_date" value="1" {% if module_payload.admin_show_date %}checked{% endif %}>
+            <span>Tampilkan tanggal</span>
+          </label>
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_stats" value="1" {% if module_payload.admin_show_stats %}checked{% endif %}>
+            <span>Tampilkan statistik</span>
+          </label>
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_hadith" value="1" {% if module_payload.admin_show_hadith %}checked{% endif %}>
+            <span>Tampilkan hadis harian</span>
+          </label>
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_monthly_winners" value="1" {% if module_payload.admin_show_monthly_winners %}checked{% endif %}>
+            <span>Tampilkan prestasi bulanan</span>
+          </label>
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_monthly_poster" value="1" {% if module_payload.admin_show_monthly_poster %}checked{% endif %}>
+            <span>Tampilkan poster bulanan</span>
+          </label>
+          <label class="cc-checkbox">
+            <input type="checkbox" name="admin_show_syllabus" value="1" {% if module_payload.admin_show_syllabus %}checked{% endif %}>
+            <span>Tampilkan silabus</span>
+          </label>
+          <div class="cc-note" style="margin-top:1rem;font-size:0.95rem;color:var(--cc-text-muted);">Urutkan blok dashboard menggunakan angka; lebih kecil artinya ditampilkan lebih awal.</div>
+          <div class="cc-grid-2" style="margin-top:1rem;">
+            <label class="cc-field">
+              <span class="cc-label">Urutan Tanggal</span>
+              <input type="number" name="admin_card_date_order" value="{{ module_payload.admin_card_date_order }}" class="cc-input" min="0" max="999">
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Urutan Statistik</span>
+              <input type="number" name="admin_card_stats_order" value="{{ module_payload.admin_card_stats_order }}" class="cc-input" min="0" max="999">
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Urutan Hadis</span>
+              <input type="number" name="admin_card_hadith_order" value="{{ module_payload.admin_card_hadith_order }}" class="cc-input" min="0" max="999">
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Urutan Prestasi</span>
+              <input type="number" name="admin_card_monthly_winners_order" value="{{ module_payload.admin_card_monthly_winners_order }}" class="cc-input" min="0" max="999">
+            </label>
+          </div>
+          <div class="cc-grid-2">
+            <label class="cc-field">
+              <span class="cc-label">Urutan Poster Bulanan</span>
+              <input type="number" name="admin_card_monthly_poster_order" value="{{ module_payload.admin_card_monthly_poster_order }}" class="cc-input" min="0" max="999">
+            </label>
+            <label class="cc-field">
+              <span class="cc-label">Urutan Silabus</span>
+              <input type="number" name="admin_card_syllabus_order" value="{{ module_payload.admin_card_syllabus_order }}" class="cc-input" min="0" max="999">
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="cc-card cc-card-highlight">
+        <div class="cc-card-header">
+          <div class="cc-card-title"><i class="fa-solid fa-images"></i> Gambar & Logo</div>
+        </div>
+        <div class="cc-card-body">
+          {% if portal_identity.tpq_name or portal_identity.short_description %}
+          <div class="cc-note" style="margin-bottom:1rem;">
+            <strong>{{ portal_identity.tpq_name or 'Portal TPQ' }}</strong><br>
+            {{ portal_identity.short_description or 'Tidak ada deskripsi singkat saat ini.' }}
+          </div>
+          {% endif %}
+          {% if current_logo_url %}
+          <div class="cc-image-preview"><img src="{{ current_logo_url }}" alt="Logo aktif"></div>
+          <p class="cc-note">Logo aktif saat ini dari Portal Identitas.</p>
+          {% endif %}
+          {% if current_favicon_url %}
+          <div class="cc-field" style="margin-top:0.75rem;">
+            <span class="cc-label">Favicon saat ini</span>
+            <div class="cc-image-preview" style="max-width:80px;"><img src="{{ current_favicon_url }}" alt="Favicon aktif"></div>
+          </div>
+          {% endif %}
+          <label class="cc-field">
+            <span class="cc-label">Header Image</span>
+            <input type="file" name="header_image" accept="image/png,image/jpeg,image/webp">
+          </label>
+          {% if draft_header_url %}
+          <div class="cc-image-preview"><img src="{{ draft_header_url }}" alt="Header draft"></div>
+          <label class="cc-checkbox"><input type="checkbox" name="reset_header_image" value="1"> Hapus gambar header draft</label>
+          {% endif %}
+          <label class="cc-field">
+            <span class="cc-label">Login Image</span>
+            <input type="file" name="login_image" accept="image/png,image/jpeg,image/webp">
+          </label>
+          {% if draft_login_url %}
+          <div class="cc-image-preview"><img src="{{ draft_login_url }}" alt="Login draft"></div>
+          <label class="cc-checkbox"><input type="checkbox" name="reset_login_image" value="1"> Hapus gambar login draft</label>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <div class="cc-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Status Publish</div>
+        </div>
+        <div class="cc-card-body">
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Draft</span><span class="cc-sysinfo-val">Versi terbaru disimpan sebagai draft.</span></div>
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Aktif</span><span class="cc-sysinfo-val">Perubahan akan tampil setelah publish.</span></div>
+          {% if current_logo_url %}
+          <div class="cc-sysinfo-row"><span class="cc-sysinfo-key">Logo aktif</span><span class="cc-sysinfo-val">Tipe file yang digunakan saat ini.</span></div>
+          {% endif %}
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="cc-card" style="margin-top:1.5rem;">
+    <div class="cc-card-body" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <button type="submit" class="cc-btn cc-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Draft</button>
+      <button type="submit" name="action" value="publish" class="cc-btn cc-btn-success"><i class="fa-solid fa-cloud-arrow-up"></i> Terbitkan Perubahan</button>
+      {% if preview_url %}
+      <a href="{{ preview_url }}" target="_blank" class="cc-btn cc-btn-secondary"><i class="fa-solid fa-eye"></i> Pratinjau Layout</a>
+      {% endif %}
+      <a href="{{ url_for('control_center_layout_center') }}" class="cc-btn cc-btn-outline"><i class="fa-solid fa-arrow-left"></i> Batal</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
